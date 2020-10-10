@@ -1,0 +1,90 @@
+﻿<Window x:Class="MultiTool.DownloadMainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Downloader" 
+        WindowStartupLocation="CenterScreen"
+        Height="900" 
+        Width="1000"
+        Style="{StaticResource DarkWindow}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Label x:Name="downloadStatusLabel" 
+               Content="No download queued" 
+               HorizontalAlignment="Center" 
+               VerticalAlignment="Top"
+               FontSize="12"/>
+        <TextBox x:Name="urlTextBox"
+                 Height="66"
+                 Width="772"
+                 TextWrapping="Wrap"
+                 HorizontalAlignment="Stretch" 
+                 VerticalAlignment="Center"
+                 FontSize="16"
+                 TextChanged="UrlTextBox_TextChanged"/>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="1">
+                <Button x:Name="downloadButton"
+                        Content="Download"
+                        Click="DownloadButton_Click"  Height="50"/>
+                <Button x:Name="cancelButton"
+                        Content="Cancel"
+                        IsEnabled="False"
+                        Click="CancelButton_Click"  Height="50"/>
+                <Button x:Name="downloadListButton"
+                        Content="Download selected item(s)"
+                        IsEnabled="False"
+                        Click="DownloadListButton_Click"  
+                        Height="50"
+                        Margin="0,20,0,0"/>
+                <Button x:Name="showDownload"
+                        Content="Show download"
+                        Click="ShowDownload_Click" 
+                        ToolTip="Show latest downloaded data"
+                        Height="50"
+                        Margin="0,10"
+                        IsEnabled="{Binding ShowDownloadActivated}"/>
+                <Button x:Name="clearHistory"
+                        Content="Clear history"
+                        Click="ClearHistory_Click"
+                        Height="50"
+                        Margin="0,30"/>
+            </StackPanel>
+
+            <ListView x:Name="historyListView"
+                      Grid.Column="0"
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Stretch"
+                      Height="Auto" 
+                      Width="Auto"
+                      SelectionChanged="HistoryListView_SelectionChanged">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Date" Width="Auto" DisplayMemberBinding="{Binding Date}"/>
+                        <GridViewColumn Header="Link" Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Link}"
+                                               Foreground="{Binding TextColor}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+    </Grid>
+</Window>

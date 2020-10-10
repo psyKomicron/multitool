@@ -1,0 +1,150 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="MultiTool.PowerWindow"
+        Title="PowerWindow" Height="280" Width="604.667"
+        WindowStartupLocation="CenterScreen"
+        Style="{StaticResource DarkWindow}">
+    <Window.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="MinWidth" Value="125"/>
+            <Setter Property="MaxHeight" Value="90"/>
+            <Setter Property="Padding" Value="5,5,5,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <ControlTemplate x:Key="ButtonBaseControlTemplate1" TargetType="{x:Type ButtonBase}">
+            <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="Button.IsDefaulted" Value="True">
+                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FF3C7FB1"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FF2C628B"/>
+                </Trigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Background" TargetName="border" Value="#FFBCDDEE"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FF245A83"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="#FFADB2B5"/>
+                    <Setter Property="Foreground" Value="#FF838383"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="8*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical"
+                    Grid.Row="0"
+                    Grid.Column="0"/>
+
+        <!--Buttons zone-->
+        <StackPanel x:Name="ButtonsPanel" Orientation="Horizontal" Margin="0,2" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center">
+
+            <Button x:Name="LockButton" ToolTip="Lock" Click="LockButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{DynamicResource IconButtonControlTemplate}">
+                lock
+            </Button>
+            <Button x:Name="SleepButton" ToolTip="Sleep" Click="SleepButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{DynamicResource IconButtonControlTemplate}">
+                sleep
+            </Button>
+            <Button x:Name="RestartButton" ToolTip="Restart" Click="RestartButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{DynamicResource IconButtonControlTemplate}">
+                restart
+            </Button>
+            <Button x:Name="ShutdownButton" ToolTip="Shutdown" Click="ShutdownButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{StaticResource IconButtonControlTemplate}">
+                <Image Source="../../images/power_ico.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Button>
+        </StackPanel>
+
+        <!--Tiles panel-->
+        <Grid x:Name="TileGrid" Margin="5" Grid.Row="0" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="192*"/>
+                <ColumnDefinition Width="249*"/>
+                <ColumnDefinition Width="133*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+
+            <TextBox 
+                    x:Name="InputTextBox" 
+                    Text="Input delay" 
+                    MaxWidth="300" 
+                    Width="170" 
+                    MinHeight="40" MaxHeight="100" 
+                    VerticalContentAlignment="Center" 
+                    VerticalAlignment="Center" 
+                    BorderThickness="0" 
+                    Background="#212121" 
+                    GotKeyboardFocus="InputTextBlock_GotKeyboardFocus" 
+                    Grid.Column="0" Grid.Row="0"/>
+
+            <ComboBox 
+                x:Name="TypeComboBox"
+                Height="{Binding ElementName=InputTextBox, Path=ActualHeight}" 
+                MaxWidth="230" Width="170" 
+                VerticalContentAlignment="Center"
+                Background="#212121" 
+                Foreground="Black" 
+                BorderBrush="#212121"
+                Grid.Column="1" Grid.Row="0">
+                <ComboBox.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#212121" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#212121" />
+                </ComboBox.Resources>
+
+                <ComboBoxItem IsSelected="True" Content="seconds"/>
+                <ComboBoxItem Content="minutes"/>
+                <ComboBoxItem Content="hours"/>
+                <ComboBoxItem Content="auto-detect"/>
+            </ComboBox>
+            <StackPanel Orientation="Vertical" Grid.Column="2" VerticalAlignment="Center">
+                
+                <Button 
+                    x:Name="RestartTimer" 
+                    MinHeight="40" 
+                    Content="Restart timer" 
+                    Click="RestartTimer_Click" 
+                    Grid.Column="2" Grid.Row="0" 
+                    Template="{DynamicResource ButtonBaseControlTemplate1}"/>
+                <Button 
+                    x:Name="StopTimer" 
+                    MinHeight="40" 
+                    Content="Stop timer" 
+                    Click="StopTimer_Click" 
+                    Grid.Column="2" Grid.Row="1" 
+                    Template="{DynamicResource ButtonBaseControlTemplate1}"/>
+            
+            </StackPanel>
+        </Grid>
+
+        <!--Progress bar (timer)-->
+        <ProgressBar x:Name="TimerProgressBar" Height="10" Value="0" Background="Transparent" VerticalAlignment="Center" Grid.Row="2"/>
+    </Grid>
+</Window>

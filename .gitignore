@@ -1,0 +1,15 @@
+# general
+.git
+
+# ide
+*.sln
+
+# compilation generated directories
+bin
+obj
+
+# hmi
+.vs
+packages
+
+# business
