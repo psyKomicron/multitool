@@ -15,21 +15,10 @@ namespace MultiTool
     /// </summary>
     public partial class PowerWindow : Window, INotifyPropertyChanged
     {
-        private double _progressBarValue;
         private Timer timer;
         private PowerController powerController;
 
         public bool CountingDown => timer == null;
-
-        public double ProgressBarValue
-        {
-            get => _progressBarValue;
-            set
-            {
-                _progressBarValue = value;
-                OnPropertyChanged();
-            }
-        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -37,7 +26,6 @@ namespace MultiTool
         {
             InitializeComponent();
             DataContext = this;
-            ProgressBarValue = 0;
             powerController = new PowerController();
         }
 
@@ -74,6 +62,30 @@ namespace MultiTool
                     return new Duration(TimeSpan.FromHours(delay));
                 default:
                     throw new Exception();
+            }
+        }
+
+        private void StartTimer()
+        {
+            try
+            {
+                double delay = GetTextBoxValue();
+                Duration duration = GetDurationFromComboBox(delay);
+
+                timer = new Timer(duration.TimeSpan.TotalMilliseconds);
+                timer.AutoReset = false;
+                timer.Elapsed += Shutdown;
+
+                DoubleAnimation animation = new DoubleAnimation(100.0, duration);
+                animation.Completed += Animation_Completed;
+                TimerProgressBar.BeginAnimation(ProgressBar.ValueProperty, animation, HandoffBehavior.SnapshotAndReplace);
+
+                timer.Start();
+                OnPropertyChanged("CountingDown");
+            }
+            catch (FormatException)
+            {
+                // TODO : Show alert window
             }
         }
 
@@ -127,27 +139,7 @@ namespace MultiTool
         #region button events
         private void ShutdownButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                double delay = GetTextBoxValue();
-                Duration duration = GetDurationFromComboBox(delay);
-                ProgressBarValue = duration.TimeSpan.TotalMilliseconds;
-
-                timer = new Timer(duration.TimeSpan.TotalMilliseconds);
-                timer.AutoReset = false;
-                timer.Elapsed += Shutdown;
-
-                DoubleAnimation animation = new DoubleAnimation(100.0, duration);
-                animation.Completed += Animation_Completed;
-                TimerProgressBar.BeginAnimation(ProgressBar.ValueProperty, animation, HandoffBehavior.SnapshotAndReplace);
-                
-                timer.Start();
-                OnPropertyChanged("CountingDown");
-            }
-            catch (FormatException)
-            {
-                // TODO : Show alert window
-            }
+            StartTimer();
         }
 
         private void RestartButton_Click(object sender, RoutedEventArgs e)
