@@ -56,6 +56,7 @@
     <Compile Include="Downloader.cs" />
     <Compile Include="DownloadEventArgs.cs" />
     <Compile Include="PowerController.cs" />
+    <Compile Include="poweroptions\ShutdownOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
