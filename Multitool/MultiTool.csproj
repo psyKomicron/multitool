@@ -163,9 +163,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="images\lock_ico.png" />
     <Content Include="images\power_ico.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="images\sleep_ico.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="images\restart_ico.png" />
     <Resource Include="15_multitool-512.ico" />
     <Content Include="images\download_ico.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
