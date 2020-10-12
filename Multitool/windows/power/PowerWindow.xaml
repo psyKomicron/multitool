@@ -4,25 +4,37 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="MultiTool.PowerWindow"
-        Title="PowerWindow" Height="280" Width="604.667"
+        Title="PowerWindow" 
+        Name="Window"
+        MinHeight="405" Height="405" 
+        MinWidth="520" Width="640"
         WindowStartupLocation="CenterScreen"
         Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
-            <Setter Property="MinWidth" Value="125"/>
-            <Setter Property="MaxHeight" Value="90"/>
-            <Setter Property="Padding" Value="5,5,5,5"/>
+            <Setter Property="MinWidth" Value="10"/>
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="MaxWidth" Value="100"/>
+
+            <Setter Property="MinHeight" Value="10"/>
+            <Setter Property="Height" Value="80"/>
+            <Setter Property="MaxHeight" Value="100"/>
+
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
         <Style TargetType="{x:Type TextBox}">
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
         <Style TargetType="{x:Type ComboBox}">
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
+        <Style TargetType="MenuItem">
+            <Setter Property="Margin" Value="3"/>
+        </Style>
+
         <ControlTemplate x:Key="ButtonBaseControlTemplate1" TargetType="{x:Type ButtonBase}">
             <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
                 <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
@@ -49,99 +61,387 @@
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
+        <ControlTemplate x:Key="MenuItemControlTemplate1" TargetType="{x:Type MenuItem}">
+            <Border x:Name="templateRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                <Grid Margin="-1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="22" SharedSizeGroup="MenuItemIconColumnGroup" Width="Auto"/>
+                        <ColumnDefinition Width="13"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition SharedSizeGroup="MenuItemIGTColumnGroup" Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Margin="3" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" Width="16"/>
+                    <Border x:Name="GlyphPanel" BorderBrush="#FF26A0DA" BorderThickness="1" Background="#3D26A0DA" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Margin="-1,0,0,0" Visibility="Hidden" VerticalAlignment="Center" Width="22">
+                        <Path x:Name="Glyph" Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="#FF212121" FlowDirection="LeftToRight" Height="11" Width="10"/>
+                    </Border>
+                    <ContentPresenter x:Name="menuHeaderContainer" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="2" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="menuGestureText" Grid.Column="4" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding InputGestureText}" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="Icon" Value="{x:Null}">
+                    <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Visibility" TargetName="GlyphPanel" Value="Visible"/>
+                    <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
+                </Trigger>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" TargetName="templateRoot" Value="#3D26A0DA"/>
+                    <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF26A0DA"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="TextElement.Foreground" TargetName="templateRoot" Value="#FF707070"/>
+                    <Setter Property="Fill" TargetName="Glyph" Value="#FF707070"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsHighlighted" Value="True"/>
+                        <Condition Property="IsEnabled" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" TargetName="templateRoot" Value="#0A000000"/>
+                    <Setter Property="BorderBrush" TargetName="templateRoot" Value="#21000000"/>
+                </MultiTrigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ComboBoxControlTemplate1" TargetType="{x:Type ComboBox}">
+            <Grid x:Name="templateRoot" SnapsToDevicePixels="True" Background="{StaticResource DarkBlack}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" Width="0"/>
+                </Grid.ColumnDefinitions>
+                <Popup x:Name="PART_Popup" AllowsTransparency="True" Grid.ColumnSpan="2" IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom">
+                    <Themes:SystemDropShadowChrome x:Name="shadow" Color="Transparent" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{Binding ActualWidth, ElementName=templateRoot}">
+                        <Border x:Name="DropDownBorder" BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" BorderThickness="1" Background="{StaticResource DarkBlack}">
+                            <ScrollViewer x:Name="DropDownScrollViewer">
+                                <Grid x:Name="grid" RenderOptions.ClearTypeHint="Enabled">
+                                    <Canvas x:Name="canvas" HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0">
+                                        <Rectangle x:Name="OpaqueRect" Fill="{Binding Background, ElementName=DropDownBorder}" Height="{Binding ActualHeight, ElementName=DropDownBorder}" Width="{Binding ActualWidth, ElementName=DropDownBorder}"/>
+                                    </Canvas>
+                                    <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+                    </Themes:SystemDropShadowChrome>
+                </Popup>
+                <ToggleButton x:Name="toggleButton" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{StaticResource LightBlack}" Grid.ColumnSpan="2" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                    <ToggleButton.Style>
+                        <Style TargetType="{x:Type ToggleButton}">
+                            <Setter Property="OverridesDefaultStyle" Value="True"/>
+                            <Setter Property="IsTabStop" Value="False"/>
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="ClickMode" Value="Press"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                        <Border x:Name="templateRoot" Background="{StaticResource DarkBlack}" CornerRadius="2" BorderBrush="#FFACACAC" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                                            
+                                            <Border x:Name="splitBorder" BorderBrush="Transparent" BorderThickness="1" HorizontalAlignment="Right" Margin="0" SnapsToDevicePixels="True" Width="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}">
+                                                <Path x:Name="Arrow" Data="F1M0,0L2.667,2.66665 5.3334,0 5.3334,-1.78168 2.6667,0.88501 0,-1.78168 0,0z" Fill="#FF606060" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="true"/>
+                                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="false"/>
+                                                    <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="false"/>
+                                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="true"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="templateRoot" Value="White"/>
+                                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FFABADB3"/>
+                                                <Setter Property="Background" TargetName="splitBorder" Value="Transparent"/>
+                                                <Setter Property="BorderBrush" TargetName="splitBorder" Value="Transparent"/>
+                                            </MultiDataTrigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Fill" TargetName="Arrow" Value="Black"/>
+                                            </Trigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
+                                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="false"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="templateRoot">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="#2e2e2e" Opacity="0.2"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF7EB4EA"/>
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
+                                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="true"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF7EB4EA"/>
+                                                
+                                                <Setter Property="BorderBrush" TargetName="splitBorder" Value="#FF7EB4EA"/>
+                                            </MultiDataTrigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Fill" TargetName="Arrow" Value="Black"/>
+                                            </Trigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="true"/>
+                                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="false"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="templateRoot">
+                                                    <Setter.Value>
+                                                        <LinearGradientBrush EndPoint="0,1" StartPoint="0,2">
+                                                            <GradientStop Color="#FFDAECFC" Offset="0"/>
+                                                            <GradientStop Color="#2e2e2e" Offset="1"/>
+                                                            <GradientStop Color="#FFC4E0FC" Offset="2"/>
+                                                        </LinearGradientBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF569DE5"/>
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="true"/>
+                                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="true"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="templateRoot" Value="White"/>
+                                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF569DE5"/>
+                                                <Setter Property="Background" TargetName="splitBorder">
+                                                    <Setter.Value>
+                                                        <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                                                            <GradientStop Color="#FFDAEBFC" Offset="0"/>
+                                                            <GradientStop Color="#FFC4E0FC" Offset="1"/>
+                                                        </LinearGradientBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="BorderBrush" TargetName="splitBorder" Value="#FF569DE5"/>
+                                            </MultiDataTrigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Fill" TargetName="Arrow" Value="#FFBFBFBF"/>
+                                            </Trigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false"/>
+                                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="false"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="templateRoot" Value="#FFF0F0F0"/>
+                                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FFD9D9D9"/>
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false"/>
+                                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="true"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="templateRoot" Value="White"/>
+                                                <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FFBFBFBF"/>
+                                                <Setter Property="Background" TargetName="splitBorder" Value="Transparent"/>
+                                                <Setter Property="BorderBrush" TargetName="splitBorder" Value="Transparent"/>
+                                            </MultiDataTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+                <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Content="{TemplateBinding SelectionBoxItem}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" IsHitTestVisible="False" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="HasDropShadow" SourceName="PART_Popup" Value="True">
+                    <Setter Property="Margin" TargetName="shadow" Value="0,0,5,5"/>
+                    <Setter Property="Color" TargetName="shadow" Value="#71000000"/>
+                </Trigger>
+                <Trigger Property="HasItems" Value="False">
+                    <Setter Property="Height" TargetName="DropDownBorder" Value="95"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsGrouping" Value="True"/>
+                        <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+                </MultiTrigger>
+                <Trigger Property="CanContentScroll" SourceName="DropDownScrollViewer" Value="False">
+                    <Setter Property="Canvas.Top" TargetName="OpaqueRect" Value="{Binding VerticalOffset, ElementName=DropDownScrollViewer}"/>
+                    <Setter Property="Canvas.Left" TargetName="OpaqueRect" Value="{Binding HorizontalOffset, ElementName=DropDownScrollViewer}"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
     </Window.Resources>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="10*"/>
-            <RowDefinition Height="8*"/>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="292*"/>
+            <RowDefinition Height="152*"/>
+            <RowDefinition Height="25*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Vertical"
-                    Grid.Row="0"
-                    Grid.Column="0"/>
+        <StackPanel>
+            <Menu
+                Foreground="White"
+                BorderThickness="1"
+                BorderBrush="WhiteSmoke"
+                Style="{StaticResource DarkMenu}">
 
-        <!--Buttons zone-->
-        <StackPanel x:Name="ButtonsPanel" Orientation="Horizontal" Margin="0,2" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center">
-
-            <Button x:Name="LockButton" ToolTip="Lock" Click="LockButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{DynamicResource IconButtonControlTemplate}">
-                lock
-            </Button>
-            <Button x:Name="SleepButton" ToolTip="Sleep" Click="SleepButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{DynamicResource IconButtonControlTemplate}">
-                sleep
-            </Button>
-            <Button x:Name="RestartButton" ToolTip="Restart" Click="RestartButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{DynamicResource IconButtonControlTemplate}">
-                restart
-            </Button>
-            <Button x:Name="ShutdownButton" ToolTip="Shutdown" Click="ShutdownButton_Click" Margin="10,0" IsEnabled="{Binding CountingDown}" Template="{StaticResource IconButtonControlTemplate}">
-                <Image Source="../../images/power_ico.png" RenderOptions.BitmapScalingMode="HighQuality"/>
-            </Button>
+                <MenuItem Header="Options" Template="{StaticResource DarkMenuItemCT}">
+                    <MenuItem Header="General" Template="{StaticResource MenuItemControlTemplate1}"/>
+                    <MenuItem Header="Shutdown" Template="{StaticResource MenuItemControlTemplate1}"/>
+                    <MenuItem Header="Restart" Template="{DynamicResource MenuItemControlTemplate1}"/>
+                </MenuItem>
+                <MenuItem Header="Options">
+                    <MenuItem Header="General"/>
+                    <MenuItem Header="Shutdown"/>
+                    <MenuItem Header="Restart"/>
+                </MenuItem>
+            </Menu>
         </StackPanel>
 
         <!--Tiles panel-->
-        <Grid x:Name="TileGrid" Margin="5" Grid.Row="0" Grid.Column="1">
+        <Grid x:Name="TileGrid" Margin="0,30,0,0" Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="192*"/>
                 <ColumnDefinition Width="249*"/>
                 <ColumnDefinition Width="133*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBox 
                     x:Name="InputTextBox" 
                     Text="Input delay" 
-                    MaxWidth="300" 
-                    Width="170" 
+                    MaxWidth="300" Width="170" 
                     MinHeight="40" MaxHeight="100" 
-                    VerticalContentAlignment="Center" 
-                    VerticalAlignment="Center" 
-                    BorderThickness="0" 
+                    VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                    VerticalAlignment="Center"
                     Background="#212121" 
                     GotKeyboardFocus="InputTextBlock_GotKeyboardFocus" 
-                    Grid.Column="0" Grid.Row="0"/>
+                    Grid.Column="0" Grid.Row="1">
+                <TextBox.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="2"/>
+                    </Style>
+                </TextBox.Resources>
+            </TextBox>
 
             <ComboBox 
                 x:Name="TypeComboBox"
                 Height="{Binding ElementName=InputTextBox, Path=ActualHeight}" 
                 MaxWidth="230" Width="170" 
                 VerticalContentAlignment="Center"
-                Background="#212121" 
-                Foreground="Black" 
-                BorderBrush="#212121"
-                Grid.Column="1" Grid.Row="0">
-                <ComboBox.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#212121" />
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#212121" />
-                </ComboBox.Resources>
+                Foreground="White"
+                Grid.Column="1" Grid.Row="1" 
+                Template="{DynamicResource ComboBoxControlTemplate1}">
+                
 
                 <ComboBoxItem IsSelected="True" Content="seconds"/>
                 <ComboBoxItem Content="minutes"/>
                 <ComboBoxItem Content="hours"/>
                 <ComboBoxItem Content="auto-detect"/>
             </ComboBox>
-            <StackPanel Orientation="Vertical" Grid.Column="2" VerticalAlignment="Center">
-                
+            <StackPanel Orientation="Vertical" Grid.Column="2" VerticalAlignment="Center" Margin="0,26" Grid.RowSpan="2">
+
                 <Button 
                     x:Name="RestartTimer" 
                     MinHeight="40" 
-                    Content="Restart timer" 
+                    Content="Restart" 
                     Click="RestartTimer_Click" 
-                    Grid.Column="2" Grid.Row="0" 
-                    Template="{DynamicResource ButtonBaseControlTemplate1}"/>
+                    Grid.Column="2" Grid.Row="0"/>
                 <Button 
                     x:Name="StopTimer" 
                     MinHeight="40" 
-                    Content="Stop timer" 
+                    Content="Stop" 
                     Click="StopTimer_Click" 
-                    Grid.Column="2" Grid.Row="1" 
-                    Template="{DynamicResource ButtonBaseControlTemplate1}"/>
-            
+                    Grid.Column="2" Grid.Row="1"/>
+
             </StackPanel>
+        </Grid>
+
+        <!--Buttons zone-->
+        <Grid x:Name="ButtonsPanel" Grid.Row="1" HorizontalAlignment="Center" Width="{Binding ElementName=Window, Path=ActualWidth}" Margin="10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button 
+                x:Name="LockButton" 
+                ToolTip="Lock" 
+                Click="LockButton_Click" 
+                Margin="10,0" 
+                Grid.Column="0"
+                IsEnabled="{Binding CountingDown}" 
+                Template="{DynamicResource IconButtonControlTemplate}">
+                lock
+            </Button>
+            <Button 
+                x:Name="SleepButton" 
+                ToolTip="Sleep" 
+                Click="SleepButton_Click" 
+                Margin="10,0" 
+                Grid.Column="1"
+                IsEnabled="{Binding CountingDown}" 
+                Template="{DynamicResource IconButtonControlTemplate}">
+                sleep
+            </Button>
+            <Button 
+                x:Name="RestartButton" 
+                ToolTip="Restart" 
+                Click="RestartButton_Click" 
+                Margin="10,0" 
+                Grid.Column="2"
+                IsEnabled="{Binding CountingDown}" 
+                Template="{DynamicResource IconButtonControlTemplate}">
+                restart
+            </Button>
+            <Button 
+                x:Name="ShutdownButton" 
+                ToolTip="Shutdown" 
+                Click="ShutdownButton_Click"
+                Margin="10,10"
+                Grid.Column="3"
+                IsEnabled="{Binding CountingDown}"
+                Template="{StaticResource IconButtonControlTemplate}">
+                <Image Source="../../images/power_ico.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Button>
+
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="ShutdownButton">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                            Storyboard.TargetName="ShutdownButton"
+                            Storyboard.TargetProperty="Width"
+                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                            <DoubleAnimation
+                            Storyboard.TargetName="ShutdownButton"
+                            Storyboard.TargetProperty="Height"
+                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="ShutdownButton">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                            Storyboard.TargetName="ShutdownButton"
+                            Storyboard.TargetProperty="Width"
+                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
+                            Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                            <DoubleAnimation
+                            Storyboard.TargetName="ShutdownButton"
+                            Storyboard.TargetProperty="Height" 
+                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
+                            Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
+
         </Grid>
 
         <!--Progress bar (timer)-->
