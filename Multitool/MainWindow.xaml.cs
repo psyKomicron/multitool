@@ -21,6 +21,8 @@ namespace MultiTool
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private List<Window> openWindows = new List<Window>(3);
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -34,19 +36,59 @@ namespace MultiTool
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
+        private void Open<WindowType>() where WindowType : Window, new()
+        {
+            if (openWindows.Count > 0)
+            {
+                Window window = openWindows.Find((w) => w is WindowType);
+                if (window != null)
+                {
+                    window.Activate();
+                }
+                else
+                {
+                    CreateAndOpen<WindowType>();
+                }
+            }
+            else
+            {
+                CreateAndOpen<WindowType>();
+            }
+        }
+
+        private void CreateAndOpen<WindowType>() where WindowType : Window, new()
+        {
+            Window w = new WindowType();
+            w.Closed += ChildWindow_Closed;
+            w.Show();
+            openWindows.Add(w);
+        }
+
+        private void ChildWindow_Closed(object sender, EventArgs e)
+        {
+            if (sender is Window window)
+            {
+                Window instanceWindow = openWindows.Find((w) => w.Uid == window.Uid);
+                if (instanceWindow != null)
+                {
+                    openWindows.Remove(instanceWindow);
+                }
+            }
+        }
+
         private void OpenDownload_Click(object sender, RoutedEventArgs e)
         {
-            new DownloadMainWindow().Show();
+            Open<DownloadMainWindow>();
         }
 
         private void OpenExplorer_Click(object sender, RoutedEventArgs e)
         {
-            new ExplorerWindow().Show();
+            Open<ExplorerWindow>();
         }
 
         private void OpenPowerSettings_Click(object sender, RoutedEventArgs e)
         {
-            new PowerWindow().Show();
+            Open<PowerWindow>();
         }
 
         private void OpenSoon_Click(object sender, RoutedEventArgs e)
