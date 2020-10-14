@@ -53,10 +53,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Downloader.cs" />
-    <Compile Include="DownloadEventArgs.cs" />
-    <Compile Include="PowerController.cs" />
-    <Compile Include="poweroptions\ShutdownOptions.cs" />
+    <Compile Include="Controllers\Controller.cs" />
+    <Compile Include="Network\Downloader.cs" />
+    <Compile Include="Network\DownloadEventArgs.cs" />
+    <Compile Include="Controllers\PowerController.cs" />
+    <Compile Include="ProcessOptions\Enums\PowerOptions.cs" />
+    <Compile Include="ProcessOptions\EnumTranslaters\EnumTranslater.cs" />
+    <Compile Include="ProcessOptions\EnumTranslaters\PowerEnumTranslater.cs" />
+    <Compile Include="ProcessOptions\StartOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
