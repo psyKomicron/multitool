@@ -43,9 +43,15 @@ namespace MultiTool
 
         private void DisposeAllResources()
         {
-            timer.Close();
-            timer.Dispose();
-            controller?.ClearOptions();
+            if (timer != null)
+            {
+                timer.Close();
+                timer.Dispose();
+            }
+            if (controller != null)
+            {
+                controller.ClearOptions();
+            }
             CancelProgressBarAnimation();
         }
 
@@ -123,7 +129,13 @@ namespace MultiTool
             }
         }
 
-        private void CancelProgressBarAnimation() => TimerProgressBar.BeginAnimation(ProgressBar.ValueProperty, null);
+        private void CancelProgressBarAnimation()
+        {
+            if (IsInitialized)
+            {
+                TimerProgressBar.BeginAnimation(ProgressBar.ValueProperty, null);
+            }
+        }
 
 
         #region power management methods
