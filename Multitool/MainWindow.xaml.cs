@@ -19,21 +19,14 @@ namespace MultiTool
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        private List<Window> openWindows = new List<Window>(3);
+        private readonly List<Window> openWindows = new List<Window>(3);
         
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         private void Open<WindowType>() where WindowType : Window, new()
