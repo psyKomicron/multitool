@@ -3,6 +3,7 @@
 
 # ide
 *.sln
+*.user
 
 # compilation generated directories
 bin
