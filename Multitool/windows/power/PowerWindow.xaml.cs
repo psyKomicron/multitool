@@ -1,6 +1,7 @@
 ﻿using BusinessLayer.Controllers;
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
+using BusinessLayer.ProcessOptions.EnumTranslaters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -89,8 +90,9 @@ namespace MultiTool
             {
                 StartOptions = new StartOptions<PowerOptions>()
                 {
-                    Options = options
-                }
+                    Options = options,
+                    Translater = new PowerEnumTranslater()
+                },
             };
             controller.Execute();
         }
@@ -146,7 +148,7 @@ namespace MultiTool
             timer.Stop();
             timer.Close();
 
-            ExecuteController(new List<PowerOptions>() { PowerOptions.LogOff, PowerOptions.NoDelay });
+            ExecuteController(new List<PowerOptions>() { PowerOptions.LogOff, PowerOptions.Force });
         }
 
         private void Sleep(object sender, ElapsedEventArgs e)
