@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,9 +20,10 @@ namespace MultiTool
     /// </summary>
     public partial class PowerWindow : Window, INotifyPropertyChanged
     {
+        private bool _buttonsEnabled = true;
+        private Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])");
         private Timer timer;
         private PowerController controller;
-        private bool _buttonsEnabled = true;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -74,19 +76,25 @@ namespace MultiTool
             }
         }
 
-        private Duration GetDurationFromComboBox(double delay)
+        private Duration GetDurationFromComboBox()
         {
             string value = (TypeComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
             switch (value)
             {
                 case "seconds":
-                    return new Duration(TimeSpan.FromSeconds(delay));
+                    return new Duration(TimeSpan.FromSeconds(GetTextBoxValue()));
                 case "minutes":
-                    return new Duration(TimeSpan.FromMinutes(delay));
+                    return new Duration(TimeSpan.FromMinutes(GetTextBoxValue()));
                 case "hours":
-                    return new Duration(TimeSpan.FromHours(delay));
+                    return new Duration(TimeSpan.FromHours(GetTextBoxValue()));
+                case "auto-detect":
+                    if (timespanRegex.Match(InputTextBox.Text).Success)
+                    {
+                        return new Duration(TimeSpan.Parse(InputTextBox.Text));
+                    }
+                    throw new FormatException("Input is not valid");
                 default:
-                    throw new Exception();
+                    throw new FormatException();
             }
         }
 
@@ -107,8 +115,7 @@ namespace MultiTool
         {
             try
             {
-                double delay = GetTextBoxValue();
-                Duration duration = GetDurationFromComboBox(delay);
+                Duration duration = GetDurationFromComboBox();
 
                 timer = new Timer(duration.TimeSpan.TotalMilliseconds)
                 {
@@ -123,9 +130,9 @@ namespace MultiTool
                 timer.Start();
                 ButtonsEnabled = false;
             }
-            catch (FormatException)
+            catch (FormatException e)
             {
-                // TODO : Show alert window
+                MessageBox.Show(e.Message);
             }
         }
 

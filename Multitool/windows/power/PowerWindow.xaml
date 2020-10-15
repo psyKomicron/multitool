@@ -290,11 +290,6 @@
                     <MenuItem Header="Shutdown" Template="{StaticResource MenuItemControlTemplate1}"/>
                     <MenuItem Header="Restart" Template="{DynamicResource MenuItemControlTemplate1}"/>
                 </MenuItem>
-                <MenuItem Header="Options">
-                    <MenuItem Header="General"/>
-                    <MenuItem Header="Shutdown"/>
-                    <MenuItem Header="Restart"/>
-                </MenuItem>
             </Menu>
         </StackPanel>
 
