@@ -286,7 +286,7 @@
                 Style="{StaticResource DarkMenu}">
 
                 <MenuItem Header="Options" Template="{StaticResource DarkMenuItemCT}">
-                    <MenuItem Header="General" Template="{StaticResource MenuItemControlTemplate1}"/>
+                    <MenuItem Header="General" Click="MenuItem_Click" Template="{StaticResource MenuItemControlTemplate1}"/>
                     <MenuItem Header="Shutdown" Template="{StaticResource MenuItemControlTemplate1}"/>
                     <MenuItem Header="Restart" Template="{DynamicResource MenuItemControlTemplate1}"/>
                 </MenuItem>
@@ -305,15 +305,16 @@
             </Grid.RowDefinitions>
 
             <TextBox 
-                    x:Name="InputTextBox" 
-                    Text="Input delay" 
-                    MaxWidth="300" Width="170" 
-                    MinHeight="40" MaxHeight="100" 
-                    VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="#212121" 
-                    GotKeyboardFocus="InputTextBlock_GotKeyboardFocus" 
-                    Grid.Column="0" Grid.Row="1">
+                x:Name="InputTextBox" 
+                Text="Input delay" 
+                MaxWidth="300" Width="170" 
+                MinHeight="40" MaxHeight="100" 
+                VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                VerticalAlignment="Center"
+                Background="#212121" 
+                GotKeyboardFocus="InputTextBlock_GotKeyboardFocus"
+                TextChanged="InputTextBox_TextChanged"
+                Grid.Column="0" Grid.Row="1">
                 <TextBox.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="2"/>
@@ -329,12 +330,12 @@
                 Foreground="White"
                 Grid.Column="1" Grid.Row="1" 
                 Template="{DynamicResource ComboBoxControlTemplate1}">
-                
 
-                <ComboBoxItem IsSelected="True" Content="seconds"/>
+
+                <ComboBoxItem IsSelected="True" Content="auto-detect"/>
+                <ComboBoxItem Content="seconds"/>
                 <ComboBoxItem Content="minutes"/>
                 <ComboBoxItem Content="hours"/>
-                <ComboBoxItem Content="auto-detect"/>
             </ComboBox>
             <StackPanel Orientation="Vertical" Grid.Column="2" VerticalAlignment="Center" Margin="0,26" Grid.RowSpan="2">
 

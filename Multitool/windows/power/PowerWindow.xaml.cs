@@ -2,6 +2,7 @@
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
+using MultiTool.windows.power;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,8 +23,11 @@ namespace MultiTool
     {
         private bool _buttonsEnabled = true;
         private Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])");
+        private Regex inputTextBoxRegex = new Regex(@"([0-9])+");
         private Timer timer;
         private PowerController controller;
+
+        private ElapsedEventHandler timerHandler;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -122,6 +126,7 @@ namespace MultiTool
                     AutoReset = false,
                 };
                 timer.Elapsed += function;
+                timerHandler = function;
 
                 DoubleAnimation animation = new DoubleAnimation(100.0, duration);
                 animation.Completed += Animation_Completed;
@@ -202,12 +207,24 @@ namespace MultiTool
             StartTimer(Sleep);
         }
 
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            new ParameterWindow().ShowDialog();
+        }
+
         #endregion
 
         #region timer handling
         private void RestartTimer_Click(object sender, RoutedEventArgs e)
         {
-            StopTimer_Click(sender, e);
+            if (timer != null)
+            {
+                timer.Stop();
+                timer.Close();
+                CancelProgressBarAnimation();
+                StartTimer(timerHandler);
+                e.Handled = true;
+            }
         }
 
         private void StopTimer_Click(object sender, RoutedEventArgs e)
@@ -218,6 +235,7 @@ namespace MultiTool
                 timer.Close();
                 CancelProgressBarAnimation();
                 ButtonsEnabled = true;
+                e.Handled = true;
             }
         }
         #endregion
@@ -236,6 +254,30 @@ namespace MultiTool
         private void InputTextBlock_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             InputTextBox.Text = string.Empty;
+        }
+
+        private void InputTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (IsInitialized && sender is TextBox textBox)
+            {
+                if (string.IsNullOrEmpty(textBox.Text))
+                {
+                    TypeComboBox.SelectedIndex = 0;
+                }
+                else if (inputTextBoxRegex.Match(textBox.Text).Success)
+                {
+                    double value = double.Parse(textBox.Text);
+                    if (value < 60)
+                    {
+                        TypeComboBox.SelectedIndex = 2;
+                    }
+                    else
+                    {
+                        TypeComboBox.SelectedIndex = 1;
+                    }
+                }
+                e.Handled = true;
+            }
         }
 
         #endregion
