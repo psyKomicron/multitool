@@ -4,11 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="ParameterWindow" Height="400" Width="400">
+        Title="ParameterWindow" Height="500" Width="700"
+        Style="{StaticResource DarkWindow}">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="3*"/>
-        </Grid.ColumnDefinitions>
+        <TabControl VerticalAlignment="Top" Background="{StaticResource DarkBlack}">
+            <TabItem Header="General">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="Shutdown">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

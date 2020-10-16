@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,9 +20,15 @@ namespace MultiTool.windows.power
     /// </summary>
     public partial class ParameterWindow : Window
     {
+        public ObservableCollection<TreeViewItem> Options { get; set; }
+
         public ParameterWindow()
         {
             InitializeComponent();
+            Options = new ObservableCollection<TreeViewItem>();
+            TreeViewItem item = new TreeViewItem();
+            item.Header = "Options";
+            Options.Add(item);
         }
     }
 }
