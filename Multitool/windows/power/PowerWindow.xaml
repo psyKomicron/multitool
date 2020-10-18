@@ -344,42 +344,30 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="TabItem">
-                            <Grid Name="Panel">
+                            <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
                                 <ContentPresenter x:Name="ContentSite"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
                                         ContentSource="Header"
                                         Margin="10,2"/>
-                            </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="False">
+                                    <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
         </TabControl.Resources>
-        <TabItem Header="Controls">
+        <TabItem Header="Controls" Foreground="White">
             <Grid Background="{StaticResource LightBlack}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="292*"/>
                     <RowDefinition Height="152*"/>
                     <RowDefinition Height="25*"/>
                 </Grid.RowDefinitions>
-
-                <!--
-                <StackPanel>
-                    <Menu
-                Foreground="White"
-                BorderThickness="1"
-                BorderBrush="WhiteSmoke"
-                Style="{StaticResource DarkMenu}">
-
-                        <MenuItem Header="Options" Template="{StaticResource DarkMenuItemCT}">
-                            <MenuItem Header="General" Click="MenuItem_Click" Template="{StaticResource MenuItemControlTemplate1}"/>
-                            <MenuItem Header="Shutdown" Template="{StaticResource MenuItemControlTemplate1}"/>
-                            <MenuItem Header="Restart" Template="{DynamicResource MenuItemControlTemplate1}"/>
-                        </MenuItem>
-                    </Menu>
-                </StackPanel>
-                -->
 
                 <!--Tiles panel-->
                 <Grid x:Name="TileGrid" Margin="0,30,0,0" Grid.Row="0">
@@ -649,6 +637,12 @@
 
                 <!--Progress bar (timer)-->
                 <ProgressBar x:Name="TimerProgressBar" Height="10" Value="0" Background="Transparent" VerticalAlignment="Center" Grid.Row="2"/>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Options" Foreground="White">
+            <Grid Background="{StaticResource LightBlack}">
+                
             </Grid>
         </TabItem>
     </TabControl>
