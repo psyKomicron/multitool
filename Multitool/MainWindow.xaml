@@ -5,7 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="MainWindow" MinHeight="395" Height="500" MinWidth="555" Width="800" Style="{StaticResource DarkWindow}">
+        Closed="Window_Closed"
+        Title="MainWindow" 
+        MinHeight="395" Height="500" 
+        MinWidth="555" Width="800" 
+        Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
             <Setter Property="BorderThickness" Value="0"/>
