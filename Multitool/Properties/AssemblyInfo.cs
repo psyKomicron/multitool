@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("MultiTool")]
 [assembly: AssemblyDescription("A swedish knive look-a-like for lazy people like me")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("psyKomicron")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("MultiTool")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
@@ -52,5 +52,5 @@ using System.Windows;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.3")]
+[assembly: AssemblyFileVersion("1.0.0.4")]
 [assembly: NeutralResourcesLanguage("en")]
