@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Controllers;
+using BusinessLayer.PreferencesManager;
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
@@ -22,8 +23,8 @@ namespace MultiTool
     public partial class PowerWindow : Window, INotifyPropertyChanged
     {
         private bool _buttonsEnabled = true;
-        private Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])");
-        private Regex inputTextBoxRegex = new Regex(@"([0-9])+");
+        private readonly Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])");
+        private readonly Regex inputTextBoxRegex = new Regex(@"([0-9])+");
         private Timer timer;
         private PowerController controller;
 
@@ -37,7 +38,7 @@ namespace MultiTool
             set
             {
                 _buttonsEnabled = value;
-                OnPropertyChanged();
+                Tool.FireEvent(PropertyChanged, this);
             }
         }
 
@@ -47,6 +48,7 @@ namespace MultiTool
             DataContext = this;
         }
 
+        #region standard methods
         private void DisposeAllResources()
         {
             if (timer != null)
@@ -149,6 +151,7 @@ namespace MultiTool
             }
         }
 
+        #endregion
 
         #region power management methods
         private void Shutdown(object sender, ElapsedEventArgs e)
@@ -187,6 +190,8 @@ namespace MultiTool
         #region events
 
         #region button events
+
+        #region window buttons
         private void ShutdownButton_Click(object sender, RoutedEventArgs e)
         {
             StartTimer(Shutdown);
@@ -211,6 +216,14 @@ namespace MultiTool
         {
             new ParameterWindow().ShowDialog();
         }
+        #endregion
+
+        #region parameter buttons
+        private void GeneralOptions_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        #endregion
 
         #endregion
 
@@ -240,9 +253,14 @@ namespace MultiTool
         }
         #endregion
 
+        #region other events
         private void Window_Closed(object sender, EventArgs e)
         {
-            // TODO : dispose all resources
+            Dictionary<string, string> properties = Tool.FlattenWindow(this);
+
+            PreferenceManager manager = Tool.GetPreferenceManager();
+            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = "PowerWindow", Values = properties });
+
             DisposeAllResources();
         }
 
@@ -279,13 +297,8 @@ namespace MultiTool
                 e.Handled = true;
             }
         }
-
         #endregion
 
-        private void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-
+        #endregion
     }
 }
