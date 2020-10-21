@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace BusinessLayer.Network
 {
+    /// <summary>
+    /// Used to connect to a url and execute a GET request on it.
+    /// </summary>
     public class Downloader
     {
         private FileInfo fileInfo;
@@ -21,10 +24,15 @@ namespace BusinessLayer.Network
 
         public Downloader()
         {
-            fileInfo = new FileInfo(Path.GetTempFileName());
+            /*fileInfo = new FileInfo(Path.GetTempFileName());*/
             DownloadedData = string.Empty;
         }
 
+        /// <summary>
+        /// Asynchronously downloads data from a the <paramref name="url"/> url.
+        /// </summary>
+        /// <param name="url">url from wich to download</param>
+        /// <returns></returns>
         public async Task Download(string url)
         {
             IsDownloading?.Invoke(this, new DownloadEventArgs(url));
@@ -46,6 +54,11 @@ namespace BusinessLayer.Network
             }
         }
 
+        /// <summary>
+        /// <para>Download a list of urls (<paramref name="urls"/>) using the <see cref="Download(string)"/> method.</para>
+        /// <para>Discards the <see cref="Task"/> object return by <see cref="Download(string)"/> method.</para>
+        /// </summary>
+        /// <param name="urls"></param>
         public void Download(List<string> urls)
         {
             for (int i = 0; i < urls.Count; i++)
@@ -54,6 +67,9 @@ namespace BusinessLayer.Network
             }
         }
 
+        /// <summary>
+        /// Cancels a download by closing the <see cref="StreamReader"/> created by <see cref="Download(string)"/> 
+        /// </summary>
         public void Cancel()
         {
             if (_reader != null)

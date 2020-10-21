@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace BusinessLayer.Controllers
 {
+    /// <summary>
+    /// Abstract class to use for classes interacting with command lines
+    /// </summary>
+    /// <typeparam name="OptionsType"></typeparam>
     public abstract class Controller<OptionsType> where OptionsType : Enum
     {
         public StartOptions<OptionsType> StartOptions { get; set; }
