@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BusinessLayer.PreferencesManager;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -87,6 +88,14 @@ namespace MultiTool
         private void OpenSoon_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            Dictionary<string, string> properties = Tool.FlattenWindow(this);
+
+            PreferenceManager manager = Tool.GetPreferenceManager();
+            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = "MainWindow", Values = properties });
         }
     }
 }
