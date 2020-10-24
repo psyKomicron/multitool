@@ -23,7 +23,14 @@ namespace MultiTool
             manager.SavePreferences();
 
             stopwatch.Stop();
-            Console.WriteLine("Preference file creation/writing time : " + stopwatch.ElapsedMilliseconds);
+            Console.WriteLine(new string('-', 70));
+            Console.WriteLine("Preference file creation/writing time : " + stopwatch.ElapsedMilliseconds + "ms");
+            Console.WriteLine(new string('-', 70));
+        }
+
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+
         }
     }
 }
