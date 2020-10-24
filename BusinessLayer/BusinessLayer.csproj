@@ -58,6 +58,8 @@
     <Compile Include="Network\Downloader.cs" />
     <Compile Include="Network\DownloadEventArgs.cs" />
     <Compile Include="Controllers\PowerController.cs" />
+    <Compile Include="Parsers\Errors\JsonFormatException.cs" />
+    <Compile Include="Parsers\JsonParser.cs" />
     <Compile Include="PreferencesManager\PreferenceManager.cs" />
     <Compile Include="PreferencesManager\WindowPreferenceManager.cs" />
     <Compile Include="ProcessOptions\Enums\PowerOptions.cs" />

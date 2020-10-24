@@ -1,8 +1,11 @@
-﻿using System;
+﻿using BusinessLayer.Parsers;
+using BusinessLayer.Parsers.Errors;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,21 +15,42 @@ namespace BusinessLayer.PreferencesManager
     {
         private List<WindowPreferenceManager> childs = new List<WindowPreferenceManager>(5);
 
+        public string Path { get; private set; }
+
+        public PreferenceManager()
+        {
+            Path = @"C:\Users\julie\Documents\MultiTool\preferences\userpreferences.json";
+        }
+
+        public PreferenceManager(string path)
+        {
+            Path = path;
+        }
+
         /// <summary>
         /// Serialize the childs.
         /// </summary>
         /// <param name="path"></param>
-        public void SavePreferences(string path = "C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.json")
+        public void SavePreferences()
         {
-            var data = ParsePreferences(path);
+            PreferenceManager data = ParsePreferences(Path);
+
             if (data == null)
             {
-                WritePreferences(CreateData(), path);
+                WritePreferences(CreateData(), Path);
             }
             else
             {
+                bool noWrite = true;
                 // compare and write to optimize performance
-
+                for (int i = 0; i < data.childs.Count && i < childs.Count && noWrite; i++)
+                {
+                    noWrite = !data.childs[i].IsEquivalentTo(childs[i]);
+                }
+                if (noWrite)
+                {
+                    WritePreferences(CreateData(), Path);
+                }
             }
         }
 
@@ -48,10 +72,21 @@ namespace BusinessLayer.PreferencesManager
 
         public WindowPreferenceManager AddPreferenceManager(WindowPreferenceManager manager)
         {
-            if (childs.Contains(manager))
+            if (childs.Contains(manager)) // WPM implements IQuatable
             {
-                var currentManager = childs.((item) => item.ItemName == manager.ItemName);
-                //if ()
+                WindowPreferenceManager currentManager = null;
+                foreach (var child in childs)
+                {
+                    if (child.ItemName.Equals(manager.ItemName))
+                    {
+                        currentManager = child;
+                    }
+                }
+                if (currentManager != null && !currentManager.IsEquivalentTo(manager))
+                {
+                    childs.Remove(currentManager);
+                    childs.Add(manager);
+                }
             }
             else
             {
@@ -60,7 +95,12 @@ namespace BusinessLayer.PreferencesManager
             return manager;
         }
 
-        private List<WindowPreferenceManager> ParsePreferences(string path)
+        internal void AddPreferenceManagers(List<WindowPreferenceManager> managers)
+        {
+            childs = managers;
+        }
+
+        private PreferenceManager ParsePreferences(string path)
         {
             try
             {
@@ -77,9 +117,48 @@ namespace BusinessLayer.PreferencesManager
                         bytesToRead -= n;
                     }
                 }
-                string data = Encoding.UTF8.GetString(bytes);
+                string rawData = Encoding.UTF8.GetString(bytes);
+                string data = string.Empty;
+                bool inString = false;
 
-                //ParseJson(data);
+                for (int i = 0; i < rawData.Length; i++)
+                {
+                    if (rawData[i] == '"')
+                    {
+                        if (inString)
+                        {
+                            inString = false;
+                        }
+                        else
+                        {
+                            inString = true;
+                        }
+                    }
+
+                    if (IsControlChar(rawData[i]))
+                    {
+                        if (inString)
+                        {
+                            data += rawData[i];
+                        }
+                    }
+                    else
+                    {
+                        data += rawData[i];
+                    }
+                }
+                Console.WriteLine(data);
+                PreferenceManager manager = null;
+                try
+                {
+                    manager = JsonParser.ParsePreferenceManager(data);
+                }
+                catch (JsonFormatException jfe)
+                {
+                    Console.Error.WriteLine(jfe.Message);
+                }
+
+                return manager;
             }
             catch (FileNotFoundException) 
             {
@@ -88,15 +167,7 @@ namespace BusinessLayer.PreferencesManager
             return null;
         }
 
-
-        private Dictionary<string, string> ParseJson(string s)
-        {
-            for (int i = 0; i < s.Length; i++)
-            {
-               // if (s[i] == '{')
-            }
-            return null;
-        }
+        private bool IsControlChar(char c) => c == '\r' || c == '\n' || c == '\t' || c == ' ';
 
         private void WritePreferences(string data, string path)
         {

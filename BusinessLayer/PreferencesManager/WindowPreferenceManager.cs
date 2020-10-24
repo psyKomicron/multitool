@@ -23,7 +23,7 @@ namespace BusinessLayer.PreferencesManager
             KeyValuePair<string, string> last = Values.Last();
             foreach (KeyValuePair<string, string> pair in Values)
             {
-                json.Append(this.json(pair));
+                json.Append(this.Json(pair));
                 if (!last.Key.Equals(pair.Key))
                 {
                     json.Append(",");
@@ -66,7 +66,7 @@ namespace BusinessLayer.PreferencesManager
             return IsEquivalentTo(manager.Values);
         }
 
-        private string json(KeyValuePair<string, string> pair)
+        private string Json(KeyValuePair<string, string> pair)
         {
             return "\"" + pair.Key + "\":\"" + pair.Value + "\"";
         }
