@@ -95,7 +95,7 @@ namespace MultiTool
             Dictionary<string, string> properties = Tool.FlattenWindow(this);
 
             PreferenceManager manager = Tool.GetPreferenceManager();
-            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = "MainWindow", Values = properties });
+            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
         }
     }
 }
