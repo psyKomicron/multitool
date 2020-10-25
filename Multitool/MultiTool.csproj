@@ -112,10 +112,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="windows\power\ParameterWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="windows\power\PowerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -127,9 +123,6 @@
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="windows\power\ParameterWindow.xaml.cs">
-      <DependentUpon>ParameterWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="windows\power\PowerWindow.xaml.cs">
       <DependentUpon>PowerWindow.xaml</DependentUpon>
