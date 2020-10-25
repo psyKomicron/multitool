@@ -2,9 +2,6 @@
 using BusinessLayer.PreferencesManager;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.Parsers
 {
@@ -26,21 +23,14 @@ namespace BusinessLayer.Parsers
                     {
                         if (s[endIndex] == '"')
                         {
-                            if (inString)
-                            {
-                                inString = false;
-                            }
-                            else
-                            {
-                                inString = true;
-                            }
+                            inString = !inString;
                         }
 
                         endIndex++;
                     }
                     string array = s.Substring(startIndex, 1 + endIndex - startIndex);
 
-                    var childs = ParseWindowPreferenceManager(array.Substring(1, array.Length - 2));
+                    List<WindowPreferenceManager> childs = ParseWindowPreferenceManager(array.Substring(1, array.Length - 2));
                     preferenceManager.AddPreferenceManagers(childs);
                     
                 }
