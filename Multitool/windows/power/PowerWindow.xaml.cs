@@ -3,11 +3,9 @@ using BusinessLayer.PreferencesManager;
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
-using MultiTool.windows.power;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Timers;
 using System.Windows;
@@ -22,9 +20,9 @@ namespace MultiTool
     /// </summary>
     public partial class PowerWindow : Window, INotifyPropertyChanged
     {
-        private bool _buttonsEnabled = true;
         private readonly Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])");
         private readonly Regex inputTextBoxRegex = new Regex(@"([0-9])+");
+        private bool _buttonsEnabled = true;
         private Timer timer;
         private PowerController controller;
 
@@ -45,10 +43,22 @@ namespace MultiTool
         public PowerWindow()
         {
             InitializeComponent();
+            Reserialize();
             DataContext = this;
         }
 
         #region standard methods
+
+        private void Reserialize()
+        {
+            WindowPreferenceManager manager = Tool.GetPreferenceManager().GetWindowManager(Name);
+            if (manager != null)
+            {
+                Height = manager.Values["Height"] == null ? Height : double.Parse(manager.Values["Height"]);
+                Width = manager.Values["Width"] == null ? Width : double.Parse(manager.Values["Width"]);
+            }
+        }
+
         private void DisposeAllResources()
         {
             if (timer != null)
@@ -212,10 +222,6 @@ namespace MultiTool
             StartTimer(Sleep);
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            new ParameterWindow().ShowDialog();
-        }
         #endregion
 
         #region parameter buttons
@@ -259,7 +265,7 @@ namespace MultiTool
             Dictionary<string, string> properties = Tool.FlattenWindow(this);
 
             PreferenceManager manager = Tool.GetPreferenceManager();
-            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = "PowerWindow", Values = properties });
+            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
 
             DisposeAllResources();
         }
