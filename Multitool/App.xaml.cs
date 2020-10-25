@@ -1,11 +1,6 @@
 ﻿using BusinessLayer.PreferencesManager;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace MultiTool
@@ -17,20 +12,23 @@ namespace MultiTool
     {
         private void Application_Exit(object sender, ExitEventArgs e)
         {
+            Console.WriteLine(new string('-', 80));
+            Console.WriteLine("Application exiting... Saving preferences : \n");
+
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             PreferenceManager manager = Tool.GetPreferenceManager();
             manager.SavePreferences();
-
             stopwatch.Stop();
-            Console.WriteLine(new string('-', 70));
-            Console.WriteLine("Preference file creation/writing time : " + stopwatch.ElapsedMilliseconds + "ms");
-            Console.WriteLine(new string('-', 70));
+
+            Console.WriteLine("\tPreference file creation/writing time : " + stopwatch.ElapsedMilliseconds + "ms");
+            Console.WriteLine(new string('-', 80));
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-
+            Tool.SetPreferenceManagerPath("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.json");
+            Tool.GetPreferenceManager().DeserializePreferenceManager();
         }
     }
 }
