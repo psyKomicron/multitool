@@ -9,10 +9,21 @@ namespace MultiTool
 {
     internal static class Tool
     {
-        /* C:\\Users\\julie\\Documents\\MultiTool\\test\\userpreferences(1).json */
-        private static PreferenceManager preferenceManager = new PreferenceManager("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.json");
+        private static PreferenceManager preferenceManager;
 
         public static PreferenceManager GetPreferenceManager() => preferenceManager;
+
+        public static void SetPreferenceManagerPath(string path)
+        {
+            if (preferenceManager != null)
+            {
+                preferenceManager.Path = path;
+            }
+            else
+            {
+                preferenceManager = new PreferenceManager(path);
+            }
+        }
 
         public static void FireEvent(PropertyChangedEventHandler propertyChanged, object source, [CallerMemberName] string name = null)
         {
