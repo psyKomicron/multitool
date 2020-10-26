@@ -4,8 +4,8 @@
     xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="MultiTool.PowerWindow"
     Title="Power management" 
     Name="PowerManagementWindow"
-    MinHeight="405" Height="405" 
-    MinWidth="520" Width="640"
+    MinHeight="405" Height="430" 
+    MinWidth="520" Width="660"
     WindowStartupLocation="CenterScreen"
     Closing="Window_Closed"
     Style="{StaticResource DarkWindow}">
@@ -13,11 +13,11 @@
         <Style TargetType="{x:Type Button}">
             <Setter Property="MinWidth" Value="10"/>
             <Setter Property="Width" Value="80"/>
-            <Setter Property="MaxWidth" Value="100"/>
+            <Setter Property="MaxWidth" Value="90"/>
 
             <Setter Property="MinHeight" Value="10"/>
             <Setter Property="Height" Value="80"/>
-            <Setter Property="MaxHeight" Value="100"/>
+            <Setter Property="MaxHeight" Value="90"/>
 
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -46,7 +46,9 @@
                     <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderThickness" TargetName="border" Value="1"/>
                     <Setter Property="BorderBrush" TargetName="border" Value="#FF3C7FB1"/>
+                    <Setter Property="Background" TargetName="border" Value="#FF3C7FB1"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
                     <Setter Property="Background" TargetName="border" Value="#FFC4E5F6"/>
@@ -362,13 +364,13 @@
         <TabItem Header="Controls" Foreground="White">
             <Grid Background="{StaticResource LightBlack}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="292*"/>
-                    <RowDefinition Height="152*"/>
-                    <RowDefinition Height="25*"/>
+                    <RowDefinition Height="217*"/>
+                    <RowDefinition Height="136*"/>
+                    <RowDefinition Height="20*"/>
                 </Grid.RowDefinitions>
 
                 <!--Tiles panel-->
-                <Grid x:Name="TileGrid" Margin="0,30,0,0" Grid.Row="0">
+                <Grid x:Name="TileGrid" Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="192*"/>
                         <ColumnDefinition Width="249*"/>
@@ -418,19 +420,26 @@
                             MinHeight="40" 
                             Content="Restart" 
                             Click="RestartTimer_Click" 
-                            Grid.Column="2" Grid.Row="0"/>
+                            Grid.Column="2" Grid.Row="0"
+                            Template="{DynamicResource ButtonBaseControlTemplate1}"/>
                         <Button 
                             x:Name="StopTimer" 
                             MinHeight="40" 
                             Content="Stop" 
                             Click="StopTimer_Click" 
-                            Grid.Column="2" Grid.Row="1"/>
+                            Grid.Column="2" Grid.Row="1"
+                            Template="{DynamicResource ButtonBaseControlTemplate1}"/>
 
                     </StackPanel>
                 </Grid>
 
                 <!--Buttons zone-->
-                <Grid x:Name="ButtonsPanel" Grid.Row="1" HorizontalAlignment="Center" Width="{Binding ElementName=Window, Path=ActualWidth}" Margin="10,0">
+                <Grid 
+                    x:Name="ButtonsPanel" 
+                    Grid.Row="1" 
+                    HorizontalAlignment="Center" 
+                    Width="{Binding ElementName=PowerManagementWindow, Path=ActualWidth}" 
+                    Margin="-4,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="1*"/>
@@ -634,7 +643,7 @@
                 </Grid>
 
                 <!--Progress bar (timer)-->
-                <ProgressBar x:Name="TimerProgressBar" Height="10" Value="0" Background="Transparent" VerticalAlignment="Center" Grid.Row="2"/>
+                <ProgressBar x:Name="TimerProgressBar" Height="10" Value="0" Background="Transparent" VerticalAlignment="Center" Grid.Row="2" Margin="0,5"/>
             </Grid>
         </TabItem>
 
@@ -651,8 +660,9 @@
                     Grid.Column="0"
                     HorizontalContentAlignment="Center">
                     <ListViewItem>
-                        <Button Content="General"
-                                Click="GeneralOptions_Click"/>
+                        <Button 
+                            Content="General"
+                            Click="GeneralOptions_Click"/>
                     </ListViewItem>
                     <ListViewItem>
                         <Button Content="Shutdown"/>
