@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.PreferencesManager;
+using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,10 +21,10 @@ namespace MultiTool
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, ISerializableWindow<MainWindow>
     {
         private readonly List<Window> openWindows = new List<Window>(3);
-        
+
         public MainWindow()
         {
             InitializeComponent();
@@ -62,7 +63,7 @@ namespace MultiTool
         {
             if (sender is Window window)
             {
-                Window instanceWindow = openWindows.Find((w) => w.Uid == window.Uid);
+                Window instanceWindow = openWindows.Find((w) => w.Name == window.Name);
                 if (instanceWindow != null)
                 {
                     openWindows.Remove(instanceWindow);
@@ -92,10 +93,20 @@ namespace MultiTool
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            Dictionary<string, string> properties = Tool.FlattenWindow(this);
+            Dictionary<string, string> properties = Tool.Flatten(this);
 
             PreferenceManager manager = Tool.GetPreferenceManager();
             manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
+        }
+
+        public void Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Deserialize()
+        {
+            throw new NotImplementedException();
         }
     }
 }

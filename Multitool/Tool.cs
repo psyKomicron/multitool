@@ -30,18 +30,20 @@ namespace MultiTool
             propertyChanged?.Invoke(source, new PropertyChangedEventArgs(name));
         }
 
-        public static Dictionary<string, string> FlattenWindow<WindowType>(WindowType window) where WindowType : Window
+        public static Dictionary<string, string> Flatten<T>(T data) where T : class
         {
             Dictionary<string, string> flatProperties = new Dictionary<string, string>();
-            PropertyInfo[] properties = GetProperties<WindowType>();
+            PropertyInfo[] properties = GetProperties<T>();
             for (int i = 0; i < properties.Length; i++)
             {
                 if (properties[i].MemberType == MemberTypes.Property)
                 {
                     string key = properties[i].Name;
-                    if (properties[i].GetValue(window) != null && !string.IsNullOrEmpty(properties[i].GetValue(window).ToString()))
+                    if (properties[i].GetValue(data) != null)
                     {
-                        flatProperties.Add(key, properties[i].GetValue(window).ToString());
+                        object value = properties[i].GetValue(data);
+                        if ()
+                        flatProperties.Add(key, properties[i].GetValue(data).ToString());
                     }
                 }
             }

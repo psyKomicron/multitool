@@ -3,6 +3,8 @@ using BusinessLayer.PreferencesManager;
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
+using MultiTool.Windows.Power;
+using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +20,7 @@ namespace MultiTool
     /// <summary>
     /// Interaction logic for PowerWindow.xaml
     /// </summary>
-    public partial class PowerWindow : Window, INotifyPropertyChanged
+    public partial class PowerWindow : ISerializableWindow<PowerWindowDTO>, INotifyPropertyChanged
     {
         private readonly Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])");
         private readonly Regex inputTextBoxRegex = new Regex(@"([0-9])+");
@@ -40,16 +42,23 @@ namespace MultiTool
             }
         }
 
+        public PowerWindowDTO Data { get; set; }
+
         public PowerWindow()
         {
             InitializeComponent();
-            Reserialize();
+            Deserialize();
             DataContext = this;
         }
 
         #region standard methods
 
-        private void Reserialize()
+        public void Serialize()
+        {
+            
+        }
+
+        public void Deserialize()
         {
             WindowPreferenceManager manager = Tool.GetPreferenceManager().GetWindowManager(Name);
             if (manager != null)
@@ -262,7 +271,7 @@ namespace MultiTool
         #region other events
         private void Window_Closed(object sender, EventArgs e)
         {
-            Dictionary<string, string> properties = Tool.FlattenWindow(this);
+            Dictionary<string, string> properties = Tool.Flatten(Data);
 
             PreferenceManager manager = Tool.GetPreferenceManager();
             manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
