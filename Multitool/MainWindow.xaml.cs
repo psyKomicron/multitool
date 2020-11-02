@@ -2,19 +2,7 @@
 using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MultiTool
 {
@@ -24,6 +12,8 @@ namespace MultiTool
     public partial class MainWindow : Window, ISerializableWindow<MainWindow>
     {
         private readonly List<Window> openWindows = new List<Window>(3);
+
+        public MainWindow Data { get; set; }
 
         public MainWindow()
         {
@@ -71,27 +61,7 @@ namespace MultiTool
             }
         }
 
-        private void OpenDownload_Click(object sender, RoutedEventArgs e)
-        {
-            Open<DownloadMainWindow>();
-        }
-
-        private void OpenExplorer_Click(object sender, RoutedEventArgs e)
-        {
-            Open<ExplorerWindow>();
-        }
-
-        private void OpenPowerSettings_Click(object sender, RoutedEventArgs e)
-        {
-            Open<PowerWindow>();
-        }
-
-        private void OpenSoon_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void Window_Closed(object sender, EventArgs e)
+        public void Serialize()
         {
             Dictionary<string, string> properties = Tool.Flatten(this);
 
@@ -99,14 +69,23 @@ namespace MultiTool
             manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
         }
 
-        public void Serialize()
-        {
-            throw new NotImplementedException();
-        }
-
         public void Deserialize()
         {
             throw new NotImplementedException();
         }
+
+        #region events
+
+        private void OpenDownload_Click(object sender, RoutedEventArgs e) => Open<DownloadMainWindow>();
+
+        private void OpenExplorer_Click(object sender, RoutedEventArgs e) => Open<ExplorerWindow>();
+
+        private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => Open<PowerWindow>();
+
+        private void OpenSoon_Click(object sender, RoutedEventArgs e) { }
+
+        private void Window_Closed(object sender, EventArgs e) => Serialize();
+
+        #endregion
     }
 }
