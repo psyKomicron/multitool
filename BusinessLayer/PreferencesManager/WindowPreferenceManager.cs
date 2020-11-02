@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.PreferencesManager
 {
@@ -43,14 +41,17 @@ namespace BusinessLayer.PreferencesManager
             {
                 foreach (KeyValuePair<string, string> pair in data)
                 {
-                    string currentValue = Values[pair.Key];
-                    if (currentValue == null)
+                    if (Values.ContainsKey(pair.Key))
                     {
-                        return false;
-                    }
-                    else if (!currentValue.Equals(pair.Value))
-                    {
-                        return false;
+                        string currentValue = Values[pair.Key];
+                        if (currentValue == null)
+                        {
+                            return false;
+                        }
+                        else if (!currentValue.Equals(pair.Value))
+                        {
+                            return false;
+                        }
                     }
                 }
                 return true;
