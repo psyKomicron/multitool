@@ -3,8 +3,8 @@ using BusinessLayer.PreferencesManager;
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
-using MultiTool.Windows.Power;
 using MultiTool.Windows;
+using MultiTool.Windows.Power;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -49,13 +49,15 @@ namespace MultiTool
             InitializeComponent();
             Deserialize();
             DataContext = this;
+            Data = new PowerWindowDTO();
         }
-
-        #region standard methods
 
         public void Serialize()
         {
-            
+            Dictionary<string, string> properties = Tool.Flatten(Data);
+
+            PreferenceManager manager = Tool.GetPreferenceManager();
+            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
         }
 
         public void Deserialize()
@@ -81,6 +83,21 @@ namespace MultiTool
             }
             CancelProgressBarAnimation();
         }
+
+        private void ExecuteController(List<PowerOptions> options)
+        {
+            controller = new PowerController()
+            {
+                StartOptions = new StartOptions<PowerOptions>()
+                {
+                    Options = options,
+                    Translater = new PowerEnumTranslater()
+                },
+            };
+            controller.Execute();
+        }
+
+        #region hmi methods
 
         private double GetTextBoxValue()
         {
@@ -123,19 +140,6 @@ namespace MultiTool
             }
         }
 
-        private void ExecuteController(List<PowerOptions> options)
-        {
-            controller = new PowerController()
-            {
-                StartOptions = new StartOptions<PowerOptions>()
-                {
-                    Options = options,
-                    Translater = new PowerEnumTranslater()
-                },
-            };
-            controller.Execute();
-        }
-
         private void StartTimer(ElapsedEventHandler function)
         {
             try
@@ -173,40 +177,71 @@ namespace MultiTool
         #endregion
 
         #region power management methods
-        private void Shutdown(object sender, ElapsedEventArgs e)
+        private void Shutdown(object sender, ElapsedEventArgs e) => ExecuteController(new List<PowerOptions>() { PowerOptions.Shutdown, PowerOptions.NoDelay });
+
+        private void Restart(object sender, ElapsedEventArgs e) => ExecuteController(new List<PowerOptions>() { PowerOptions.Restart, PowerOptions.NoDelay });
+
+        private void Lock(object sender, ElapsedEventArgs e) => ExecuteController(new List<PowerOptions>() { PowerOptions.LogOff, PowerOptions.Force });
+
+        private void Sleep(object sender, ElapsedEventArgs e) => ExecuteCommand(new List<PowerOptions>() { PowerOptions.Hibernate, PowerOptions.NoDelay });
+
+        private void ExecuteCommand(List<PowerOptions> options)
         {
             timer.Stop();
             timer.Close();
 
-            ExecuteController(new List<PowerOptions>() { PowerOptions.Shutdown, PowerOptions.NoDelay });
+            ExecuteController(options);
         }
 
-        private void Restart(object sender, ElapsedEventArgs e)
-        {
-            timer.Stop();
-            timer.Close();
-
-            ExecuteController(new List<PowerOptions>() { PowerOptions.Restart, PowerOptions.NoDelay });
-        }
-
-        private void Lock(object sender, ElapsedEventArgs e)
-        {
-            timer.Stop();
-            timer.Close();
-
-            ExecuteController(new List<PowerOptions>() { PowerOptions.LogOff, PowerOptions.Force });
-        }
-
-        private void Sleep(object sender, ElapsedEventArgs e)
-        {
-            timer.Stop();
-            timer.Close();
-
-            ExecuteController(new List<PowerOptions>() { PowerOptions.Hibernate, PowerOptions.NoDelay });
-        }
         #endregion
 
         #region events
+
+        #region other events
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            Data.Height = Height;
+            Data.Width = Width;
+            Data.ForceShutdown = true;
+
+            Serialize();
+            DisposeAllResources();
+        }
+
+        private void Animation_Completed(object sender, EventArgs e)
+        {
+            TimerProgressBar.BeginAnimation(ProgressBar.ValueProperty, null);
+        }
+
+        private void InputTextBlock_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            InputTextBox.Text = string.Empty;
+        }
+
+        private void InputTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (IsInitialized && sender is TextBox textBox)
+            {
+                if (string.IsNullOrEmpty(textBox.Text))
+                {
+                    TypeComboBox.SelectedIndex = 0;
+                }
+                else if (inputTextBoxRegex.Match(textBox.Text).Success)
+                {
+                    double value = double.Parse(textBox.Text);
+                    if (value < 60)
+                    {
+                        TypeComboBox.SelectedIndex = 2;
+                    }
+                    else
+                    {
+                        TypeComboBox.SelectedIndex = 1;
+                    }
+                }
+                e.Handled = true;
+            }
+        }
+        #endregion
 
         #region button events
 
@@ -263,52 +298,6 @@ namespace MultiTool
                 timer.Close();
                 CancelProgressBarAnimation();
                 ButtonsEnabled = true;
-                e.Handled = true;
-            }
-        }
-        #endregion
-
-        #region other events
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            Dictionary<string, string> properties = Tool.Flatten(Data);
-
-            PreferenceManager manager = Tool.GetPreferenceManager();
-            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
-
-            DisposeAllResources();
-        }
-
-        private void Animation_Completed(object sender, EventArgs e)
-        {
-            TimerProgressBar.BeginAnimation(ProgressBar.ValueProperty, null);
-        }
-
-        private void InputTextBlock_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            InputTextBox.Text = string.Empty;
-        }
-
-        private void InputTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (IsInitialized && sender is TextBox textBox)
-            {
-                if (string.IsNullOrEmpty(textBox.Text))
-                {
-                    TypeComboBox.SelectedIndex = 0;
-                }
-                else if (inputTextBoxRegex.Match(textBox.Text).Success)
-                {
-                    double value = double.Parse(textBox.Text);
-                    if (value < 60)
-                    {
-                        TypeComboBox.SelectedIndex = 2;
-                    }
-                    else
-                    {
-                        TypeComboBox.SelectedIndex = 1;
-                    }
-                }
                 e.Handled = true;
             }
         }
