@@ -1,25 +1,21 @@
 ﻿using BusinessLayer.Network;
 using BusinessLayer.Network.Events;
+using Microsoft.Win32;
+using MultiTool.DTO;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Net;
 using System.Runtime.CompilerServices;
-using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using MultiTool.DTO;
+using System.Windows.Media.Animation;
 
 namespace MultiTool
 {
@@ -28,6 +24,7 @@ namespace MultiTool
     /// </summary>
     public partial class DownloadMainWindow : Window, INotifyPropertyChanged
     {
+        private readonly Regex isExtension = new Regex(@"([a-z])+");
         private bool _showDownloadActivated;
 
         internal bool CurrentlyHyperLinked { get; set; }
@@ -46,6 +43,8 @@ namespace MultiTool
             } 
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public DownloadMainWindow()
         {
             InitializeComponent();
@@ -53,9 +52,7 @@ namespace MultiTool
             DataContext = this;
         }
 
-        #region events
-        public event PropertyChangedEventHandler PropertyChanged;
-        #endregion
+        #region methods
 
         private void InitializeWindow()
         {
@@ -84,6 +81,31 @@ namespace MultiTool
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
+        private void SaveDownload(string url)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Save download from multi-tool";
+            saveFileDialog.FileName = DateTime.Now.ToString().Replace('/', '-').Replace(':', '-');
+            saveFileDialog.Filter = GetExtensions(url);
+
+            bool ok = saveFileDialog.ShowDialog() ?? false;
+            if (ok && !string.IsNullOrEmpty(saveFileDialog.FileName))
+            {
+                using (FileStream fs = (FileStream)saveFileDialog.OpenFile())
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(Downloader.DownloadedData.ToCharArray());
+                    fs.Write(bytes, 0, bytes.Length);
+                }
+            }
+        }
+
+        private string GetExtensions(string url)
+        {
+            return string.Empty;
+        }
+
+        #endregion
+
         #region events handlers
 
         private void OnDownload(object sender, DownloadEventArgs e)
@@ -98,17 +120,16 @@ namespace MultiTool
             IsDownloading = false;
             cancelButton.IsEnabled = false;
             downloadButton.IsEnabled = true;
-            if (e.Success)
+            if (!e.Cancelled && !e.Crashed)
             {
                 UrlHistory.Add(new UrlHistoryViewModel() 
                 { 
                     Date = DateTime.Now, 
                     Link = urlTextBox.Text,
-                    TextColor = new SolidColorBrush(Colors.Black)
+                    TextColor = Foreground
                 });
 
                 urlTextBox.Clear();
-                downloadStatusLabel.Foreground = new SolidColorBrush(Colors.Black);
                 downloadStatusLabel.Content = e.Message;
                 DownloadHistory.Add(Downloader.DownloadedData);
                 ShowDownloadActivated = true;
@@ -119,10 +140,21 @@ namespace MultiTool
                 {
                     Date = DateTime.Now,
                     Link = urlTextBox.Text,
-                    TextColor = new SolidColorBrush(Colors.Red)
+                    TextColor = Foreground
                 });
                 downloadStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
-                downloadStatusLabel.Content = "Download canceled/failed";
+                if (e.Cancelled)
+                {
+                    downloadStatusLabel.Content = "Download cancelled";
+                }
+                else if (e.Crashed)
+                {
+                    downloadStatusLabel.Content = "Download failed";
+                }
+                else
+                {
+                    downloadStatusLabel.Content = "Download cancelled/failed";
+                }
             }
         }
 
@@ -174,16 +206,23 @@ namespace MultiTool
         {
             if (IsUrl(urlTextBox.Text))
             {
-                urlTextBox.Foreground = new SolidColorBrush(Colors.Blue);
                 urlTextBox.TextDecorations = TextDecorations.Underline;
                 CurrentlyHyperLinked = true;
                 e.Handled = true;
             }
             else if (CurrentlyHyperLinked)
             {
-                urlTextBox.Foreground = new SolidColorBrush(Colors.Black);
                 urlTextBox.TextDecorations = null;
                 CurrentlyHyperLinked = false;
+                e.Handled = true;
+            }
+        }
+
+        private void SaveDownload_Click(object sender, RoutedEventArgs e)
+        {
+            if (Downloader != null && Downloader.DownloadedData != string.Empty)
+            {
+                SaveDownload(Downloader.Url);
                 e.Handled = true;
             }
         }
@@ -210,5 +249,6 @@ namespace MultiTool
         }
 
         #endregion
+
     }
 }
