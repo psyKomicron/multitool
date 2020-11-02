@@ -86,7 +86,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="SerializableWindow.cs" />
+    <Compile Include="ISerializableWindow.cs" />
     <Compile Include="windows\power\PowerWindowDTO.cs" />
     <Page Include="windows\download\DownloadView.xaml">
       <SubType>Designer</SubType>
