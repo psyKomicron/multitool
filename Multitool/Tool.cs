@@ -30,6 +30,12 @@ namespace MultiTool
             propertyChanged?.Invoke(source, new PropertyChangedEventArgs(name));
         }
 
+        /// <summary>
+        /// ToString but for properties of an object. Only flatten if the property is a primitive type and a string.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static Dictionary<string, string> Flatten<T>(T data) where T : class
         {
             Dictionary<string, string> flatProperties = new Dictionary<string, string>();
@@ -42,8 +48,10 @@ namespace MultiTool
                     if (properties[i].GetValue(data) != null)
                     {
                         object value = properties[i].GetValue(data);
-                        if ()
-                        flatProperties.Add(key, properties[i].GetValue(data).ToString());
+                        if (value.GetType().IsPrimitive || value.GetType() == typeof(string))
+                        {
+                            flatProperties.Add(key, properties[i].GetValue(data).ToString());
+                        }
                     }
                 }
             }
