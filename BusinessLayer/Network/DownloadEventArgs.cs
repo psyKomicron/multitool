@@ -1,26 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.Network.Events
 {
     public class DownloadEventArgs : EventArgs
     {
         public string Message { get; }
-        public bool Success { get; }
+        public bool Crashed { get; }
+        public bool Cancelled { get; }
 
-        public DownloadEventArgs(string url, bool success = false)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url">Url</param>
+        /// <param name="crashed">Download crashed</param>
+        /// <param name="cancelled">Download was cancelled</param>
+        public DownloadEventArgs(string url, bool crashed, bool cancelled)
         {
             Message = url;
-            Success = success;
+            Crashed = crashed;
+            Cancelled = cancelled;
         }
 
         public DownloadEventArgs()
         {
             Message = default;
-            Success = default;
+            Crashed = default;
+            Cancelled = default;
         }
     }
 }

@@ -14,17 +14,16 @@ namespace BusinessLayer.Network
     /// </summary>
     public class Downloader
     {
-        private FileInfo fileInfo;
         private StreamReader _reader;
 
         public event EventHandler<DownloadEventArgs> IsDownloading;
         public event EventHandler<DownloadEventArgs> EndedDownload;
 
         public string DownloadedData { get; private set; }
+        public string Url { get; private set; }
 
         public Downloader()
         {
-            /*fileInfo = new FileInfo(Path.GetTempFileName());*/
             DownloadedData = string.Empty;
         }
 
@@ -35,7 +34,7 @@ namespace BusinessLayer.Network
         /// <returns></returns>
         public async Task Download(string url)
         {
-            IsDownloading?.Invoke(this, new DownloadEventArgs(url));
+            IsDownloading?.Invoke(this, new DownloadEventArgs(url, false, false));
             try
             {
                 WebRequest request = WebRequest.Create(url);
@@ -46,11 +45,12 @@ namespace BusinessLayer.Network
                     DownloadedData = await _reader.ReadToEndAsync();
                 }
                 response.Close();
-                EndedDownload?.Invoke(this, new DownloadEventArgs("Finished downloading : " + url, true));
+                Url = url;
+                EndedDownload?.Invoke(this, new DownloadEventArgs("Finished downloading : " + url, false, false));
             }
             catch (UriFormatException e)
             {
-                EndedDownload?.Invoke(this, new DownloadEventArgs(e.Message, false));
+                EndedDownload?.Invoke(this, new DownloadEventArgs(e.Message, true, false));
             }
         }
 
@@ -76,7 +76,7 @@ namespace BusinessLayer.Network
             {
                 _reader.Close();
                 _reader.Dispose();
-                EndedDownload?.Invoke(this, new DownloadEventArgs("User cancelled download", false));
+                EndedDownload?.Invoke(this, new DownloadEventArgs("User cancelled download", false, true));
             }
         }
     }
