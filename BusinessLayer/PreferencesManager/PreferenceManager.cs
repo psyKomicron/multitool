@@ -94,7 +94,10 @@ namespace BusinessLayer.PreferencesManager
         public void DeserializePreferenceManager()
         {
             PreferenceManager manager = ParsePreferences(Path);
-            childs = manager.childs;
+            if (manager != null)
+            {
+                childs = manager.childs;
+            }
         }
 
         internal PreferenceManager ParsePreferences(string path)
