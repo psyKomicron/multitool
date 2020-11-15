@@ -86,8 +86,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DTO\DefaultWindowDTO.cs" />
     <Compile Include="ISerializableWindow.cs" />
-    <Compile Include="windows\power\PowerWindowDTO.cs" />
+    <Compile Include="DTO\DownloadDTO.cs" />
+    <Compile Include="DTO\PowerWindowDTO.cs" />
     <Page Include="windows\download\DownloadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -100,7 +102,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DTO\MainWindowDTO.cs" />
     <Compile Include="Tool.cs" />
+    <Compile Include="WindowManager.cs" />
     <Compile Include="windows\download\DownloadView.xaml.cs">
       <DependentUpon>DownloadView.xaml</DependentUpon>
     </Compile>

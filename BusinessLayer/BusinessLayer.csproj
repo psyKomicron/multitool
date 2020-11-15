@@ -60,8 +60,12 @@
     <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="Parsers\Errors\JsonFormatException.cs" />
     <Compile Include="Parsers\JsonParser.cs" />
-    <Compile Include="PreferencesManager\PreferenceManager.cs" />
-    <Compile Include="PreferencesManager\WindowPreferenceManager.cs" />
+    <Compile Include="PreferencesManager\IPreferenceManager.cs" />
+    <Compile Include="PreferencesManager\IWindowPreferenceManager.cs" />
+    <Compile Include="PreferencesManager\JsonPreferenceManager.cs" />
+    <Compile Include="PreferencesManager\JsonWindowPreferenceManager.cs" />
+    <Compile Include="PreferencesManager\XmlPreferenceManager.cs" />
+    <Compile Include="PreferencesManager\XmlWindowPreferenceManager.cs" />
     <Compile Include="ProcessOptions\Enums\PowerOptions.cs" />
     <Compile Include="ProcessOptions\EnumTranslaters\EnumTranslater.cs" />
     <Compile Include="ProcessOptions\EnumTranslaters\PowerEnumTranslater.cs" />
@@ -71,5 +75,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
