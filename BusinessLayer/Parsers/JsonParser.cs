@@ -7,11 +7,11 @@ namespace BusinessLayer.Parsers
 {
     internal static class JsonParser
     {
-        public static PreferenceManager ParsePreferenceManager(string s)
+        public static JsonPreferenceManager ParsePreferenceManager(string s)
         {
             if (!string.IsNullOrEmpty(s) && s[0] == '{')
             {
-                PreferenceManager preferenceManager = new PreferenceManager();
+                JsonPreferenceManager preferenceManager = new JsonPreferenceManager();
                 string rootName = GetJsonName(s.Substring(1));
 
                 if (s.Length > rootName.Length + 4 && s[rootName.Length + 4] == '[') // array
@@ -30,7 +30,7 @@ namespace BusinessLayer.Parsers
                     }
                     string array = s.Substring(startIndex, 1 + endIndex - startIndex);
 
-                    List<WindowPreferenceManager> childs = ParseWindowPreferenceManager(array.Substring(1, array.Length - 2));
+                    List<JsonWindowPreferenceManager> childs = ParseWindowPreferenceManager(array.Substring(1, array.Length - 2));
                     preferenceManager.AddPreferenceManagers(childs);
                     
                 }
@@ -80,9 +80,9 @@ namespace BusinessLayer.Parsers
             return properties;
         }
 
-        private static List<WindowPreferenceManager> ParseWindowPreferenceManager(string s)
+        private static List<JsonWindowPreferenceManager> ParseWindowPreferenceManager(string s)
         {
-            List<WindowPreferenceManager> managers = new List<WindowPreferenceManager>(s.Length / 100);
+            List<JsonWindowPreferenceManager> managers = new List<JsonWindowPreferenceManager>(s.Length / 100);
 
             int it = 1;
             int charRead = 0;
@@ -100,7 +100,7 @@ namespace BusinessLayer.Parsers
                     }
                     charRead += i;
 
-                    WindowPreferenceManager manager = new WindowPreferenceManager() { ItemName = name };
+                    JsonWindowPreferenceManager manager = new JsonWindowPreferenceManager() { ItemName = name };
                     managers.Add(manager);
                     
                     manager.Values = Parse(s.Substring(charRead + 2),  out int charParsed);
