@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Windows;
 
 namespace MultiTool
 {
     internal static class Tool
     {
-        private static PreferenceManager preferenceManager;
+        private static IPreferenceManager<JsonWindowPreferenceManager> preferenceManager;
 
-        public static PreferenceManager GetPreferenceManager() => preferenceManager;
+        public static IPreferenceManager<JsonWindowPreferenceManager> GetPreferenceManager() => preferenceManager;
 
         public static void SetPreferenceManagerPath(string path)
         {
@@ -21,7 +20,7 @@ namespace MultiTool
             }
             else
             {
-                preferenceManager = new PreferenceManager(path);
+                preferenceManager = new JsonPreferenceManager(path);
             }
         }
 
@@ -51,6 +50,14 @@ namespace MultiTool
                         if (value.GetType().IsPrimitive || value.GetType() == typeof(string))
                         {
                             flatProperties.Add(key, properties[i].GetValue(data).ToString());
+                        }
+                        else
+                        {
+                            Dictionary<string, string> props = Flatten(value);
+                            foreach (var prop in props)
+                            {
+                                flatProperties.Add(prop.Key, prop.Value);
+                            }
                         }
                     }
                 }
