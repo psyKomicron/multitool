@@ -2,27 +2,26 @@
 using BusinessLayer.Network.Events;
 using Microsoft.Win32;
 using MultiTool.DTO;
+using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 
 namespace MultiTool
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class DownloadMainWindow : Window, INotifyPropertyChanged
+    public partial class DownloadMainWindow : Window, INotifyPropertyChanged, ISerializableWindow
     {
         private readonly Regex isExtension = new Regex(@"([a-z])+");
         private bool _showDownloadActivated;
@@ -32,6 +31,7 @@ namespace MultiTool
         internal ObservableCollection<UrlHistoryViewModel> UrlHistory { get; set; }
         internal Downloader Downloader { get; set; }
 
+        public DownloadDTO Data { get; set; }
         public List<string> DownloadHistory { get; private set; }
         public bool ShowDownloadActivated 
         {
@@ -39,7 +39,7 @@ namespace MultiTool
             set
             {
                 _showDownloadActivated = value;
-                OnPropertyChanged();
+                Tool.FireEvent(PropertyChanged, this);
             } 
         }
 
@@ -53,6 +53,16 @@ namespace MultiTool
         }
 
         #region methods
+
+        public void Serialize()
+        {
+            Dictionary<string, string> props = Tool.Flatten(this);
+        }
+
+        public void Deserialize()
+        {
+            throw new NotImplementedException();
+        }
 
         private void InitializeWindow()
         {
@@ -74,11 +84,6 @@ namespace MultiTool
             Downloader.IsDownloading += OnDownload;
             Downloader.EndedDownload += OnDownloadEnd;
             await Downloader.Download(url);
-        }
-
-        private void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         private void SaveDownload(string url)
@@ -107,6 +112,11 @@ namespace MultiTool
         #endregion
 
         #region events handlers
+
+        private void DownloadWindow_Closed(object sender, EventArgs e)
+        {
+            Serialize();
+        }
 
         private void OnDownload(object sender, DownloadEventArgs e)
         {
@@ -208,14 +218,13 @@ namespace MultiTool
             {
                 urlTextBox.TextDecorations = TextDecorations.Underline;
                 CurrentlyHyperLinked = true;
-                e.Handled = true;
             }
             else if (CurrentlyHyperLinked)
             {
                 urlTextBox.TextDecorations = null;
                 CurrentlyHyperLinked = false;
-                e.Handled = true;
             }
+            e.Handled = true;
         }
 
         private void SaveDownload_Click(object sender, RoutedEventArgs e)
