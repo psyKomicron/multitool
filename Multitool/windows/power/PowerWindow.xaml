@@ -5,10 +5,10 @@
     x:Class="MultiTool.PowerWindow"
     Title="Power management" 
     Name="PowerManagementWindow"
-    MinHeight="405" Height="430" 
-    MinWidth="520" Width="680"
-    WindowStartupLocation="CenterScreen"
-    Closing="Window_Closed"
+    MinHeight="405" Height="{Binding Path=Data.Height, Mode=TwoWay}" 
+    MinWidth="520" Width="{Binding Path=Data.Width, Mode=TwoWay}"
+    Left="{Binding Path=Data.Left, Mode=TwoWay}"
+    Top="{Binding Path=Data.Top, Mode=TwoWay}"
     Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type TextBox}">
@@ -340,7 +340,7 @@
                         <Button 
                             x:Name="RestartTimer" 
                             MinHeight="40" 
-                            Content="Restart" 
+                            Content="Restart timer" 
                             Click="RestartTimer_Click" 
                             Margin="0,0,0,5"
                             Grid.Column="2" Grid.Row="0"
@@ -348,7 +348,7 @@
                         <Button 
                             x:Name="StopTimer" 
                             MinHeight="40" 
-                            Content="Stop" 
+                            Content="Stop timer" 
                             Click="StopTimer_Click" 
                             Grid.Column="2" Grid.Row="1"
                             Template="{StaticResource StandardButtonCT}"/>

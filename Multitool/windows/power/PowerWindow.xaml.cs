@@ -4,7 +4,7 @@ using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
 using MultiTool.Windows;
-using MultiTool.Windows.Power;
+using MultiTool.DTO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,7 +20,7 @@ namespace MultiTool
     /// <summary>
     /// Interaction logic for PowerWindow.xaml
     /// </summary>
-    public partial class PowerWindow : ISerializableWindow<PowerWindowDTO>, INotifyPropertyChanged
+    public partial class PowerWindow : ISerializableWindow, INotifyPropertyChanged
     {
         private readonly Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])");
         private readonly Regex inputTextBoxRegex = new Regex(@"([0-9])+");
@@ -47,26 +47,44 @@ namespace MultiTool
         public PowerWindow()
         {
             InitializeComponent();
-            Deserialize();
             DataContext = this;
             Data = new PowerWindowDTO();
+            Deserialize();
         }
 
         public void Serialize()
         {
             Dictionary<string, string> properties = Tool.Flatten(Data);
 
-            PreferenceManager manager = Tool.GetPreferenceManager();
-            manager.AddPreferenceManager(new WindowPreferenceManager() { ItemName = Name, Values = properties });
+            Tool.GetPreferenceManager()
+                .AddPreferenceManager(new JsonWindowPreferenceManager() 
+                { 
+                    ItemName = Name, 
+                    Values = properties 
+                });
         }
 
         public void Deserialize()
         {
-            WindowPreferenceManager manager = Tool.GetPreferenceManager().GetWindowManager(Name);
+            IWindowPreferenceManager manager = Tool.GetPreferenceManager().GetWindowManager(Name);
             if (manager != null)
             {
-                Height = manager.Values["Height"] == null ? Height : double.Parse(manager.Values["Height"]);
-                Width = manager.Values["Width"] == null ? Width : double.Parse(manager.Values["Width"]);
+                try
+                {
+                    Data.Height = manager.Values["Height"] == null ? Data.Height : double.Parse(manager.Values["Height"]);
+                    Data.Width  = manager.Values["Width"] == null ? Data.Width : double.Parse(manager.Values["Width"]);
+                    Data.Left   = manager.Values["Left"] == null ? Data.Left : double.Parse(manager.Values["Left"]);
+                    Data.Top    = manager.Values["Top"] == null ? Data.Top : double.Parse(manager.Values["Top"]);
+                }
+                catch (KeyNotFoundException e)
+                {
+                    Console.Error.WriteLine("Wanted property not found in the preference manager. Exception was : ");
+                    Console.Error.WriteLine(e.ToString());
+                }
+            }
+            else
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
         }
 
@@ -200,11 +218,6 @@ namespace MultiTool
         #region other events
         private void Window_Closed(object sender, EventArgs e)
         {
-            Data.Height = Height;
-            Data.Width = Width;
-            Data.ForceShutdown = true;
-
-            Serialize();
             DisposeAllResources();
         }
 

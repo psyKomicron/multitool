@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Closed="Window_Closed"
         Title="MultiTool"
         Name="MultiToolMainWindow"
-        MinHeight="395" Height="500" 
-        MinWidth="555" Width="800" 
+        Closed="MultiToolMainWindow_Closed"
+        MinHeight="395" Height="{Binding Path=Data.Height, Mode=TwoWay}" 
+        MinWidth="555" Width="{Binding Path=Data.Width, Mode=TwoWay}" 
+        Left="{Binding Path=Data.Left, Mode=TwoWay}"
+        Top="{Binding Path=Data.Top, Mode=TwoWay}"
         Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
@@ -38,6 +40,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="100*"/>
             <RowDefinition Height="30*"/>
+            <RowDefinition Height="10*"/>
         </Grid.RowDefinitions>
 
         <Button x:Name="OpenDownload" Margin="10,50" Background="Transparent" Click="OpenDownload_Click" Grid.Row="0" Grid.Column="0" Template="{StaticResource IconButtonControlTemplate}">
@@ -54,6 +57,14 @@
 
         <Button x:Name="openSoon" Content="COMING SOON" Foreground="White" Click="OpenSoon_Click" Template="{StaticResource IconButtonControlTemplate}" Grid.Column="2" Grid.Row="1"/>
 
+        <TextBlock
+            x:Name="VersionTextBlock"
+            Text="{Binding Path=AppVersion, Mode=OneTime}"
+            FontFamily="Consolas"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Grid.Column="2"
+            Grid.Row="3"/>
 
         <Grid.Triggers>
             <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenPowerSettings">
