@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace BusinessLayer.ProcessOptions.EnumTranslaters
 {
-    public abstract class EnumTranslater<EnumType> where EnumType : Enum
+    public interface EnumTranslater<EnumType> where EnumType : Enum
     {
-        public abstract string Translate(List<EnumType> enums);
+        string Translate(List<EnumType> enums);
     }
 }
