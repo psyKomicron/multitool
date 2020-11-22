@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace BusinessLayer.PreferencesManager
+namespace BusinessLayer.PreferencesManagers.Json
 {
     public class JsonPreferenceManager : IPreferenceManager<JsonWindowPreferenceManager>
     {
-        private List<JsonWindowPreferenceManager> childs = new List<JsonWindowPreferenceManager>(5);
+        private List<JsonWindowPreferenceManager> childs = new List<JsonWindowPreferenceManager>(5);    
 
         public string Path { get; set; }
 
