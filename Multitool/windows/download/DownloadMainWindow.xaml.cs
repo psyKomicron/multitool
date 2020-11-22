@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Network;
 using BusinessLayer.Network.Events;
+using BusinessLayer.PreferencesManagers.Xml;
 using Microsoft.Win32;
 using MultiTool.DTO;
 using MultiTool.Windows;
@@ -56,7 +57,14 @@ namespace MultiTool
 
         public void Serialize()
         {
-            Dictionary<string, string> props = Tool.Flatten(this);
+            Dictionary<string, string> properties = Tool.Flatten(Data);
+
+            Tool.GetPreferenceManager()
+                .AddPreferenceManager(new XmlWindowPreferenceManager()
+                {
+                    ItemName = Name,
+                    Properties = properties
+                });
         }
 
         public void Deserialize()
