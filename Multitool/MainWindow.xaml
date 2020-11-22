@@ -8,8 +8,10 @@
         Title="MultiTool"
         Name="MultiToolMainWindow"
         Closed="MultiToolMainWindow_Closed"
-        MinHeight="395" Height="{Binding Path=Data.Height, Mode=TwoWay}" 
-        MinWidth="555" Width="{Binding Path=Data.Width, Mode=TwoWay}" 
+        MinHeight="395" 
+        Height="{Binding Path=Data.Height, Mode=TwoWay}" 
+        MinWidth="555" 
+        Width="{Binding Path=Data.Width, Mode=TwoWay}" 
         Left="{Binding Path=Data.Left, Mode=TwoWay}"
         Top="{Binding Path=Data.Top, Mode=TwoWay}"
         Style="{StaticResource DarkWindow}">
@@ -43,19 +45,51 @@
             <RowDefinition Height="10*"/>
         </Grid.RowDefinitions>
 
-        <Button x:Name="OpenDownload" Margin="10,50" Background="Transparent" Click="OpenDownload_Click" Grid.Row="0" Grid.Column="0" Template="{StaticResource IconButtonControlTemplate}">
-            <Image Source="images/download_ico.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+        <Button 
+            x:Name="OpenDownload" 
+            Margin="10,50" 
+            Background="Transparent" 
+            Click="OpenDownload_Click" 
+            Grid.Row="0" 
+            Grid.Column="0" 
+            Template="{StaticResource IconButtonControlTemplate}">
+            <Image 
+                Source="images/download_ico.png" 
+                RenderOptions.BitmapScalingMode="HighQuality"/>
         </Button>
 
-        <Button x:Name="OpenExplorer" Grid.Column="1" Grid.Row="0" Margin="10,50" Click="OpenExplorer_Click" Template="{StaticResource IconButtonControlTemplate}">
-            <Image Source="images/explorer_ico.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+        <Button 
+            x:Name="OpenExplorer" 
+            Grid.Column="1" 
+            Grid.Row="0" 
+            Margin="10,50" 
+            Click="OpenExplorer_Click" 
+            Template="{StaticResource IconButtonControlTemplate}">
+            <Image 
+                Source="images/explorer_ico.png" 
+                RenderOptions.BitmapScalingMode="HighQuality"/>
         </Button>
 
-        <Button x:Name="OpenPowerSettings" Grid.Column="2" Grid.Row="0" Margin="10,50" Click="OpenPowerSettings_Click" Template="{StaticResource IconButtonControlTemplate}">
-            <Image Source="images/power_ico.png" RenderOptions.BitmapScalingMode="HighQuality" />
+        <Button 
+            x:Name="OpenPowerSettings" 
+            Grid.Column="2" 
+            Grid.Row="0" 
+            Margin="10,50" 
+            Click="OpenPowerSettings_Click" 
+            Template="{StaticResource IconButtonControlTemplate}">
+            <Image 
+                Source="images/power_ico.png" 
+                RenderOptions.BitmapScalingMode="HighQuality" />
         </Button>
 
-        <Button x:Name="openSoon" Content="COMING SOON" Foreground="White" Click="OpenSoon_Click" Template="{StaticResource IconButtonControlTemplate}" Grid.Column="2" Grid.Row="1"/>
+        <Button 
+            x:Name="openSoon" 
+            Content="COMING SOON" 
+            Foreground="White" 
+            Click="OpenSoon_Click" 
+            Template="{StaticResource IconButtonControlTemplate}" 
+            Grid.Column="2" 
+            Grid.Row="1"/>
 
         <TextBlock
             x:Name="VersionTextBlock"
