@@ -1,4 +1,7 @@
-﻿using BusinessLayer.PreferencesManager;
+﻿using BusinessLayer.PreferencesManagers;
+using BusinessLayer.PreferencesManagers.Json;
+using BusinessLayer.PreferencesManagers.Xml;
+using BusinessLayer.Reflection;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
@@ -8,9 +11,9 @@ namespace MultiTool
 {
     internal static class Tool
     {
-        private static IPreferenceManager<JsonWindowPreferenceManager> preferenceManager;
+        private static IPreferenceManager<XmlWindowPreferenceManager> preferenceManager;
 
-        public static IPreferenceManager<JsonWindowPreferenceManager> GetPreferenceManager() => preferenceManager;
+        public static IPreferenceManager<XmlWindowPreferenceManager> GetPreferenceManager() => preferenceManager;
 
         public static void SetPreferenceManagerPath(string path)
         {
@@ -20,7 +23,7 @@ namespace MultiTool
             }
             else
             {
-                preferenceManager = new JsonPreferenceManager(path);
+                preferenceManager = new XmlPreferenceManager() { Path = path };
             }
         }
 
@@ -30,39 +33,14 @@ namespace MultiTool
         }
 
         /// <summary>
-        /// ToString but for properties of an object. Only flatten if the property is a primitive type and a string.
+        /// ToString but for properties of an object. Only flatten if the property is a primitive type or a string.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
         /// <returns></returns>
         public static Dictionary<string, string> Flatten<T>(T data) where T : class
         {
-            Dictionary<string, string> flatProperties = new Dictionary<string, string>();
-            PropertyInfo[] properties = GetProperties<T>();
-            for (int i = 0; i < properties.Length; i++)
-            {
-                if (properties[i].MemberType == MemberTypes.Property)
-                {
-                    string key = properties[i].Name;
-                    if (properties[i].GetValue(data) != null)
-                    {
-                        object value = properties[i].GetValue(data);
-                        if (value.GetType().IsPrimitive || value.GetType() == typeof(string))
-                        {
-                            flatProperties.Add(key, properties[i].GetValue(data).ToString());
-                        }
-                        else
-                        {
-                            Dictionary<string, string> props = Flatten(value);
-                            foreach (var prop in props)
-                            {
-                                flatProperties.Add(prop.Key, prop.Value);
-                            }
-                        }
-                    }
-                }
-            }
-            return flatProperties;
+            return new BasicObjectFlattener().Flatten(data);
         }
 
         private static PropertyInfo[] GetProperties<T>() where T : class
