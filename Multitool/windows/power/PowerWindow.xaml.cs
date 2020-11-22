@@ -1,5 +1,5 @@
 ﻿using BusinessLayer.Controllers;
-using BusinessLayer.PreferencesManager;
+using BusinessLayer.PreferencesManagers;
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
@@ -14,6 +14,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using BusinessLayer.PreferencesManagers.Xml;
 
 namespace MultiTool
 {
@@ -57,10 +58,10 @@ namespace MultiTool
             Dictionary<string, string> properties = Tool.Flatten(Data);
 
             Tool.GetPreferenceManager()
-                .AddPreferenceManager(new JsonWindowPreferenceManager() 
+                .AddPreferenceManager(new XmlWindowPreferenceManager() 
                 { 
                     ItemName = Name, 
-                    Values = properties 
+                    Properties = properties 
                 });
         }
 
@@ -69,18 +70,7 @@ namespace MultiTool
             IWindowPreferenceManager manager = Tool.GetPreferenceManager().GetWindowManager(Name);
             if (manager != null)
             {
-                try
-                {
-                    Data.Height = manager.Values["Height"] == null ? Data.Height : double.Parse(manager.Values["Height"]);
-                    Data.Width  = manager.Values["Width"] == null ? Data.Width : double.Parse(manager.Values["Width"]);
-                    Data.Left   = manager.Values["Left"] == null ? Data.Left : double.Parse(manager.Values["Left"]);
-                    Data.Top    = manager.Values["Top"] == null ? Data.Top : double.Parse(manager.Values["Top"]);
-                }
-                catch (KeyNotFoundException e)
-                {
-                    Console.Error.WriteLine("Wanted property not found in the preference manager. Exception was : ");
-                    Console.Error.WriteLine(e.ToString());
-                }
+                Data = (Application.Current as App).PropertyLoader.Load<PowerWindowDTO>(manager.Properties);
             }
             else
             {
