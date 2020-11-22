@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Parsers.Errors;
-using BusinessLayer.PreferencesManager;
+using BusinessLayer.PreferencesManagers;
+using BusinessLayer.PreferencesManagers.Json;
 using System;
 using System.Collections.Generic;
 
@@ -103,7 +104,7 @@ namespace BusinessLayer.Parsers
                     JsonWindowPreferenceManager manager = new JsonWindowPreferenceManager() { ItemName = name };
                     managers.Add(manager);
                     
-                    manager.Values = Parse(s.Substring(charRead + 2),  out int charParsed);
+                    manager.Properties = Parse(s.Substring(charRead + 2),  out int charParsed);
                     charRead += charParsed;
                 }
                 // end
