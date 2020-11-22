@@ -1,4 +1,4 @@
-﻿using MultiTool.Windows;
+﻿using BusinessLayer.Reflection;
 using System;
 using System.Diagnostics;
 using System.Windows;
@@ -10,6 +10,8 @@ namespace MultiTool
     /// </summary>
     public partial class App : Application
     {
+        public IPropertyLoader PropertyLoader { get; set; }
+
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             SerializeApplication();
@@ -17,8 +19,9 @@ namespace MultiTool
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Tool.SetPreferenceManagerPath("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.json");
+            Tool.SetPreferenceManagerPath("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.xml");
             Tool.GetPreferenceManager().DeserializePreferenceManager();
+            PropertyLoader = new PropertyLoader();
         }
 
         private void SerializeApplication()
