@@ -63,6 +63,9 @@
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System" />
@@ -87,14 +90,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DTO\DefaultWindowDTO.cs" />
-    <Compile Include="ISerializableWindow.cs" />
+    <Compile Include="Windows\ISerializableWindow.cs" />
     <Compile Include="DTO\DownloadDTO.cs" />
     <Compile Include="DTO\PowerWindowDTO.cs" />
-    <Page Include="windows\download\DownloadView.xaml">
+    <Page Include="Windows\Download\DownloadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="windows\download\DownloadMainWindow.xaml">
+    <Page Include="Windows\Download\DownloadMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -103,17 +106,17 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DTO\MainWindowDTO.cs" />
-    <Compile Include="Tool.cs" />
-    <Compile Include="WindowManager.cs" />
-    <Compile Include="windows\download\DownloadView.xaml.cs">
+    <Compile Include="Tools\Tool.cs" />
+    <Compile Include="Tools\WindowManager.cs" />
+    <Compile Include="Windows\Download\DownloadView.xaml.cs">
       <DependentUpon>DownloadView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DTO\UrlHistoryViewModel.cs" />
-    <Compile Include="windows\download\DownloadMainWindow.xaml.cs">
+    <Compile Include="Windows\Download\DownloadMainWindow.xaml.cs">
       <DependentUpon>DownloadMainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="windows\explorer\ExplorerWindow.xaml">
+    <Page Include="Windows\Explorer\ExplorerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -121,19 +124,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="windows\power\PowerWindow.xaml">
+    <Page Include="Windows\Power\PowerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="windows\explorer\ExplorerWindow.xaml.cs">
+    <Compile Include="Windows\Explorer\ExplorerWindow.xaml.cs">
       <DependentUpon>ExplorerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="windows\power\PowerWindow.xaml.cs">
+    <Compile Include="Windows\Power\PowerWindow.xaml.cs">
       <DependentUpon>PowerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
