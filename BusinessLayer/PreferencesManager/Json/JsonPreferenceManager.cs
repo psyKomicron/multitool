@@ -1,21 +1,21 @@
 ﻿using BusinessLayer.Parsers;
 using BusinessLayer.Parsers.Errors;
+using BusinessLayer.Reflection;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace BusinessLayer.PreferencesManagers.Json
 {
-    public class JsonPreferenceManager : IPreferenceManager<JsonWindowPreferenceManager>
+    public class JsonPreferenceManager : IPreferenceManager
     {
-        private List<JsonWindowPreferenceManager> childs = new List<JsonWindowPreferenceManager>(5);    
+        private List<WindowPreferenceManager> childs = new List<WindowPreferenceManager>(5);
+        private readonly IPropertyLoader propertyLoader = new PropertyLoader();
 
         public string Path { get; set; }
 
-        /// <summary>
-        /// Serialize the childs to a JSON file.
-        /// </summary>
         public void SerializePreferenceManager()
         {
             string path = Path; // to keep the same path even if the property is changed
@@ -53,16 +53,11 @@ namespace BusinessLayer.PreferencesManagers.Json
             }
         }
 
-        /// <summary>
-        /// Add a <see cref="JsonWindowPreferenceManager"/> to the list.
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <returns></returns>
-        public JsonWindowPreferenceManager AddPreferenceManager(JsonWindowPreferenceManager manager)
+        public void AddWindowManager(WindowPreferenceManager manager)
         {
             if (childs.Contains(manager)) // WPM implements IQuatable
             {
-                JsonWindowPreferenceManager currentManager = null; 
+                WindowPreferenceManager currentManager = null; 
                 foreach (var child in childs)
                 {
                     if (child.ItemName.Equals(manager.ItemName))
@@ -80,20 +75,20 @@ namespace BusinessLayer.PreferencesManagers.Json
             {
                 childs.Add(manager);
             }
-            return manager;
         }
 
-        public JsonWindowPreferenceManager GetWindowManager(string name)
+        public DataType GetWindowManager<DataType>(string name) where DataType : class, new()
         {
-            foreach (JsonWindowPreferenceManager manager in childs)
+            foreach (WindowPreferenceManager manager in childs)
             {
                 if (manager.ItemName.Equals(name))
                 {
-                    return manager;
+                    return propertyLoader.Load<DataType>(manager.Properties);
                 }
             }
             return null;
         }
+
 
         internal JsonPreferenceManager ParsePreferences(string path)
         {
@@ -136,10 +131,11 @@ namespace BusinessLayer.PreferencesManagers.Json
             return null;
         }
 
-        internal void AddPreferenceManagers(List<JsonWindowPreferenceManager> managers)
+        internal void AddPreferenceManagers(List<WindowPreferenceManager> managers)
         {
             childs = managers;
         }
+
 
         private string CreateData()
         {
@@ -147,7 +143,7 @@ namespace BusinessLayer.PreferencesManagers.Json
             data.Append("{\"preferences\":[");
             for (int i = 0; i < childs.Count; i++)
             {
-                data.Append(childs[i].Flatten()).Append("}");
+                data.Append(Flatten(childs[i])).Append("}");
                 if (i != childs.Count - 1)
                 {
                     data.Append(",");
@@ -155,6 +151,21 @@ namespace BusinessLayer.PreferencesManagers.Json
             }
             data.Append("]}");
             return data.ToString();
+        }
+
+        private StringBuilder Flatten(WindowPreferenceManager manager)
+        {
+            StringBuilder json = new StringBuilder("{\"" + manager.ItemName + "\":{");
+            KeyValuePair<string, string> last = manager.Properties.Last();
+            foreach (KeyValuePair<string, string> pair in manager.Properties)
+            {
+                json.Append(Jsonify(pair));
+                if (!last.Key.Equals(pair.Key))
+                {
+                    json.Append(",");
+                }
+            }
+            return json.Append("}");
         }
 
         private string ReadPreferenceFile(string path)
@@ -193,5 +204,6 @@ namespace BusinessLayer.PreferencesManagers.Json
 
         private bool IsControlChar(char c) => c == '\r' || c == '\n' || c == '\t' || c == ' ';
 
+        private string Jsonify(KeyValuePair<string, string> pair) => "\"" + pair.Key + "\":\"" + pair.Value + "\"";
     }
 }

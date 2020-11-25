@@ -31,7 +31,7 @@ namespace BusinessLayer.Parsers
                     }
                     string array = s.Substring(startIndex, 1 + endIndex - startIndex);
 
-                    List<JsonWindowPreferenceManager> childs = ParseWindowPreferenceManager(array.Substring(1, array.Length - 2));
+                    List<WindowPreferenceManager> childs = ParseWindowPreferenceManager(array.Substring(1, array.Length - 2));
                     preferenceManager.AddPreferenceManagers(childs);
                     
                 }
@@ -81,9 +81,9 @@ namespace BusinessLayer.Parsers
             return properties;
         }
 
-        private static List<JsonWindowPreferenceManager> ParseWindowPreferenceManager(string s)
+        private static List<WindowPreferenceManager> ParseWindowPreferenceManager(string s)
         {
-            List<JsonWindowPreferenceManager> managers = new List<JsonWindowPreferenceManager>(s.Length / 100);
+            List<WindowPreferenceManager> managers = new List<WindowPreferenceManager>(s.Length / 100);
 
             int it = 1;
             int charRead = 0;
@@ -101,7 +101,7 @@ namespace BusinessLayer.Parsers
                     }
                     charRead += i;
 
-                    JsonWindowPreferenceManager manager = new JsonWindowPreferenceManager() { ItemName = name };
+                    WindowPreferenceManager manager = new WindowPreferenceManager() { ItemName = name };
                     managers.Add(manager);
                     
                     manager.Properties = Parse(s.Substring(charRead + 2),  out int charParsed);
