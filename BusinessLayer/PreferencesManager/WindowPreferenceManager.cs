@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace BusinessLayer.PreferencesManagers
 {
-    public abstract class WindowPreferenceManager : IWindowPreferenceManager, IEquatable<WindowPreferenceManager>
+    public sealed class WindowPreferenceManager : IEquatable<WindowPreferenceManager>
     {
         public string ItemName { get; set; }
         public Dictionary<string, string> Properties { get; set; }
 
-        public virtual bool IsEquivalentTo(Dictionary<string, string> data)
+        public bool IsEquivalentTo(Dictionary<string, string> data)
         {
             if (data.Count == Properties.Count)
             {
@@ -33,7 +32,7 @@ namespace BusinessLayer.PreferencesManagers
             }
         }
 
-        public bool IsEquivalentTo(IWindowPreferenceManager manager)
+        public bool IsEquivalentTo(WindowPreferenceManager manager)
         {
             return IsEquivalentTo(manager.Properties);
         }
