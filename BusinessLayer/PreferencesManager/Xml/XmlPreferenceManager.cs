@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BusinessLayer.Reflection;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,18 +7,25 @@ using System.Xml;
 
 namespace BusinessLayer.PreferencesManagers.Xml
 {
-    public class XmlPreferenceManager : IPreferenceManager<XmlWindowPreferenceManager>
+    public class XmlPreferenceManager : IPreferenceManager
     {
         private const string _RootName = "PreferenceManager";
         private XmlDocument xmlDocument;
+        private readonly IPropertyLoader propertyLoader = new PropertyLoader();
 
         public string Path { get; set; }
 
+        /// <summary>
+        /// Write the data stored in a XML file format on the hard drive.
+        /// </summary>
         public void SerializePreferenceManager()
         {
             xmlDocument.Save(Path);
         }
 
+        /// <summary>
+        /// Load the values written on the disk as an XML file.
+        /// </summary>
         public void DeserializePreferenceManager()
         {
             if (File.Exists(Path))
@@ -46,7 +54,7 @@ namespace BusinessLayer.PreferencesManagers.Xml
             }
         }
 
-        public XmlWindowPreferenceManager AddPreferenceManager(XmlWindowPreferenceManager manager)
+        public void AddWindowManager(WindowPreferenceManager manager)
         {
             XmlNode node = xmlDocument.SelectSingleNode(".//" + manager.ItemName);
             if (node != null)
@@ -68,27 +76,44 @@ namespace BusinessLayer.PreferencesManagers.Xml
             }
             else // node is not existing, thus need to be created
             {
-                manager.AddToXmlDocument(xmlDocument, xmlDocument.SelectSingleNode(".//" + _RootName));
+                AddToXmlDocument(xmlDocument.SelectSingleNode(".//" + _RootName), manager);
             }
-
-            return manager;
         }
 
-        public XmlWindowPreferenceManager GetWindowManager(string name)
+        public DataType GetWindowManager<DataType>(string name) where DataType : class, new()
         {
             if (xmlDocument != null)
             {
                 XmlNode xmlManager = xmlDocument.SelectSingleNode(".//" + name);
-                return xmlManager != null ? ParseXml(xmlManager) : null;
+                if (xmlManager != null)
+                {
+                    Dictionary<string, string> properties = ParseXml(xmlManager);
+                    return propertyLoader.Load<DataType>(properties);
+                }
+                else
+                {
+                    return default;
+                }
             }
-            return null;
+            return default;
         }
 
-        private XmlWindowPreferenceManager ParseXml(XmlNode xmlManager)
+        private void AddToXmlDocument(XmlNode root, WindowPreferenceManager manager)
+        {
+            XmlNode item = xmlDocument.CreateElement(manager.ItemName);
+            foreach (KeyValuePair<string, string> pair in manager.Properties)
+            {
+                XmlNode property = xmlDocument.CreateElement(pair.Key);
+                property.InnerText = pair.Value;
+                item.AppendChild(property);
+            }
+            root.AppendChild(item);
+        }
+
+        private Dictionary<string, string> ParseXml(XmlNode xmlManager)
         {
             if (xmlManager != null)
             {
-                string itemName = xmlManager.Name;
                 Dictionary<string, string> properties = new Dictionary<string, string>();
 
                 foreach (XmlNode node in xmlManager.ChildNodes)
@@ -98,15 +123,11 @@ namespace BusinessLayer.PreferencesManagers.Xml
                     properties.Add(nodeName, nodeValue);
                 }
 
-                return new XmlWindowPreferenceManager()
-                {
-                    ItemName = itemName,
-                    Properties = properties
-                };
+                return properties;
             }
             else
             {
-                throw new ArgumentNullException("XmlNode xmlManager provided was null");
+                throw new ArgumentNullException("Argument xmlManager was null");
             }
         }
 
