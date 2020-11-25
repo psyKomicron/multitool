@@ -1,14 +1,27 @@
-﻿using MultiTool.Windows;
+﻿using BusinessLayer.PreferencesManagers;
+using BusinessLayer.PreferencesManagers.Xml;
+using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 
-namespace MultiTool
+namespace MultiTool.Tools
 {
     public static class WindowManager
     {
-        private static List<Window> windows = new List<Window>(3);
+        private static readonly List<Window> windows = new List<Window>(3);
+        private static volatile IPreferenceManager preferenceManager;
         
+        public static void InitializePreferenceManager(string path)
+        {
+            if (preferenceManager == null)
+            {
+                preferenceManager = new XmlPreferenceManager() { Path = path };
+            }
+        }
+
+        public static IPreferenceManager GetPreferenceManager() => preferenceManager;
+
         /// <summary>
         /// Opens a window of the <typeparamref name="WindowType"/> type if a window of <typeparamref name="WindowType"/>
         /// is not already openened.
@@ -48,7 +61,6 @@ namespace MultiTool
             w.Show();
             windows.Add(w);
         }
-
 
         #region events
 

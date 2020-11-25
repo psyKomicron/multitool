@@ -1,32 +1,14 @@
 ﻿using BusinessLayer.PreferencesManagers;
-using BusinessLayer.PreferencesManagers.Json;
 using BusinessLayer.PreferencesManagers.Xml;
-using BusinessLayer.Reflection;
+using BusinessLayer.Reflection.ObjectFlatteners;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace MultiTool
+namespace MultiTool.Tools
 {
     internal static class Tool
     {
-        private static IPreferenceManager<XmlWindowPreferenceManager> preferenceManager;
-
-        public static IPreferenceManager<XmlWindowPreferenceManager> GetPreferenceManager() => preferenceManager;
-
-        public static void SetPreferenceManagerPath(string path)
-        {
-            if (preferenceManager != null)
-            {
-                preferenceManager.Path = path;
-            }
-            else
-            {
-                preferenceManager = new XmlPreferenceManager() { Path = path };
-            }
-        }
-
         public static void FireEvent(PropertyChangedEventHandler propertyChanged, object source, [CallerMemberName] string name = null)
         {
             propertyChanged?.Invoke(source, new PropertyChangedEventArgs(name));
@@ -43,9 +25,5 @@ namespace MultiTool
             return new BasicObjectFlattener().Flatten(data);
         }
 
-        private static PropertyInfo[] GetProperties<T>() where T : class
-        {
-            return typeof(T).GetProperties();
-        }
     }
 }
