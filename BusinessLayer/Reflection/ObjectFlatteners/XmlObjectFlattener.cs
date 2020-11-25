@@ -19,8 +19,13 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
 
             for (int i = 0; i < propertyInfos.Length; i++)
             {
+                if (propertyInfos[i].MemberType == MemberTypes.Property)
+                {
 
+                }
             }
+
+            return root;
         }
 
         private PropertyInfo[] GetPropertyInfos<T>()
