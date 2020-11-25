@@ -1,7 +1,6 @@
 ﻿using BusinessLayer.PreferencesManagers;
-using BusinessLayer.PreferencesManagers.Json;
-using BusinessLayer.PreferencesManagers.Xml;
 using MultiTool.DTO;
+using MultiTool.Tools;
 using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
@@ -29,8 +28,8 @@ namespace MultiTool
         {
             Dictionary<string, string> properties = Tool.Flatten(Data);
 
-            Tool.GetPreferenceManager()
-                .AddPreferenceManager(new XmlWindowPreferenceManager() 
+            WindowManager.GetPreferenceManager()
+                .AddWindowManager(new WindowPreferenceManager() 
                 { 
                     ItemName = Name,
                     Properties = properties
@@ -39,15 +38,11 @@ namespace MultiTool
 
         public void Deserialize()
         {
-            Data = new MainWindowDTO();
-            IWindowPreferenceManager manager = Tool.GetPreferenceManager().GetWindowManager(Name);
+            Data = WindowManager.GetPreferenceManager().GetWindowManager<MainWindowDTO>(Name);
 
-            if (manager != null)
+            if (Data == null)
             {
-                Data = (Application.Current as App).PropertyLoader.Load<MainWindowDTO>(manager.Properties);
-            }
-            else
-            {
+                Data = new MainWindowDTO();
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 UpdateLayout();
             }
