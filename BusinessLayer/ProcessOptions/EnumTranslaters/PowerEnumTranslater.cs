@@ -1,15 +1,12 @@
 ﻿using BusinessLayer.ProcessOptions.Enums;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.ProcessOptions.EnumTranslaters
 {
-    public class PowerEnumTranslater : EnumTranslater<PowerOptions>
+    public class PowerEnumTranslater : IEnumTranslater<PowerOptions>
     {
-        public override string Translate(List<PowerOptions> enums)
+        public string Translate(List<PowerOptions> enums)
         {
             StringBuilder options = new StringBuilder(10);
             enums.ForEach((value) =>
