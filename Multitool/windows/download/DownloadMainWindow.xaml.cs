@@ -1,8 +1,9 @@
 ﻿using BusinessLayer.Network;
 using BusinessLayer.Network.Events;
-using BusinessLayer.PreferencesManagers.Xml;
+using BusinessLayer.PreferencesManagers;
 using Microsoft.Win32;
 using MultiTool.DTO;
+using MultiTool.Tools;
 using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace MultiTool
     /// </summary>
     public partial class DownloadMainWindow : Window, INotifyPropertyChanged, ISerializableWindow
     {
-        private readonly Regex isExtension = new Regex(@"([a-z])+");
+        //private readonly Regex isExtension = new Regex(@"([a-z])+");
         private bool _showDownloadActivated;
 
         internal bool CurrentlyHyperLinked { get; set; }
@@ -59,8 +60,8 @@ namespace MultiTool
         {
             Dictionary<string, string> properties = Tool.Flatten(Data);
 
-            Tool.GetPreferenceManager()
-                .AddPreferenceManager(new XmlWindowPreferenceManager()
+            WindowManager.GetPreferenceManager()
+                .AddWindowManager(new WindowPreferenceManager()
                 {
                     ItemName = Name,
                     Properties = properties
@@ -96,10 +97,12 @@ namespace MultiTool
 
         private void SaveDownload(string url)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Save download from multi-tool";
-            saveFileDialog.FileName = DateTime.Now.ToString().Replace('/', '-').Replace(':', '-');
-            saveFileDialog.Filter = GetExtensions(url);
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Title = "Save download from multi-tool",
+                FileName = DateTime.Now.ToString().Replace('/', '-').Replace(':', '-'),
+                Filter = GetExtensions(url)
+            };
 
             bool ok = saveFileDialog.ShowDialog() ?? false;
             if (ok && !string.IsNullOrEmpty(saveFileDialog.FileName))

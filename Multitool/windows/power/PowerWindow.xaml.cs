@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using BusinessLayer.PreferencesManagers.Xml;
+using MultiTool.Tools;
 
 namespace MultiTool
 {
@@ -57,8 +58,8 @@ namespace MultiTool
         {
             Dictionary<string, string> properties = Tool.Flatten(Data);
 
-            Tool.GetPreferenceManager()
-                .AddPreferenceManager(new XmlWindowPreferenceManager() 
+            WindowManager.GetPreferenceManager()
+                .AddWindowManager(new WindowPreferenceManager() 
                 { 
                     ItemName = Name, 
                     Properties = properties 
@@ -67,13 +68,10 @@ namespace MultiTool
 
         public void Deserialize()
         {
-            IWindowPreferenceManager manager = Tool.GetPreferenceManager().GetWindowManager(Name);
-            if (manager != null)
+            Data = WindowManager.GetPreferenceManager().GetWindowManager<PowerWindowDTO>(Name);
+            if (Data == null)
             {
-                Data = (Application.Current as App).PropertyLoader.Load<PowerWindowDTO>(manager.Properties);
-            }
-            else
-            {
+                Data = new PowerWindowDTO();
                 WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
         }
