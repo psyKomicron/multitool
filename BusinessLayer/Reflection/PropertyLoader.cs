@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace BusinessLayer.Reflection
 {
-    public class PropertyLoader : IPropertyLoader
+    internal class PropertyLoader : IPropertyLoader
     {
         public DtoType Load<DtoType>(Dictionary<string, string> dictionnary) where DtoType : class, new()
         {
