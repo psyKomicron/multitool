@@ -23,7 +23,7 @@ namespace MultiTool
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class DownloadMainWindow : Window, INotifyPropertyChanged, ISerializableWindow
+    public partial class DownloadWindow : Window, INotifyPropertyChanged, ISerializableWindow
     {
         //private readonly Regex isExtension = new Regex(@"([a-z])+");
         private bool _showDownloadActivated;
@@ -47,7 +47,7 @@ namespace MultiTool
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public DownloadMainWindow()
+        public DownloadWindow()
         {
             InitializeComponent();
             InitializeWindow();
@@ -75,7 +75,8 @@ namespace MultiTool
 
         private void InitializeWindow()
         {
-            IsDownloading = false;
+            Data = new DownloadDTO();
+            IsDownloading = ShowDownloadActivated = false;
             ShowDownloadActivated = false;
             UrlHistory = new ObservableCollection<UrlHistoryViewModel>();
             DownloadHistory = new List<string>(10);

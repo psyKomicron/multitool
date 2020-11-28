@@ -60,7 +60,7 @@ namespace MultiTool
 
         private void MultiToolMainWindow_Closed(object sender, EventArgs e) => Serialize();
 
-        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<DownloadMainWindow>();
+        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<DownloadWindow>();
 
         private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
 

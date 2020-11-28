@@ -97,7 +97,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Windows\Download\DownloadMainWindow.xaml">
+    <Page Include="Windows\Download\DownloadWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -112,8 +112,8 @@
       <DependentUpon>DownloadView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DTO\UrlHistoryViewModel.cs" />
-    <Compile Include="Windows\Download\DownloadMainWindow.xaml.cs">
-      <DependentUpon>DownloadMainWindow.xaml</DependentUpon>
+    <Compile Include="Windows\Download\DownloadWindow.xaml.cs">
+      <DependentUpon>DownloadWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Windows\Explorer\ExplorerWindow.xaml">
