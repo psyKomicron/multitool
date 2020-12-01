@@ -1,9 +1,10 @@
-﻿using System;
+﻿using BusinessLayer.Reflection.ObjectFlatteners;
+using System;
 using System.Collections.Generic;
 
 namespace BusinessLayer.PreferencesManagers
 {
-    public sealed class WindowPreferenceManager : IEquatable<WindowPreferenceManager>
+    internal sealed class WindowPreferenceManager : IEquatable<WindowPreferenceManager>
     {
         public string ItemName { get; set; }
         public Dictionary<string, string> Properties { get; set; }
@@ -40,6 +41,12 @@ namespace BusinessLayer.PreferencesManagers
         public bool Equals(WindowPreferenceManager other)
         {
             return other.ItemName.Equals(other.ItemName);
+        }
+
+        public void SetProperties<T>(T o) where T : class
+        {
+            XmlObjectFlattener flattener = new XmlObjectFlattener();
+            flattener.Flatten(o);
         }
     }
 }

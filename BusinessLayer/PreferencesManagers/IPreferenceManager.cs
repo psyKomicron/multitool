@@ -3,8 +3,9 @@
     public interface IPreferenceManager
     {
         string Path { get; set; }
+        PreferenceManagerType Type { get; }
 
-        void AddWindowManager(WindowPreferenceManager manager);
+        void AddWindowManager<DataType>(DataType data, string name) where DataType : class;
         void DeserializePreferenceManager();
         /// <summary>
         /// Load the data for the serialized item with the key <paramref name="key"/>.

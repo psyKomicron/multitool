@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Reflection;
+using BusinessLayer.Reflection.ObjectFlatteners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,17 +16,13 @@ namespace BusinessLayer.PreferencesManagers.Xml
 
         public string Path { get; set; }
 
-        /// <summary>
-        /// Write the data stored in a XML file format on the hard drive.
-        /// </summary>
+        public PreferenceManagerType Type => PreferenceManagerType.XML;
+
         public void SerializePreferenceManager()
         {
             xmlDocument.Save(Path);
         }
 
-        /// <summary>
-        /// Load the values written on the disk as an XML file.
-        /// </summary>
         public void DeserializePreferenceManager()
         {
             if (File.Exists(Path))
@@ -38,6 +35,11 @@ namespace BusinessLayer.PreferencesManagers.Xml
                 catch (XmlException e)
                 {
                     Console.Error.WriteLine(e.ToString());
+                    // check if the root is created
+                    if (xmlDocument.SelectSingleNode(".//" + _RootName) == null)
+                    {
+                        xmlDocument.AppendChild(xmlDocument.CreateElement(_RootName));
+                    }
                 }
             }
             else
@@ -54,19 +56,20 @@ namespace BusinessLayer.PreferencesManagers.Xml
             }
         }
 
-        public void AddWindowManager(WindowPreferenceManager manager)
+        public void AddWindowManager<DataType>(DataType data, string name) where DataType : class
         {
-            XmlNode node = xmlDocument.SelectSingleNode(".//" + manager.ItemName);
+            XmlNode dataAsXml = new XmlObjectFlattener().Flatten(data);
+            XmlNode node = xmlDocument.SelectSingleNode(".//" + name);
             if (node != null)
             {
                 foreach (XmlNode subNode in node.ChildNodes)
                 {
                     string nodeName = subNode.Name;
-                    string nodeValue = subNode.FirstChild.InnerText;
+                    string nodeValue = subNode?.FirstChild?.InnerText;
 
-                    if (!string.IsNullOrEmpty(nodeValue) && manager.Properties.ContainsKey(nodeName))
+                    if (!string.IsNullOrEmpty(nodeValue) && dataAsXml.SelectSingleNode(".//" + nodeName) != null)
                     {
-                        string storedValue = manager.Properties[nodeName];
+                        string storedValue = dataAsXml.SelectSingleNode(".//" + nodeName).FirstChild.InnerText;
                         if (!storedValue.Equals(nodeValue)) // edit the xml node to the value in manager
                         {
                             subNode.FirstChild.Value = storedValue;
@@ -74,9 +77,16 @@ namespace BusinessLayer.PreferencesManagers.Xml
                     }
                 }
             }
-            else // node is not existing, thus need to be created
+            else // node is not existing
             {
-                AddToXmlDocument(xmlDocument.SelectSingleNode(".//" + _RootName), manager);
+                XmlNode dataRoot = xmlDocument.CreateElement(name);
+                foreach (XmlNode childNode in dataAsXml.ChildNodes)
+                {
+                    XmlNode importNode = xmlDocument.ImportNode(childNode, true);
+                    dataRoot.AppendChild(importNode);
+                }
+
+                xmlDocument.SelectSingleNode(".//" + _RootName).AppendChild(dataRoot);
             }
         }
 
@@ -98,6 +108,7 @@ namespace BusinessLayer.PreferencesManagers.Xml
             return default;
         }
 
+        #region private methods
         private void AddToXmlDocument(XmlNode root, WindowPreferenceManager manager)
         {
             XmlNode item = xmlDocument.CreateElement(manager.ItemName);
@@ -130,6 +141,7 @@ namespace BusinessLayer.PreferencesManagers.Xml
                 throw new ArgumentNullException("Argument xmlManager was null");
             }
         }
+        #endregion
 
     }
 }

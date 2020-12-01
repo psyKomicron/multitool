@@ -1,6 +1,7 @@
 ﻿using BusinessLayer.Parsers;
 using BusinessLayer.Parsers.Errors;
 using BusinessLayer.Reflection;
+using BusinessLayer.Reflection.ObjectFlatteners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,8 @@ namespace BusinessLayer.PreferencesManagers.Json
         private readonly IPropertyLoader propertyLoader = new PropertyLoader();
 
         public string Path { get; set; }
+
+        public PreferenceManagerType Type => PreferenceManagerType.JSON;
 
         public void SerializePreferenceManager()
         {
@@ -53,8 +56,14 @@ namespace BusinessLayer.PreferencesManagers.Json
             }
         }
 
-        public void AddWindowManager(WindowPreferenceManager manager)
+        public void AddWindowManager<DataType>(DataType data, string name) where DataType : class
         {
+            WindowPreferenceManager manager = new WindowPreferenceManager()
+            {
+                Properties = new BasicObjectFlattener().Flatten(data),
+                ItemName = name
+            };
+
             if (childs.Contains(manager)) // WPM implements IQuatable
             {
                 WindowPreferenceManager currentManager = null; 
@@ -88,7 +97,6 @@ namespace BusinessLayer.PreferencesManagers.Json
             }
             return null;
         }
-
 
         internal JsonPreferenceManager ParsePreferences(string path)
         {
@@ -135,7 +143,6 @@ namespace BusinessLayer.PreferencesManagers.Json
         {
             childs = managers;
         }
-
 
         private string CreateData()
         {
@@ -205,5 +212,6 @@ namespace BusinessLayer.PreferencesManagers.Json
         private bool IsControlChar(char c) => c == '\r' || c == '\n' || c == '\t' || c == ' ';
 
         private string Jsonify(KeyValuePair<string, string> pair) => "\"" + pair.Key + "\":\"" + pair.Value + "\"";
+
     }
 }
