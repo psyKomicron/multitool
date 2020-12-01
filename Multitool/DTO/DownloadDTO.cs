@@ -2,10 +2,15 @@
 
 namespace MultiTool.DTO
 {
-    public class DownloadDTO
+    public class DownloadDTO : DefaultWindowDTO
     {
-        public List<string> History { get; set; }
-        public double Height { get; set; }
-        public double Width { get; set; }
+        public List<UrlHistoryViewModel> History { get; set; }
+
+        public DownloadDTO()
+        {
+            Height = 600;
+            Width = 900;
+            History = new List<UrlHistoryViewModel>();
+        }
     }
 }
