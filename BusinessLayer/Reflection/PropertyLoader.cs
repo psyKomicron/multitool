@@ -20,7 +20,7 @@ namespace BusinessLayer.Reflection
                     string propValue = dictionnary[property.Name];
                     Type type = property.PropertyType;
 
-                    var value = Convert.ChangeType(propValue, type);
+                    var value = Convert.ChangeType(propValue, type); // can cause crashes if conversion fail.
                     property.SetValue(dto, value);
                 }
             }
