@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
 namespace BusinessLayer.Reflection.ObjectFlatteners
 {
-    public class BasicObjectFlattener : IObjectFlattener<Dictionary<string, string>>
+    public class BasicObjectFlattener : ObjectFlattener<Dictionary<string, string>>
     {
-        public Dictionary<string, string> Flatten<T>(T o) where T : class
+        public override Dictionary<string, string> Flatten<T>(T o)
         {
             Dictionary<string, string> flatProperties = new Dictionary<string, string>();
             PropertyInfo[] properties = GetPropertyInfos<T>();
@@ -38,11 +40,6 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
             }
 
             return flatProperties;
-        }
-
-        private PropertyInfo[] GetPropertyInfos<T>()
-        {
-            return typeof(T).GetProperties();
         }
     }
 }
