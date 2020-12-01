@@ -26,14 +26,7 @@ namespace MultiTool
 
         public void Serialize()
         {
-            Dictionary<string, string> properties = Tool.Flatten(Data);
-
-            WindowManager.GetPreferenceManager()
-                .AddWindowManager(new WindowPreferenceManager() 
-                { 
-                    ItemName = Name,
-                    Properties = properties
-                });
+            WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
         }
 
         public void Deserialize()
