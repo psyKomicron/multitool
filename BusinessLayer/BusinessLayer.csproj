@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CFE7F0B9-2C5D-433F-9C6A-8C3D94931F2C}</ProjectGuid>
+    <ProjectGuid>{545DC8FD-0E0F-43EA-917D-B6BE03E43E48}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BusinessLayer</RootNamespace>
@@ -12,7 +12,6 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,18 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Google.Apis, Version=1.48.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\YoutubeMP3\packages\Google.Apis.1.48.0\lib\net45\Google.Apis.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.Core, Version=1.48.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\YoutubeMP3\packages\Google.Apis.Core.1.48.0\lib\net45\Google.Apis.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Google.Apis.PlatformServices, Version=1.48.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
-      <HintPath>..\YoutubeMP3\packages\Google.Apis.1.48.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\YoutubeMP3\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -55,29 +42,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\Controller.cs" />
+    <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="Network\Downloader.cs" />
     <Compile Include="Network\DownloadEventArgs.cs" />
-    <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="Parsers\Errors\JsonFormatException.cs" />
     <Compile Include="Parsers\JsonParser.cs" />
-    <Compile Include="PreferencesManager\IPreferenceManager.cs" />
-    <Compile Include="Reflection\ObjectFlatteners\IObjectFlattener.cs" />
-    <Compile Include="Reflection\IPropertyLoader.cs" />
-    <Compile Include="PreferencesManager\Json\JsonPreferenceManager.cs" />
-    <Compile Include="Reflection\ObjectFlatteners\BasicObjectFlattener.cs" />
-    <Compile Include="Reflection\ObjectFlatteners\XmlObjectFlattener.cs" />
-    <Compile Include="Reflection\PropertyLoader.cs" />
-    <Compile Include="PreferencesManager\WindowPreferenceManager.cs" />
-    <Compile Include="PreferencesManager\Xml\XmlPreferenceManager.cs" />
+    <Compile Include="PreferencesManagers\IPreferenceManager.cs" />
+    <Compile Include="PreferencesManagers\Json\JsonPreferenceManager.cs" />
+    <Compile Include="PreferencesManagers\PreferenceManagerType.cs" />
+    <Compile Include="PreferencesManagers\WindowPreferenceManager.cs" />
+    <Compile Include="PreferencesManagers\Xml\XmlPreferenceManager.cs" />
     <Compile Include="ProcessOptions\Enums\PowerOptions.cs" />
     <Compile Include="ProcessOptions\EnumTranslaters\IEnumTranslater.cs" />
     <Compile Include="ProcessOptions\EnumTranslaters\PowerEnumTranslater.cs" />
     <Compile Include="ProcessOptions\StartOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\IPropertyLoader.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\BasicObjectFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\IObjectFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\ObjectFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\XmlObjectFlattener.cs" />
+    <Compile Include="Reflection\PropertyLoader.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
