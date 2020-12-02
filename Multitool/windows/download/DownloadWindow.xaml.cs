@@ -1,6 +1,5 @@
 ﻿using BusinessLayer.Network;
 using BusinessLayer.Network.Events;
-using BusinessLayer.PreferencesManagers;
 using Microsoft.Win32;
 using MultiTool.DTO;
 using MultiTool.Tools;
@@ -58,19 +57,20 @@ namespace MultiTool
 
         public void Serialize()
         {
-            Dictionary<string, string> properties = Tool.Flatten(Data);
-
-            WindowManager.GetPreferenceManager()
-                .AddWindowManager(new WindowPreferenceManager()
-                {
-                    ItemName = Name,
-                    Properties = properties
-                });
+            foreach (var item in UrlHistory)
+            {
+                Data.History.Add(item);
+            }
+            WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
         }
 
         public void Deserialize()
         {
-            throw new NotImplementedException();
+            Data = WindowManager.GetPreferenceManager().GetWindowManager<DownloadDTO>(Name);
+            foreach (var item in Data.History)
+            {
+                UrlHistory.Add(item);
+            }
         }
 
         private void InitializeWindow()
