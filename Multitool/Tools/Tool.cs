@@ -1,9 +1,11 @@
 ﻿using BusinessLayer.PreferencesManagers;
 using BusinessLayer.PreferencesManagers.Xml;
 using BusinessLayer.Reflection.ObjectFlatteners;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Xml;
 
 namespace MultiTool.Tools
 {
@@ -22,7 +24,25 @@ namespace MultiTool.Tools
         /// <returns></returns>
         public static Dictionary<string, string> Flatten<T>(T data) where T : class
         {
-            return new BasicObjectFlattener().Flatten(data);
+            try
+            {
+                XmlNode xml = new XmlObjectFlattener().Flatten(data);
+            }
+            catch (StackOverflowException e)
+            {
+                Console.Error.WriteLine(e.ToString());
+                Console.WriteLine("Data could not be flatten into a xml format");
+            }
+
+            try
+            {
+                return new BasicObjectFlattener().Flatten(data);
+            }
+            catch (StackOverflowException e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            return null;
         }
 
     }
