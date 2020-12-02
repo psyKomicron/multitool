@@ -7,8 +7,8 @@
         Title="Downloader" 
         Name="DownloaderWindow"
         WindowStartupLocation="CenterScreen"
-        Height="600" 
-        Width="900"
+        Height="{Binding Path=Data.Height, Mode=TwoWay}" 
+        Width="{Binding Path=Data.Width, Mode=TwoWay}"
         Style="{StaticResource DarkWindow}"
         Closed="DownloadWindow_Closed">
     <Window.Resources>
