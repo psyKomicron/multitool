@@ -33,7 +33,6 @@ namespace MultiTool
         internal Downloader Downloader { get; set; }
 
         public DownloadDTO Data { get; set; }
-        public List<string> DownloadHistory { get; private set; }
         public bool ShowDownloadActivated 
         {
             get => _showDownloadActivated;
@@ -67,6 +66,7 @@ namespace MultiTool
         public void Deserialize()
         {
             Data = WindowManager.GetPreferenceManager().GetWindowManager<DownloadDTO>(Name);
+            UrlHistory = new ObservableCollection<UrlHistoryViewModel>();
             foreach (var item in Data.History)
             {
                 UrlHistory.Add(item);
@@ -75,11 +75,11 @@ namespace MultiTool
 
         private void InitializeWindow()
         {
-            Data = new DownloadDTO();
+            Deserialize();
             IsDownloading = ShowDownloadActivated = false;
-            ShowDownloadActivated = false;
-            UrlHistory = new ObservableCollection<UrlHistoryViewModel>();
-            DownloadHistory = new List<string>(10);
+            
+            //UrlHistory = new ObservableCollection<UrlHistoryViewModel>();
+
             historyListView.ItemsSource = UrlHistory;
         }
 
@@ -125,11 +125,6 @@ namespace MultiTool
 
         #region events handlers
 
-        private void DownloadWindow_Closed(object sender, EventArgs e)
-        {
-            Serialize();
-        }
-
         private void OnDownload(object sender, DownloadEventArgs e)
         {
             IsDownloading = true;
@@ -153,7 +148,6 @@ namespace MultiTool
 
                 urlTextBox.Clear();
                 downloadStatusLabel.Content = e.Message;
-                DownloadHistory.Add(Downloader.DownloadedData);
                 ShowDownloadActivated = true;
             }
             else
@@ -259,8 +253,6 @@ namespace MultiTool
 
         private void ClearHistory_Click(object sender, RoutedEventArgs e)
         {
-            DownloadHistory.Clear();
-            DownloadHistory.Capacity = 10;
             ShowDownloadActivated = false;
 
             UrlHistory.Clear();

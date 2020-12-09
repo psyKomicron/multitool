@@ -15,28 +15,56 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
         /// <returns></returns>
         public override XmlNode Flatten<T>(T o)
         {
-            return RecursiveFlatten(o, new XmlDocument());
+            XmlDocument xmlDocument = new XmlDocument();
+            try
+            {
+                return RecursiveFlatten(o, xmlDocument);
+            }
+            catch (ArgumentNullException ane)
+            {
+                Console.BackgroundColor = ConsoleColor.White;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine(ane);
+                Console.ResetColor();
+                return xmlDocument.CreateElement("properties");
+            }
+            
         }
 
         private XmlNode RecursiveFlatten<T>(T o, XmlDocument xml , string rootName = "properties", int depth = 0)
         {
+            #region checks
             // check to prevent stack overflow
-            if (depth > 100)
+            if (depth >= 10)
             {
                 XmlNode xml1 = xml.CreateElement(rootName);
                 xml1.InnerText = o.ToString();
                 return xml1;
             }
 
+            if (o == null)
+            {
+                // "Value provided to flatten was null: \n[rootName: " + rootName + ",\ndepth: " + depth
+                throw new ArgumentNullException("o", "Value provided to flatten was null: \n{ rootName: " + rootName + ", depth: " + depth + " }");
+            }
+            #endregion
+
             XmlNode root = xml.CreateElement(rootName);
 
             PropertyInfo[] propertyInfos = o.GetType().GetProperties();
-
             for (int i = 0; i < propertyInfos.Length; i++)
             {
                 if (propertyInfos[i].MemberType == MemberTypes.Property)
                 {
-                    object value = propertyInfos[i].GetValue(o);
+                    object value = null;
+                    try
+                    {
+                        value = propertyInfos[i].GetValue(o);
+                    }
+                    catch (TargetInvocationException tie)
+                    {
+                        Console.WriteLine(tie.ToString());
+                    }
                     string name = propertyInfos[i].Name;
 
                     if (value != null)
@@ -47,9 +75,9 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
                             prop.InnerText = value.ToString();
                             root.AppendChild(prop);
                         }
-                        else if (IsEnumerable(propertyInfos[i].PropertyType))
+                        else if (IsList(propertyInfos[i].PropertyType))
                         {
-                            IEnumerable array = propertyInfos[i].GetMethod.Invoke(o, null) as IEnumerable;
+                            IList array = propertyInfos[i].GetMethod.Invoke(o, null) as IList;
                             Type[] genericArgs = propertyInfos[i].PropertyType.GetGenericArguments();
                             Type itemType = null;
                             if (genericArgs.Length == 1)
@@ -59,27 +87,31 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
 
                             XmlNode arrayRoot = xml.CreateElement(name);
                             int index = 0;
+
                             foreach (var obj in array)
                             {
-                                XmlNode xmlNode = xml.CreateElement(index.ToString());
+                                //XmlNode xmlNode = xml.CreateElement(index.ToString());
                                 if (itemType != null)
                                 {
                                     var item = Convert.ChangeType(obj, itemType);
                                     
-                                    if (IsPrimitive(item.GetType()))
+                                    if (IsPrimitive(item.GetType()) || CanTreatObject(itemType))
                                     {
+                                        XmlNode xmlNode = xml.CreateElement(index.ToString());
                                         xmlNode.InnerText = item.ToString();
+                                        arrayRoot.AppendChild(xmlNode);
                                     }
                                     else
                                     {
-                                        XmlNode node = RecursiveFlatten(item, xml, item.GetType().Name, depth);
-                                        xmlNode.AppendChild(node);
+                                        XmlNode node = RecursiveFlatten(item, xml, item.GetType().Name, depth + 1);
+                                        arrayRoot.AppendChild(node);
                                     }
-                                    arrayRoot.AppendChild(xmlNode);
                                 }
                                 else
                                 {
+                                    XmlNode xmlNode = xml.CreateElement(index.ToString());
                                     xmlNode.InnerText = obj.ToString();
+                                    arrayRoot.AppendChild(xmlNode);
                                 }
                                 // update index for node names
                                 index++;
@@ -87,21 +119,36 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
 
                             root.AppendChild(arrayRoot);
                         }
+                        else if (CanTreatObject(value.GetType()))
+                        {
+                            XmlNode node = xml.CreateElement(name);
+                            node.InnerText = value.ToString();
+                            root.AppendChild(node);
+                        }
                         else
                         {
                             XmlNode node = RecursiveFlatten(value, xml , name, depth + 1); // recursively flatten the properties of the object
                             root.AppendChild(node);
                         }
                     }
-                    else
-                    {
-                        XmlNode node = RecursiveFlatten(value, xml, name, depth + 1); // recursively flatten the properties of the object
-                        root.AppendChild(node);
-                    }
                 }
             }
 
             return root;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oType"></param>
+        /// <returns></returns>
+        private bool CanTreatObject(Type oType)
+        {
+            if (oType != null)
+            {
+                return oType.Equals(typeof(DateTime)) || oType.Name.Equals("SolidColorBrush");
+            }
+            return false;
         }
 
     }

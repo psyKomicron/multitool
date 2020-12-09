@@ -9,8 +9,7 @@
         WindowStartupLocation="CenterScreen"
         Height="{Binding Path=Data.Height, Mode=TwoWay}" 
         Width="{Binding Path=Data.Width, Mode=TwoWay}"
-        Style="{StaticResource DarkWindow}"
-        Closed="DownloadWindow_Closed">
+        Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
             <Setter Property="Margin" Value="10,5,10,5"/>

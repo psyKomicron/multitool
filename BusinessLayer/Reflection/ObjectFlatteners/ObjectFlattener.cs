@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.Reflection.ObjectFlatteners
 {
@@ -17,13 +13,13 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
             return t.IsPrimitive || t == typeof(string);
         }
 
-        protected bool IsEnumerable(Type t)
+        protected bool IsList(Type t)
         {
             Type[] interfaces = t.GetInterfaces();
             for (int i = 0; i < interfaces.Length; i++)
             {
                 Type type = interfaces[i];
-                if (type.Equals(typeof(IEnumerable)))
+                if (type.Equals(typeof(IList)))
                 {
                     return true;
                 }

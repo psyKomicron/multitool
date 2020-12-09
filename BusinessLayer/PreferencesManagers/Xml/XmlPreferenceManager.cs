@@ -1,5 +1,5 @@
-﻿using BusinessLayer.Reflection;
-using BusinessLayer.Reflection.ObjectFlatteners;
+﻿using BusinessLayer.Reflection.ObjectFlatteners;
+using BusinessLayer.Reflection.PropertyLoaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ namespace BusinessLayer.PreferencesManagers.Xml
     {
         private const string _RootName = "PreferenceManager";
         private XmlDocument xmlDocument;
-        private readonly IPropertyLoader propertyLoader = new PropertyLoader();
+        private readonly PropertyLoader propertyLoader = new PropertyLoader();
 
         public string Path { get; set; }
 
@@ -69,10 +69,38 @@ namespace BusinessLayer.PreferencesManagers.Xml
 
                     if (!string.IsNullOrEmpty(nodeValue) && dataAsXml.SelectSingleNode(".//" + nodeName) != null)
                     {
-                        string storedValue = dataAsXml.SelectSingleNode(".//" + nodeName).FirstChild.InnerText;
-                        if (!storedValue.Equals(nodeValue)) // edit the xml node to the value in manager
+                        bool isList = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes?.Count > 1; // count >= 2
+
+                        if (!isList)
                         {
-                            subNode.FirstChild.Value = storedValue;
+                            XmlNode storedValue = xmlDocument.ImportNode(dataAsXml.SelectSingleNode(".//" + nodeName).FirstChild, true);
+                            if (storedValue != null && !storedValue.Equals(nodeValue)) // edit the xml node to the value in manager
+                            {
+                                node.RemoveChild(subNode);
+                                node.AppendChild(storedValue);
+                            }
+                        }
+                        else
+                        {
+                            XmlNodeList incomingNodes = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes;
+                            foreach (XmlNode incomingNode in incomingNodes)
+                            {
+                                XmlNode importedNode = xmlDocument.ImportNode(incomingNode, true);
+                                subNode.AppendChild(importedNode);
+                            }
+                        }
+                    }   
+                    // update current node if the incoming node has values
+                    else if (string.IsNullOrEmpty(nodeValue) && dataAsXml.SelectSingleNode(".//" + nodeName) != null)
+                    {
+                        XmlNodeList incomingNodes = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes;
+                        if (incomingNodes != null)
+                        {
+                            foreach (XmlNode incomingNode in incomingNodes)
+                            {
+                                XmlNode importedNode = xmlDocument.ImportNode(incomingNode, true);
+                                subNode.AppendChild(importedNode);
+                            }
                         }
                     }
                 }
@@ -97,15 +125,15 @@ namespace BusinessLayer.PreferencesManagers.Xml
                 XmlNode xmlManager = xmlDocument.SelectSingleNode(".//" + name);
                 if (xmlManager != null)
                 {
-                    Dictionary<string, string> properties = ParseXml(xmlManager);
-                    return propertyLoader.Load<DataType>(properties);
+                    //Dictionary<string, string> properties = ParseXml(xmlManager);
+                    return propertyLoader.LoadFromXml<DataType>(xmlManager);
                 }
                 else
                 {
-                    return default;
+                    return new DataType();
                 }
             }
-            return default;
+            return new DataType();
         }
 
         #region private methods
@@ -130,7 +158,11 @@ namespace BusinessLayer.PreferencesManagers.Xml
                 foreach (XmlNode node in xmlManager.ChildNodes)
                 {
                     string nodeName = node.Name;
-                    string nodeValue = node.FirstChild.Value;
+                    string nodeValue = string.Empty;
+                    if (node.ChildNodes.Count > 0)
+                    {
+                        nodeValue = node.FirstChild.Value;
+                    }
                     properties.Add(nodeName, nodeValue);
                 }
 

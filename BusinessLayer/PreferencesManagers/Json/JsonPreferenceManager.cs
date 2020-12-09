@@ -1,7 +1,7 @@
 ﻿using BusinessLayer.Parsers;
 using BusinessLayer.Parsers.Errors;
-using BusinessLayer.Reflection;
 using BusinessLayer.Reflection.ObjectFlatteners;
+using BusinessLayer.Reflection.PropertyLoaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +13,7 @@ namespace BusinessLayer.PreferencesManagers.Json
     public class JsonPreferenceManager : IPreferenceManager
     {
         private List<WindowPreferenceManager> childs = new List<WindowPreferenceManager>(5);
-        private readonly IPropertyLoader propertyLoader = new PropertyLoader();
+        private readonly PropertyLoader propertyLoader = new PropertyLoader();
 
         public string Path { get; set; }
 
@@ -92,7 +92,7 @@ namespace BusinessLayer.PreferencesManagers.Json
             {
                 if (manager.ItemName.Equals(name))
                 {
-                    return propertyLoader.Load<DataType>(manager.Properties);
+                    return propertyLoader.LoadFromStringDictionary<DataType>(manager.Properties);
                 }
             }
             return null;
