@@ -57,12 +57,11 @@
     <Compile Include="ProcessOptions\EnumTranslaters\PowerEnumTranslater.cs" />
     <Compile Include="ProcessOptions\StartOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reflection\IPropertyLoader.cs" />
     <Compile Include="Reflection\ObjectFlatteners\BasicObjectFlattener.cs" />
     <Compile Include="Reflection\ObjectFlatteners\IObjectFlattener.cs" />
     <Compile Include="Reflection\ObjectFlatteners\ObjectFlattener.cs" />
     <Compile Include="Reflection\ObjectFlatteners\XmlObjectFlattener.cs" />
-    <Compile Include="Reflection\PropertyLoader.cs" />
+    <Compile Include="Reflection\PropertyLoaders\PropertyLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
