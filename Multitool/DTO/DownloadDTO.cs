@@ -10,7 +10,6 @@ namespace MultiTool.DTO
         {
             Height = 600;
             Width = 900;
-            History = new List<UrlHistoryViewModel>();
         }
     }
 }
