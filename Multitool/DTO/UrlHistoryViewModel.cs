@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
 
 namespace MultiTool.DTO
 {
-    public class UrlHistoryViewModel
+    public class UrlHistoryViewModel : IEquatable<UrlHistoryViewModel>
     {
         public DateTime Date { get; set; }
         public string Link { get; set; }
-        public Brush TextColor { get; set; }
+
+        public bool Equals(UrlHistoryViewModel other)
+        {
+            return Date.Equals(other.Date) && Link.Equals(other.Link);
+        }
     }
 }
