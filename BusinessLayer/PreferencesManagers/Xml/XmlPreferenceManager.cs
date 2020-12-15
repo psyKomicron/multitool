@@ -27,19 +27,18 @@ namespace BusinessLayer.PreferencesManagers.Xml
         {
             if (File.Exists(Path))
             {
+                xmlDocument = new XmlDocument();
                 try
                 {
-                    xmlDocument = new XmlDocument();
                     xmlDocument.Load(Path);
                 }
                 catch (XmlException e)
                 {
+                    // On error reset the file.
                     Console.Error.WriteLine(e.ToString());
-                    // check if the root is created
-                    if (xmlDocument.SelectSingleNode(".//" + _RootName) == null)
-                    {
-                        xmlDocument.AppendChild(xmlDocument.CreateElement(_RootName));
-                    }
+                    File.WriteAllBytes(Path, new byte[0]);
+
+                    xmlDocument.AppendChild(xmlDocument.CreateElement(_RootName));
                 }
             }
             else
@@ -73,11 +72,11 @@ namespace BusinessLayer.PreferencesManagers.Xml
 
                         if (!isList)
                         {
-                            XmlNode storedValue = xmlDocument.ImportNode(dataAsXml.SelectSingleNode(".//" + nodeName).FirstChild, true);
-                            if (storedValue != null && !storedValue.Equals(nodeValue)) // edit the xml node to the value in manager
+                            XmlNode storedValue = dataAsXml.SelectSingleNode(".//" + nodeName);
+                            string storedValueText = storedValue?.FirstChild.InnerText;
+                            if (storedValueText != null && !storedValueText.Equals(nodeValue)) // edit the xml node to the value in manager
                             {
-                                node.RemoveChild(subNode);
-                                node.AppendChild(storedValue);
+                                subNode.FirstChild.Value = storedValueText;
                             }
                         }
                         else
@@ -85,12 +84,13 @@ namespace BusinessLayer.PreferencesManagers.Xml
                             XmlNodeList incomingNodes = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes;
                             foreach (XmlNode incomingNode in incomingNodes)
                             {
+                                
                                 XmlNode importedNode = xmlDocument.ImportNode(incomingNode, true);
                                 subNode.AppendChild(importedNode);
                             }
                         }
-                    }   
-                    // update current node if the incoming node has values
+                    }
+                    // update current node if current node value is empty and the incoming node has values
                     else if (string.IsNullOrEmpty(nodeValue) && dataAsXml.SelectSingleNode(".//" + nodeName) != null)
                     {
                         XmlNodeList incomingNodes = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes;
@@ -125,7 +125,6 @@ namespace BusinessLayer.PreferencesManagers.Xml
                 XmlNode xmlManager = xmlDocument.SelectSingleNode(".//" + name);
                 if (xmlManager != null)
                 {
-                    //Dictionary<string, string> properties = ParseXml(xmlManager);
                     return propertyLoader.LoadFromXml<DataType>(xmlManager);
                 }
                 else
@@ -135,45 +134,6 @@ namespace BusinessLayer.PreferencesManagers.Xml
             }
             return new DataType();
         }
-
-        #region private methods
-        private void AddToXmlDocument(XmlNode root, WindowPreferenceManager manager)
-        {
-            XmlNode item = xmlDocument.CreateElement(manager.ItemName);
-            foreach (KeyValuePair<string, string> pair in manager.Properties)
-            {
-                XmlNode property = xmlDocument.CreateElement(pair.Key);
-                property.InnerText = pair.Value;
-                item.AppendChild(property);
-            }
-            root.AppendChild(item);
-        }
-
-        private Dictionary<string, string> ParseXml(XmlNode xmlManager)
-        {
-            if (xmlManager != null)
-            {
-                Dictionary<string, string> properties = new Dictionary<string, string>();
-
-                foreach (XmlNode node in xmlManager.ChildNodes)
-                {
-                    string nodeName = node.Name;
-                    string nodeValue = string.Empty;
-                    if (node.ChildNodes.Count > 0)
-                    {
-                        nodeValue = node.FirstChild.Value;
-                    }
-                    properties.Add(nodeName, nodeValue);
-                }
-
-                return properties;
-            }
-            else
-            {
-                throw new ArgumentNullException("Argument xmlManager was null");
-            }
-        }
-        #endregion
 
     }
 }

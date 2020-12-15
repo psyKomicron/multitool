@@ -86,18 +86,17 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
                             }
 
                             XmlNode arrayRoot = xml.CreateElement(name);
-                            int index = 0;
+                            const string index = "item";
 
                             foreach (var obj in array)
                             {
-                                //XmlNode xmlNode = xml.CreateElement(index.ToString());
                                 if (itemType != null)
                                 {
                                     var item = Convert.ChangeType(obj, itemType);
                                     
                                     if (IsPrimitive(item.GetType()) || CanTreatObject(itemType))
                                     {
-                                        XmlNode xmlNode = xml.CreateElement(index.ToString());
+                                        XmlNode xmlNode = xml.CreateElement(index);
                                         xmlNode.InnerText = item.ToString();
                                         arrayRoot.AppendChild(xmlNode);
                                     }
@@ -109,12 +108,10 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
                                 }
                                 else
                                 {
-                                    XmlNode xmlNode = xml.CreateElement(index.ToString());
+                                    XmlNode xmlNode = xml.CreateElement(index);
                                     xmlNode.InnerText = obj.ToString();
                                     arrayRoot.AppendChild(xmlNode);
                                 }
-                                // update index for node names
-                                index++;
                             }
 
                             root.AppendChild(arrayRoot);

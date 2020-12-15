@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
@@ -38,12 +39,7 @@ namespace BusinessLayer.Reflection.PropertyLoaders
 
             // match object property names with xml nodes names
             // creating dictionnary with property names and actual property methods
-            Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-            PropertyInfo[] propertyInfos = dtoType.GetProperties();
-            for (int i = 0; i < propertyInfos.Length; i++)
-            {
-                properties.Add(propertyInfos[i].Name, propertyInfos[i]);
-            }
+            Dictionary<string, PropertyInfo> properties = ToDictionnary(dtoType.GetProperties());
 
             XmlNodeList nodes = xml.ChildNodes;
             foreach (XmlNode node in nodes)
@@ -52,9 +48,9 @@ namespace BusinessLayer.Reflection.PropertyLoaders
                 if (properties.ContainsKey(nodeName))
                 {
                     PropertyInfo property = properties[nodeName];
-                    if (!node.HasChildNodes)
+                    if (node.HasChildNodes && node.ChildNodes.Count == 1 && !node.FirstChild.HasChildNodes)
                     {
-                        string nodeValue = node.Value;
+                        string nodeValue = node.FirstChild.InnerText;
                         if (!string.IsNullOrEmpty(nodeValue))
                         {
                             SafeLoadIntoProperty(property, dto, nodeValue);
@@ -62,9 +58,23 @@ namespace BusinessLayer.Reflection.PropertyLoaders
                     }
                     else
                     {
-                        Type type = property.PropertyType;
-                        var data = RecursiveLoadFromXml(node, type); // recursive, should instanciate object and properties
-                        SafeLoadIntoProperty(property, dto, data);
+                        if (IsIList(property.PropertyType))
+                        {
+                            SafeInstanciateProperty(property, dto);
+                            Type generic = property.PropertyType.GetGenericArguments()[0];
+
+                            XmlNodeList childNodes = node.ChildNodes;
+                            foreach (XmlNode listItem in childNodes)
+                            {
+                                var item = Convert.ChangeType(RecursiveLoadFromXml(listItem, generic), generic);
+                                (property.GetValue(dto) as IList).Add(item);
+                            }
+                        }
+                        else
+                        {
+                            var data = RecursiveLoadFromXml(node, property.PropertyType); // recursive, should instanciate object and properties
+                            SafeLoadIntoProperty(property, dto, data);
+                        }
                     }
                 }
             }
@@ -72,7 +82,26 @@ namespace BusinessLayer.Reflection.PropertyLoaders
             return dto;
         }
 
-        private void SafeLoadIntoProperty(PropertyInfo property, object dto, object propValue)
+        private void SafeInstanciateProperty(PropertyInfo property, object target)
+        {
+            Type type = property.PropertyType;
+            var o = type.GetConstructor(new Type[0]).Invoke(null);
+            try
+            {
+                var value = Convert.ChangeType(o, type);
+                property.SetValue(target, value);
+            }
+            catch (InvalidCastException ice)
+            {
+                HandleICE(ice, property);
+            }
+            catch (TargetInvocationException tie)
+            {
+                HandleTIE(tie, property);
+            }
+        }
+
+        private void SafeLoadIntoProperty(PropertyInfo property, object target, object propValue)
         {
             Type type = property.PropertyType;
 
@@ -82,32 +111,21 @@ namespace BusinessLayer.Reflection.PropertyLoaders
                 try
                 {
                     var value = Convert.ChangeType(propValue, type);
-                    property.SetValue(dto, value);
+                    property.SetValue(target, value);
                 }
                 catch (InvalidCastException ice)
                 {
-                    Console.BackgroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine(GetType().Name + " was not able to convert the value of property : " + property.Name);
-                    Console.Error.WriteLine(ice.ToString());
-
-                    Console.ResetColor();
+                    HandleICE(ice, property);
                 }
                 catch (TargetInvocationException tie)
                 {
-                    Console.BackgroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine(GetType().Name + " was not able to set the value of property : " + property.Name);
-                    Console.Error.WriteLine(tie.ToString());
-
-                    Console.ResetColor();
+                    HandleTIE(tie, property);
                 }
             }
             else
             {
                 // will always work because of the new() constraint
-                var defaultValue = type.GetConstructor(new Type[0]).Invoke(null);
-                property.SetValue(dto, defaultValue);
+                SafeInstanciateProperty(property, target);
             }
         }
 
@@ -115,5 +133,51 @@ namespace BusinessLayer.Reflection.PropertyLoaders
         {
             return typeof(T).GetProperties();
         }
+
+        private Dictionary<string, PropertyInfo> ToDictionnary(PropertyInfo[] propertyInfos)
+        {
+            Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
+            for (int i = 0; i < propertyInfos.Length; i++)
+            {
+                properties.Add(propertyInfos[i].Name, propertyInfos[i]);
+            }
+            return properties;
+        }
+
+        private bool IsIList(Type t)
+        {
+            Type[] interfaces = t.GetInterfaces();
+            for (int i = 0; i < interfaces.Length; i++)
+            {
+                Type type = interfaces[i];
+                if (type.Equals(typeof(IList)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        #region exceptions handlers
+        private void HandleTIE(TargetInvocationException tie, PropertyInfo property)
+        {
+            Console.BackgroundColor = ConsoleColor.Red;
+
+            Console.WriteLine(GetType().Name + " was not able to set the value of property : " + property.Name);
+            Console.Error.WriteLine(tie.ToString());
+
+            Console.ResetColor();
+        }
+
+        private void HandleICE(InvalidCastException ice, PropertyInfo property)
+        {
+            Console.BackgroundColor = ConsoleColor.Red;
+
+            Console.WriteLine(GetType().Name + " was not able to convert the value of property : " + property.Name);
+            Console.Error.WriteLine(ice.ToString());
+
+            Console.ResetColor();
+        }
+        #endregion
     }
 }
