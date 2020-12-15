@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\Controller.cs" />
+    <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="Network\Downloader.cs" />
     <Compile Include="Network\DownloadEventArgs.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="PreferencesManagers\PreferenceManagerType.cs" />
     <Compile Include="PreferencesManagers\WindowPreferenceManager.cs" />
     <Compile Include="PreferencesManagers\Xml\XmlPreferenceManager.cs" />
+    <Compile Include="ProcessOptions\Enums\DefaultOptions.cs" />
     <Compile Include="ProcessOptions\Enums\PowerOptions.cs" />
     <Compile Include="ProcessOptions\EnumTranslaters\IEnumTranslater.cs" />
     <Compile Include="ProcessOptions\EnumTranslaters\PowerEnumTranslater.cs" />

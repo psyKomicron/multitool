@@ -90,6 +90,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DTO\DefaultWindowDTO.cs" />
+    <Compile Include="DTO\ExplorerWindowDTO.cs" />
     <Compile Include="Windows\ISerializableWindow.cs" />
     <Compile Include="DTO\DownloadDTO.cs" />
     <Compile Include="DTO\PowerWindowDTO.cs" />
