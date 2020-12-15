@@ -109,6 +109,7 @@
                       Height="Auto" 
                       Width="Auto"
                       Background="{StaticResource LightBlack}"
+                      Foreground="White"
                       SelectionChanged="HistoryListView_SelectionChanged">
                 <ListView.View>
                     <GridView>
@@ -116,8 +117,7 @@
                         <GridViewColumn Header="Link" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Link}"
-                                               Foreground="{Binding TextColor}"/>
+                                    <TextBlock Text="{Binding Link}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

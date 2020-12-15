@@ -58,7 +58,10 @@ namespace MultiTool
         {
             foreach (var item in UrlHistory)
             {
-                Data.History.Add(item);
+                if (!Data.History.Contains(item))
+                {
+                    Data.History.Add(item);
+                }
             }
             WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
         }
@@ -78,8 +81,6 @@ namespace MultiTool
             Deserialize();
             IsDownloading = ShowDownloadActivated = false;
             
-            //UrlHistory = new ObservableCollection<UrlHistoryViewModel>();
-
             historyListView.ItemsSource = UrlHistory;
         }
 
@@ -143,7 +144,6 @@ namespace MultiTool
                 { 
                     Date = DateTime.Now, 
                     Link = urlTextBox.Text,
-                    TextColor = Foreground
                 });
 
                 urlTextBox.Clear();
@@ -156,7 +156,6 @@ namespace MultiTool
                 {
                     Date = DateTime.Now,
                     Link = urlTextBox.Text,
-                    TextColor = Foreground
                 });
                 downloadStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
                 if (e.Cancelled)
