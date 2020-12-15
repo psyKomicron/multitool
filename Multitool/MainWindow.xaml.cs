@@ -1,9 +1,8 @@
-﻿using BusinessLayer.PreferencesManagers;
+﻿using BusinessLayer.Controllers;
 using MultiTool.DTO;
 using MultiTool.Tools;
 using MultiTool.Windows;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
 
@@ -14,6 +13,8 @@ namespace MultiTool
     /// </summary>
     public partial class MainWindow : Window, ISerializableWindow
     {
+        private readonly string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
+
         public string AppVersion { get; set; }
 
         public MainWindowDTO Data { get; set; }
@@ -59,7 +60,13 @@ namespace MultiTool
 
         private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => WindowManager.Open<PowerWindow>();
 
-        private void OpenSoon_Click(object sender, RoutedEventArgs e) { }
+        private void OpenSoon_Click(object sender, RoutedEventArgs e) 
+        {
+            new DefaultBrowserController()
+            {
+                Uri = new Uri(gitHub)
+            }.Execute();
+        }
 
         #endregion
 

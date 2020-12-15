@@ -41,7 +41,7 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="100*"/>
-            <RowDefinition Height="30*"/>
+            <RowDefinition Height="40*"/>
             <RowDefinition Height="10*"/>
         </Grid.RowDefinitions>
 
@@ -83,13 +83,18 @@
         </Button>
 
         <Button 
-            x:Name="openSoon" 
-            Content="COMING SOON" 
+            x:Name="OpenSoon" 
+            ToolTip="Travel to GitHub (with ❤)"
             Foreground="White" 
             Click="OpenSoon_Click" 
             Template="{StaticResource IconButtonControlTemplate}" 
             Grid.Column="2" 
-            Grid.Row="1"/>
+            Grid.Row="1">
+            <TextBlock x:Name="ComingSoonText" FontSize="19" TextAlignment="Center">
+                COMING <LineBreak/>
+                SOON
+            </TextBlock>
+        </Button>
 
         <TextBlock
             x:Name="VersionTextBlock"
@@ -98,6 +103,22 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             Grid.Column="2"
+            Grid.Row="3"/>
+        <TextBlock
+            x:Name="LeftPosition"
+            Text="{Binding Path=Left, Mode=OneWay}"
+            FontFamily="Consolas"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Grid.Column="1"
+            Grid.Row="3"/>
+        <TextBlock
+            x:Name="TopPosition"
+            Text="{Binding Path=Top, Mode=OneWay}"
+            FontFamily="Consolas"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Right"
+            Grid.Column="0"
             Grid.Row="3"/>
 
         <Grid.Triggers>
@@ -206,6 +227,29 @@
                 </BeginStoryboard>
             </EventTrigger>
 
+            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenSoon">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetName="ComingSoonText"
+                            Storyboard.TargetProperty="FontSize"
+                            To="23" By="200" Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenSoon">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetName="ComingSoonText"
+                            Storyboard.TargetProperty="FontSize"
+                            To="19"
+                            Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
         </Grid.Triggers>
     </Grid>
 </Window>
