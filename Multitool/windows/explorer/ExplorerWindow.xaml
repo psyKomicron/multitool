@@ -6,8 +6,13 @@
         xmlns:local="clr-namespace:MultiTool"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Global User Interface"
-        Title="ExplorerWindow" Height="650" Width="1100" Icon="../../images/explorer_ico.png">
+        Title="Explorer"
+        Name="ExplorerWindow"
+        Height="{Binding Path=Data.Height, Mode=TwoWay}" 
+        Width="{Binding Path=Data.Width, Mode=TwoWay}"
+        Left="{Binding Path=Data.Left, Mode=TwoWay}"
+        Top="{Binding Path=Data.Top, Mode=TwoWay}"
+        Style="{StaticResource DarkWindow}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MultiTool.DTO;
+using MultiTool.Tools;
+using MultiTool.Windows;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,11 +20,23 @@ namespace MultiTool
     /// <summary>
     /// Interaction logic for ExplorerWindow.xaml
     /// </summary>
-    public partial class ExplorerWindow : Window
+    public partial class ExplorerWindow : Window, ISerializableWindow
     {
+        public ExplorerWindowDTO Data { get; set; }
+
         public ExplorerWindow()
         {
             InitializeComponent();
+        }
+
+        public void Deserialize()
+        {
+            WindowManager.GetPreferenceManager().GetWindowManager<ExplorerWindowDTO>(Name);
+        }
+
+        public void Serialize()
+        {
+            WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
         }
     }
 }
