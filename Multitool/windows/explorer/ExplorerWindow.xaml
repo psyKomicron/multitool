@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="Explorer"
-        Name="ExplorerWindow"
+        Name="Explorer"
         Height="{Binding Path=Data.Height, Mode=TwoWay}" 
         Width="{Binding Path=Data.Width, Mode=TwoWay}"
         Left="{Binding Path=Data.Left, Mode=TwoWay}"
