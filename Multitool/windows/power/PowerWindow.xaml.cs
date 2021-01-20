@@ -50,8 +50,6 @@ namespace MultiTool
         {
             InitializeComponent();
             DataContext = this;
-            Data = new PowerWindowDTO();
-            Deserialize();
         }
 
         public void Serialize()

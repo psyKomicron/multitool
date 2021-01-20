@@ -56,7 +56,7 @@ namespace BusinessLayer.Reflection.PropertyLoaders
                             SafeLoadIntoProperty(property, dto, nodeValue);
                         }
                     }
-                    else
+                    else if (node.HasChildNodes)
                     {
                         if (IsIList(property.PropertyType))
                         {

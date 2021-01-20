@@ -29,7 +29,7 @@ namespace MultiTool.Tools
         /// <typeparam name="WindowType">Type of the window to open</typeparam>
         /// <returns>Returns true if the <see cref="Window"/> was not open and thus has been created, false if the 
         /// <see cref="Window"/> was already opened and thus was not created.</returns>
-        public static bool Open<WindowType>() where WindowType : Window, new()
+        public static bool Open<WindowType>() where WindowType : Window, ISerializableWindow, new()
         {
             if (windows.Count > 0)
             {
@@ -52,14 +52,16 @@ namespace MultiTool.Tools
             }
         }
 
-        private static void CreateAndOpen<WindowType>() where WindowType : Window, new()
+        private static void CreateAndOpen<WindowType>() where WindowType : Window, ISerializableWindow, new()
         {
-            Window w = new WindowType();
+            WindowType w = new WindowType();
+            windows.Add(w);
+
             w.Closing += Window_Closing;
             w.Closed += ChildWindow_Closed;
 
+            w.Deserialize();
             w.Show();
-            windows.Add(w);
         }
 
         #region events

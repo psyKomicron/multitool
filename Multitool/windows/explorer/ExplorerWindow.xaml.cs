@@ -3,6 +3,7 @@ using MultiTool.Tools;
 using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,19 +25,40 @@ namespace MultiTool
     {
         public ExplorerWindowDTO Data { get; set; }
 
+        public ObservableCollection<string> FolderHistory { get; private set; }
+
         public ExplorerWindow()
         {
             InitializeComponent();
+            InitializeWindow();
+        }
+
+        private void InitializeWindow()
+        {
+            DataContext = this;
+
+            FolderHistory = new ObservableCollection<string>
+            {
+                "Folder 1",
+                "Folder 2",
+                "Long Long Long name folder 3"
+            };
+            FolderHistory.Add("new");
         }
 
         public void Deserialize()
         {
-            WindowManager.GetPreferenceManager().GetWindowManager<ExplorerWindowDTO>(Name);
+            Data = WindowManager.GetPreferenceManager().GetWindowManager<ExplorerWindowDTO>(Name);
         }
 
         public void Serialize()
         {
             WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
+        }
+
+        private void FolderHistory_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

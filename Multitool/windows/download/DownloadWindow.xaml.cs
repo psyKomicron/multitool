@@ -78,7 +78,6 @@ namespace MultiTool
 
         private void InitializeWindow()
         {
-            Deserialize();
             IsDownloading = ShowDownloadActivated = false;
             
             historyListView.ItemsSource = UrlHistory;

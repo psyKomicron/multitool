@@ -22,10 +22,7 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
             }
             catch (ArgumentNullException ane)
             {
-                Console.BackgroundColor = ConsoleColor.White;
-                Console.ForegroundColor = ConsoleColor.Red;
                 Console.Error.WriteLine(ane);
-                Console.ResetColor();
                 return xmlDocument.CreateElement("properties");
             }
             
@@ -65,6 +62,7 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
                     {
                         Console.WriteLine(tie.ToString());
                     }
+
                     string name = propertyInfos[i].Name;
 
                     if (value != null)
@@ -80,13 +78,14 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
                             IList array = propertyInfos[i].GetMethod.Invoke(o, null) as IList;
                             Type[] genericArgs = propertyInfos[i].PropertyType.GetGenericArguments();
                             Type itemType = null;
-                            if (genericArgs.Length == 1)
+
+                            if (genericArgs.Length > 0)
                             {
                                 itemType = genericArgs[0];
                             }
 
                             XmlNode arrayRoot = xml.CreateElement(name);
-                            const string index = "item";
+                            string index = itemType.Name;
 
                             foreach (var obj in array)
                             {

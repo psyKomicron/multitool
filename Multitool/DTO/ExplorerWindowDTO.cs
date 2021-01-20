@@ -8,5 +8,11 @@ namespace MultiTool.DTO
 {
     public class ExplorerWindowDTO : DefaultWindowDTO
     {
+        public string LastUsedPath { get; set; }
+
+        public ExplorerWindowDTO()
+        {
+            LastUsedPath = string.Empty;
+        }
     }
 }
