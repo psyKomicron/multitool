@@ -18,6 +18,10 @@ namespace MultiTool
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            Debug.AutoFlush = true;
+            Debug.Indent();
+
             WindowManager.InitializePreferenceManager("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.xml");
             WindowManager.GetPreferenceManager().DeserializePreferenceManager();
         }

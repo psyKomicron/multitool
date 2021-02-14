@@ -5,6 +5,9 @@
              Exit="Application_Exit"
              Startup="Application_Startup">
     <Application.Resources>
+        <Color x:Key="LightBlackColor">#2e2e2e</Color>
+        <Color x:Key="DarkBlackColor">#212121</Color>
+        
         <SolidColorBrush x:Key="LightBlack" Color="#2e2e2e"/>
         <SolidColorBrush x:Key="DarkBlack" Color="#212121"/>
 
