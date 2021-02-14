@@ -92,17 +92,20 @@ namespace BusinessLayer.Reflection.ObjectFlatteners
                                 if (itemType != null)
                                 {
                                     var item = Convert.ChangeType(obj, itemType);
-                                    
-                                    if (IsPrimitive(item.GetType()) || CanTreatObject(itemType))
+
+                                    if (item != null)
                                     {
-                                        XmlNode xmlNode = xml.CreateElement(index);
-                                        xmlNode.InnerText = item.ToString();
-                                        arrayRoot.AppendChild(xmlNode);
-                                    }
-                                    else
-                                    {
-                                        XmlNode node = RecursiveFlatten(item, xml, item.GetType().Name, depth + 1);
-                                        arrayRoot.AppendChild(node);
+                                        if (IsPrimitive(item.GetType()) || CanTreatObject(itemType))
+                                        {
+                                            XmlNode xmlNode = xml.CreateElement(index);
+                                            xmlNode.InnerText = item.ToString();
+                                            arrayRoot.AppendChild(xmlNode);
+                                        }
+                                        else
+                                        {
+                                            XmlNode node = RecursiveFlatten(item, xml, item.GetType().Name, depth + 1);
+                                            arrayRoot.AppendChild(node);
+                                        }
                                     }
                                 }
                                 else

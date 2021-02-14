@@ -20,5 +20,6 @@
         /// to a file (the file format is determined by implementation).
         /// </summary>
         void SerializePreferenceManager();
+        //bool CleanSerialization();
     }
 }

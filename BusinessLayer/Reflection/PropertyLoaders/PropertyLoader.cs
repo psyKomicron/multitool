@@ -35,69 +35,96 @@ namespace BusinessLayer.Reflection.PropertyLoaders
 
         private object RecursiveLoadFromXml(XmlNode xml, Type dtoType = null)
         {
-            var dto = dtoType.GetConstructor(new Type[0]).Invoke(null);
-
-            // match object property names with xml nodes names
-            // creating dictionnary with property names and actual property methods
-            Dictionary<string, PropertyInfo> properties = ToDictionnary(dtoType.GetProperties());
-
-            XmlNodeList nodes = xml.ChildNodes;
-            foreach (XmlNode node in nodes)
+            ConstructorInfo constructor = dtoType.GetConstructor(new Type[0]);
+            if (constructor != null)
             {
-                string nodeName = node.Name;
-                if (properties.ContainsKey(nodeName))
-                {
-                    PropertyInfo property = properties[nodeName];
-                    if (node.HasChildNodes && node.ChildNodes.Count == 1 && !node.FirstChild.HasChildNodes)
-                    {
-                        string nodeValue = node.FirstChild.InnerText;
-                        if (!string.IsNullOrEmpty(nodeValue))
-                        {
-                            SafeLoadIntoProperty(property, dto, nodeValue);
-                        }
-                    }
-                    else if (node.HasChildNodes)
-                    {
-                        if (IsIList(property.PropertyType))
-                        {
-                            SafeInstanciateProperty(property, dto);
-                            Type generic = property.PropertyType.GetGenericArguments()[0];
+                var dto = constructor.Invoke(null);
+                // match object property names with xml nodes names
+                // creating dictionnary with property names and actual property methods
+                Dictionary<string, PropertyInfo> properties = ToDictionnary(dtoType.GetProperties());
 
-                            XmlNodeList childNodes = node.ChildNodes;
-                            foreach (XmlNode listItem in childNodes)
+                XmlNodeList nodes = xml.ChildNodes;
+                foreach (XmlNode node in nodes)
+                {
+                    string nodeName = node.Name;
+                    if (properties.ContainsKey(nodeName))
+                    {
+                        PropertyInfo property = properties[nodeName];
+                        if (node.HasChildNodes && node.ChildNodes.Count == 1 && !node.FirstChild.HasChildNodes)
+                        {
+                            string nodeValue = node.FirstChild.InnerText;
+                            if (!string.IsNullOrEmpty(nodeValue))
                             {
-                                var item = Convert.ChangeType(RecursiveLoadFromXml(listItem, generic), generic);
-                                (property.GetValue(dto) as IList).Add(item);
+                                SafeLoadIntoProperty(property, dto, nodeValue);
                             }
                         }
-                        else
+                        else if (node.HasChildNodes)
                         {
-                            var data = RecursiveLoadFromXml(node, property.PropertyType); // recursive, should instanciate object and properties
-                            SafeLoadIntoProperty(property, dto, data);
+                            if (IsIList(property.PropertyType))
+                            {
+                                SafeInstanciateProperty(property, dto);
+                                Type generic = property.PropertyType.GetGenericArguments()[0];
+
+                                XmlNodeList childNodes = node.ChildNodes;
+
+                                IList list = property.GetValue(dto) as IList;
+
+                                foreach (XmlNode listItem in childNodes)
+                                {
+                                    if (!string.IsNullOrEmpty(listItem.FirstChild?.Value))
+                                    {
+                                        var item = Convert.ChangeType(RecursiveLoadFromXml(listItem, generic), generic);
+                                        list.Add(item);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var data = RecursiveLoadFromXml(node, property.PropertyType); // recursive, should instanciate object and properties
+                                SafeLoadIntoProperty(property, dto, data);
+                            }
                         }
                     }
                 }
-            }
 
-            return dto;
+                return dto;
+            }
+            else
+            {
+                if (dtoType.Equals(typeof(string)))
+                {
+                    return xml.FirstChild?.Value;
+                }
+                else if (dtoType.IsPrimitive)
+                {
+                    return Convert.ChangeType(xml.FirstChild?.Value, dtoType);
+                }
+                return null;
+            }
         }
 
         private void SafeInstanciateProperty(PropertyInfo property, object target)
         {
             Type type = property.PropertyType;
-            var o = type.GetConstructor(new Type[0]).Invoke(null);
-            try
+
+            ConstructorInfo constructor = type.GetConstructor(new Type[0]);
+
+            if (constructor != null)
             {
-                var value = Convert.ChangeType(o, type);
-                property.SetValue(target, value);
-            }
-            catch (InvalidCastException ice)
-            {
-                HandleICE(ice, property);
-            }
-            catch (TargetInvocationException tie)
-            {
-                HandleTIE(tie, property);
+                var o = constructor.Invoke(null);
+                try
+                {
+                    var value = Convert.ChangeType(o, type);
+                    property.SetValue(target, value);
+                }
+                catch (InvalidCastException ice)
+                {
+                    HandleICE(ice, property);
+                }
+                catch (TargetInvocationException tie)
+                {
+                    HandleTIE(tie, property);
+                }
             }
         }
 

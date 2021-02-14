@@ -58,48 +58,68 @@ namespace BusinessLayer.PreferencesManagers.Xml
         public void AddWindowManager<DataType>(DataType data, string name) where DataType : class
         {
             XmlNode dataAsXml = new XmlObjectFlattener().Flatten(data);
-            XmlNode node = xmlDocument.SelectSingleNode(".//" + name);
-            if (node != null)
+            XmlNode storedData = xmlDocument.SelectSingleNode(".//" + name);
+
+            if (storedData != null)
             {
-                foreach (XmlNode subNode in node.ChildNodes)
+                for (int i = 0; i < dataAsXml.ChildNodes.Count; i++)
                 {
+                    XmlNode subNode = dataAsXml.ChildNodes[i];
                     string nodeName = subNode.Name;
                     string nodeValue = subNode?.FirstChild?.InnerText;
 
-                    if (!string.IsNullOrEmpty(nodeValue) && dataAsXml.SelectSingleNode(".//" + nodeName) != null)
-                    {
-                        bool isList = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes?.Count > 1; // count >= 2
+                    XmlNode storedNode = storedData.SelectSingleNode(".//" + nodeName);
 
-                        if (!isList)
+                    // Data object from the window is already stored
+                    if (storedNode != null && !string.IsNullOrEmpty(nodeValue))
+                    {
+                        if (storedNode.ChildNodes != null && storedNode.ChildNodes[0]?.ChildNodes?.Count == 0)
                         {
-                            XmlNode storedValue = dataAsXml.SelectSingleNode(".//" + nodeName);
-                            string storedValueText = storedValue?.FirstChild.InnerText;
+                            string storedValueText = storedNode.FirstChild.InnerText;
                             if (storedValueText != null && !storedValueText.Equals(nodeValue)) // edit the xml node to the value in manager
                             {
-                                subNode.FirstChild.Value = storedValueText;
+                                storedNode.FirstChild.Value = nodeValue;
                             }
                         }
                         else
                         {
-                            XmlNodeList incomingNodes = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes;
-                            foreach (XmlNode incomingNode in incomingNodes)
+                            XmlNodeList incomingNodes = subNode.ChildNodes;
+
+                            for (int k = 0; k < incomingNodes.Count; k++)
                             {
-                                
-                                XmlNode importedNode = xmlDocument.ImportNode(incomingNode, true);
-                                subNode.AppendChild(importedNode);
+                                XmlNode incomingNode = incomingNodes[k];
+                                string incomingNodeValue = incomingNode.FirstChild.Value;
+
+                                bool append = true;
+
+                                foreach (XmlNode storedSubNode in storedNode.ChildNodes)
+                                {
+                                    string storedNodeValue = storedSubNode.FirstChild.Value;
+
+                                    if (storedNodeValue.Equals(incomingNodeValue))
+                                    {
+                                        append = false;
+                                        break;
+                                    }
+                                }
+                                if (append)
+                                {
+                                    XmlNode importedNode = xmlDocument.ImportNode(incomingNode, true);
+                                    storedNode.AppendChild(importedNode);
+                                }
                             }
                         }
                     }
                     // update current node if current node value is empty and the incoming node has values
-                    else if (string.IsNullOrEmpty(nodeValue) && dataAsXml.SelectSingleNode(".//" + nodeName) != null)
+                    else if (string.IsNullOrEmpty(storedNode.FirstChild?.Value) && subNode != null)
                     {
-                        XmlNodeList incomingNodes = dataAsXml.SelectSingleNode(".//" + nodeName).ChildNodes;
+                        XmlNodeList incomingNodes = subNode.ChildNodes;
                         if (incomingNodes != null)
                         {
                             foreach (XmlNode incomingNode in incomingNodes)
                             {
                                 XmlNode importedNode = xmlDocument.ImportNode(incomingNode, true);
-                                subNode.AppendChild(importedNode);
+                                storedNode.AppendChild(importedNode);
                             }
                         }
                     }
