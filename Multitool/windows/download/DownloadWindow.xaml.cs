@@ -1,8 +1,8 @@
 ﻿using BusinessLayer.Network;
 using BusinessLayer.Network.Events;
 using Microsoft.Win32;
-using MultiTool.DTO;
 using MultiTool.Tools;
+using MultiTool.ViewModels;
 using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
@@ -27,12 +27,14 @@ namespace MultiTool
         //private readonly Regex isExtension = new Regex(@"([a-z])+");
         private bool _showDownloadActivated;
 
-        internal bool CurrentlyHyperLinked { get; set; }
-        internal bool IsDownloading { get; set; }
-        internal ObservableCollection<UrlHistoryViewModel> UrlHistory { get; set; }
-        internal Downloader Downloader { get; set; }
+        public bool CurrentlyHyperLinked { get; set; }
 
-        public DownloadDTO Data { get; set; }
+        public bool IsDownloading { get; set; }
+
+        public Downloader Downloader { get; set; }
+
+        public DownloadData Data { get; set; }
+
         public bool ShowDownloadActivated 
         {
             get => _showDownloadActivated;
@@ -56,31 +58,17 @@ namespace MultiTool
 
         public void Serialize()
         {
-            foreach (var item in UrlHistory)
-            {
-                if (!Data.History.Contains(item))
-                {
-                    Data.History.Add(item);
-                }
-            }
             WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
         }
 
         public void Deserialize()
         {
-            Data = WindowManager.GetPreferenceManager().GetWindowManager<DownloadDTO>(Name);
-            UrlHistory = new ObservableCollection<UrlHistoryViewModel>();
-            foreach (var item in Data.History)
-            {
-                UrlHistory.Add(item);
-            }
+            Data = WindowManager.GetPreferenceManager().GetWindowManager<DownloadData>(Name);
         }
 
         private void InitializeWindow()
         {
-            IsDownloading = ShowDownloadActivated = false;
-            
-            historyListView.ItemsSource = UrlHistory;
+            IsDownloading = ShowDownloadActivated = false;            
         }
 
         private bool IsUrl(string url)
@@ -93,11 +81,22 @@ namespace MultiTool
             Downloader = new Downloader();
             Downloader.IsDownloading += OnDownload;
             Downloader.EndedDownload += OnDownloadEnd;
+
             await Downloader.Download(url);
         }
 
         private void SaveDownload(string url)
         {
+            string filter = "*";
+            try
+            {
+                filter = GetExtensions(url);
+            }
+            catch (ArgumentException ae)
+            {
+                Console.Error.WriteLine("Could not get extension from url/uri " + url.Substring(url.Length - 10));
+                Console.Error.WriteLine(ae.ToString());
+            }
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Title = "Save download from multi-tool",
@@ -118,7 +117,7 @@ namespace MultiTool
 
         private string GetExtensions(string url)
         {
-            return string.Empty;
+            return Path.GetExtension(url);
         }
 
         #endregion
@@ -139,7 +138,7 @@ namespace MultiTool
             downloadButton.IsEnabled = true;
             if (!e.Cancelled && !e.Crashed)
             {
-                UrlHistory.Add(new UrlHistoryViewModel() 
+                Data.History.Add(new UrlHistoryViewModel() 
                 { 
                     Date = DateTime.Now, 
                     Link = urlTextBox.Text,
@@ -151,11 +150,13 @@ namespace MultiTool
             }
             else
             {
-                UrlHistory.Add(new UrlHistoryViewModel()
+                Data.History.Add(new UrlHistoryViewModel()
                 {
                     Date = DateTime.Now,
                     Link = urlTextBox.Text,
                 });
+
+
                 downloadStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
                 if (e.Cancelled)
                 {
@@ -178,6 +179,7 @@ namespace MultiTool
             {
                 e.Handled = true;
                 string text = urlTextBox.Text;
+
                 try
                 {
                     await DownloadUrl(text);
@@ -193,6 +195,7 @@ namespace MultiTool
             {
                 var urls = historyListView.SelectedItems;
                 List<UrlHistoryViewModel> selectedItems = new List<UrlHistoryViewModel>();
+
                 foreach (var url in urls)
                 {
                     selectedItems.Add(url as UrlHistoryViewModel);
@@ -253,7 +256,7 @@ namespace MultiTool
         {
             ShowDownloadActivated = false;
 
-            UrlHistory.Clear();
+            Data.History.Clear();
             e.Handled = true;
 
             downloadStatusLabel.Content = "History cleared";

@@ -4,7 +4,7 @@ using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
 using MultiTool.Windows;
-using MultiTool.DTO;
+using MultiTool.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -44,7 +44,7 @@ namespace MultiTool
             }
         }
 
-        public PowerWindowDTO Data { get; set; }
+        public PowerWindowData Data { get; set; }
 
         public PowerWindow()
         {
@@ -59,10 +59,10 @@ namespace MultiTool
 
         public void Deserialize()
         {
-            Data = WindowManager.GetPreferenceManager().GetWindowManager<PowerWindowDTO>(Name);
+            Data = WindowManager.GetPreferenceManager().GetWindowManager<PowerWindowData>(Name);
             if (Data == null)
             {
-                Data = new PowerWindowDTO();
+                Data = new PowerWindowData();
                 WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
         }

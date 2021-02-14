@@ -1,5 +1,5 @@
 ﻿using BusinessLayer.Controllers;
-using MultiTool.DTO;
+using MultiTool.ViewModels;
 using MultiTool.Tools;
 using MultiTool.Windows;
 using System;
@@ -17,7 +17,7 @@ namespace MultiTool
 
         public string AppVersion { get; set; }
 
-        public MainWindowDTO Data { get; set; }
+        public MainWindowData Data { get; set; }
 
         public MainWindow()
         {
@@ -32,11 +32,11 @@ namespace MultiTool
 
         public void Deserialize()
         {
-            Data = WindowManager.GetPreferenceManager().GetWindowManager<MainWindowDTO>(Name);
+            Data = WindowManager.GetPreferenceManager().GetWindowManager<MainWindowData>(Name);
 
             if (Data == null)
             {
-                Data = new MainWindowDTO();
+                Data = new MainWindowData();
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 UpdateLayout();
             }

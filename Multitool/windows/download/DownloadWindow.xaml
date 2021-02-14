@@ -102,15 +102,17 @@
                 
             </StackPanel>
 
-            <ListView x:Name="historyListView"
-                      Grid.Column="0"
-                      HorizontalAlignment="Stretch" 
-                      VerticalAlignment="Stretch"
-                      Height="Auto" 
-                      Width="Auto"
-                      Background="{StaticResource LightBlack}"
-                      Foreground="White"
-                      SelectionChanged="HistoryListView_SelectionChanged">
+            <ListView 
+                x:Name="historyListView"
+                Grid.Column="0"
+                HorizontalAlignment="Stretch" 
+                VerticalAlignment="Stretch"
+                Height="Auto" 
+                Width="Auto"
+                Background="{StaticResource LightBlack}"
+                Foreground="White"
+                SelectionChanged="HistoryListView_SelectionChanged"
+                ItemsSource="{Binding Data.History}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Date" Width="Auto" DisplayMemberBinding="{Binding Date}"/>

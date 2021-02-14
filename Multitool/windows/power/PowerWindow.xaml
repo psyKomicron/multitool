@@ -578,7 +578,13 @@
                 </Grid>
 
                 <!--Progress bar (timer)-->
-                <ProgressBar x:Name="TimerProgressBar" Height="10" Value="0" Background="Transparent" VerticalAlignment="Center" Grid.Row="2" Margin="0,5"/>
+                <ProgressBar 
+                    x:Name="TimerProgressBar" 
+                    Height="10" Value="0" 
+                    Background="Transparent" 
+                    VerticalAlignment="Center" 
+                    Grid.Row="2" 
+                    Margin="0,5"/>
             </Grid>
         </TabItem>
 
