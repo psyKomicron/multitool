@@ -48,6 +48,7 @@
     <Compile Include="Network\DownloadEventArgs.cs" />
     <Compile Include="Parsers\Errors\JsonFormatException.cs" />
     <Compile Include="Parsers\JsonParser.cs" />
+    <Compile Include="Parsers\UriCleaner.cs" />
     <Compile Include="PreferencesManagers\IPreferenceManager.cs" />
     <Compile Include="PreferencesManagers\Json\JsonPreferenceManager.cs" />
     <Compile Include="PreferencesManagers\PreferenceManagerType.cs" />

@@ -89,11 +89,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DTO\DefaultWindowDTO.cs" />
-    <Compile Include="DTO\ExplorerWindowDTO.cs" />
+    <Compile Include="DefaultWindowData.cs" />
+    <Compile Include="Windows\Explorer\ExplorerWindowData.cs" />
+    <Compile Include="ViewModels\PathItemVM.cs" />
     <Compile Include="Windows\ISerializableWindow.cs" />
-    <Compile Include="DTO\DownloadDTO.cs" />
-    <Compile Include="DTO\PowerWindowDTO.cs" />
+    <Compile Include="Windows\Download\DownloadData.cs" />
+    <Compile Include="Windows\Power\PowerWindowData.cs" />
     <Page Include="Windows\Download\DownloadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -106,13 +107,13 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DTO\MainWindowDTO.cs" />
+    <Compile Include="MainWindowData.cs" />
     <Compile Include="Tools\Tool.cs" />
     <Compile Include="Tools\WindowManager.cs" />
     <Compile Include="Windows\Download\DownloadView.xaml.cs">
       <DependentUpon>DownloadView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DTO\UrlHistoryViewModel.cs" />
+    <Compile Include="ViewModels\UrlHistoryViewModel.cs" />
     <Compile Include="Windows\Download\DownloadWindow.xaml.cs">
       <DependentUpon>DownloadWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
