@@ -1,6 +1,6 @@
-﻿namespace MultiTool.DTO
+﻿namespace MultiTool.ViewModels
 {
-    public abstract class DefaultWindowDTO
+    public abstract class DefaultWindowData
     {
         public double Height { get; set; }
         public double Width { get; set; }

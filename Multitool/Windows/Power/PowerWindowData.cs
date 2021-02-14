@@ -1,10 +1,10 @@
-﻿namespace MultiTool.DTO
+﻿namespace MultiTool.ViewModels
 {
-    public class PowerWindowDTO : DefaultWindowDTO
+    public class PowerWindowData : DefaultWindowData
     {
         public bool ForceShutdown { get; set; }
 
-        public PowerWindowDTO()
+        public PowerWindowData()
         {
             Height = 430;
             Width = 680;
