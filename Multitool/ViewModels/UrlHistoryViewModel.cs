@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultiTool.DTO
+namespace MultiTool.ViewModels
 {
     public class UrlHistoryViewModel : IEquatable<UrlHistoryViewModel>
     {
