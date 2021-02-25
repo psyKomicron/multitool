@@ -15,7 +15,8 @@
         MinWidth="700"
         Left="{Binding Data.Left, Mode=TwoWay}"
         Top="{Binding Data.Top, Mode=TwoWay}"
-        d:DesignWidth="1000" d:DesignHeight="600">
+        d:DesignWidth="1000" d:DesignHeight="600"
+        MouseDown="Window_MouseDown">
     <Window.Resources>
 
         <SolidColorBrush x:Key="ListBorder" Color="#828790"/>
@@ -71,107 +72,339 @@
             <Setter Property="Width" Value="20"/>
             <Setter Property="Margin" Value="7,0,4,0"/>
         </Style>
+        
+        
     </Window.Resources>
     <Window.Style>
         <StaticResource ResourceKey="DarkWindow"/>
     </Window.Style>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" MinWidth="100"/>
-            <ColumnDefinition Width="5*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="8*"/>
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
-            <Button 
-                x:Name="Previous"
-                Click="Previous_Click"
-                Content="Previous"
-                Margin="7,0,4,0"
-                Width="70"
-                Height="40"
-                Template="{StaticResource StandardButtonCT}"/>
-            <Button 
-                x:Name="Next"
-                Click="Next_Click" 
-                Content="Next"
-                Margin="7,0,4,0"
-                Width="70"
-                Height="40"
-                Template="{StaticResource StandardButtonCT}"/>
-        </StackPanel>
-        <StackPanel Grid.Row="0" Grid.Column="1">
-            <TextBox 
-                x:Name="PathInput"
-                Height="30"
-                Width="Auto"
-                Foreground="White"
-                Background="{StaticResource LightBlack}"
-                Text="{Binding CurrentPath, Mode=TwoWay}"
-                AcceptsReturn="True"
-                TextChanged="PathInput_TextChanged"
-                PreviewTextInput="PathInput_PreviewTextInput"/>
-            <ProgressBar
-                x:Name="DisplayProgressBar"
-                Background="Transparent"
-                IsIndeterminate="False"
-                Height="10"
-                BorderThickness="0"/>
-        </StackPanel>
-        <ListView 
-            Grid.Row="1" 
-            Grid.Column="0" 
-            ItemsSource="{Binding Data.History}"
-            MinWidth="50">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <Button 
-                            Click="FolderHistory_Click"
-                            Template="{StaticResource StandardButtonCT}"
+    <TabControl Style="{StaticResource DarkTabControlTemplate}">
+        <TabControl.Resources>
+            <Style TargetType="{x:Type TabItem}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TabItem">
+                            <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
+                                <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="False">
+                                    <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Foreground" Value="White"/>
+            </Style>
+        </TabControl.Resources>
+        
+        <TabItem Header="Explorer" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" MinWidth="100"/>
+                    <ColumnDefinition Width="5*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="8*"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                    <Button 
+                    x:Name="PreviousButton"
+                    Click="Previous_Click"
+                    Content="Previous"
+                    Margin="7,0,4,0"
+                    Width="70"
+                    Height="40"
+                    Template="{StaticResource StandardButtonCT}"/>
+                    <Button 
+                    x:Name="NextButton"
+                    Click="Next_Click" 
+                    Content="Next"
+                    Margin="7,0,4,0"
+                    Width="70"
+                    Height="40"
+                    Template="{StaticResource StandardButtonCT}"/>
+                </StackPanel>
+                
+                <Grid Grid.Row="0" Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0">
+                        <TextBox 
+                            x:Name="PathInput"
+                            MinHeight="25"
+                            MaxHeight="50"
                             Width="Auto"
-                            Content="{Binding}"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                            Foreground="White"
+                            Background="{StaticResource LightBlack}"
+                            Text="{Binding CurrentPath, Mode=TwoWay}"
+                            AcceptsReturn="True"
+                            TextChanged="PathInput_TextChanged"
+                            PreviewTextInput="PathInput_PreviewTextInput"/>
 
-        <ListView
-            ItemsSource="{Binding CurrentFiles}"
-            Grid.Row="1"
-            Grid.Column="1"
-            MouseDoubleClick="ListView_MouseDoubleClick" Style="{DynamicResource DarkListViewStyle}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn 
-                        Header="Folder name" 
-                        Width="600">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock
-                                        Text="{Binding Name}"
-                                        Foreground="{Binding Color}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn 
-                        Header="Size"
-                        Width="100">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Foreground="White">
-                                    <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
-                                    <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
-                                </TextBlock>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
-    </Grid>
+                        <ProgressBar
+                            x:Name="DisplayProgressBar"
+                            Background="Transparent"
+                            IsIndeterminate="False"
+                            Height="10"
+                            BorderThickness="0"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Stretch"/>
+                        
+                    </StackPanel>
+
+                    <Button 
+                        x:Name="RefreshFileList"
+                        Content="Refresh"
+                        Width="Auto"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Grid.Column="1"
+                        Click="RefreshFileList_Click"
+                        Template="{StaticResource StandardButtonCT}"/>
+                </Grid>
+                <ListView 
+                Grid.Row="1" 
+                Grid.Column="0" 
+                ItemsSource="{Binding Data.History}"
+                MinWidth="50">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <Button 
+                                Click="FolderHistory_Click"
+                                Template="{StaticResource StandardButtonCT}"
+                                Width="Auto"
+                                Content="{Binding}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <ListView
+                ItemsSource="{Binding CurrentFiles}"
+                Grid.Row="1"
+                Grid.Column="1"
+                MouseDoubleClick="ListView_MouseDoubleClick" Style="{DynamicResource DarkListViewStyle}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn 
+                            Header="Folder name" 
+                            Width="600">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock
+                                            Text="{Binding Name}"
+                                            Foreground="{Binding Color}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn 
+                            Header="Size"
+                            Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Foreground="White">
+                                        <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
+                                        <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </TabItem>
+        
+        <TabItem Header="Details">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" MinWidth="100"/>
+                    <ColumnDefinition Width="5*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="8*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                    <Button 
+                    x:Name="PreviousTab"
+                    Click="Previous_Click"
+                    Content="Previous"
+                    Margin="7,0,4,0"
+                    Width="70"
+                    Height="40"
+                    Template="{StaticResource StandardButtonCT}"/>
+                    <Button 
+                    x:Name="NextTab"
+                    Click="Next_Click" 
+                    Content="Next"
+                    Margin="7,0,4,0"
+                    Width="70"
+                    Height="40"
+                    Template="{StaticResource StandardButtonCT}"/>
+                </StackPanel>
+
+                <Grid Grid.Row="0" Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBox 
+                            MinHeight="25"
+                            MaxHeight="50"
+                            Width="Auto"
+                            Foreground="White"
+                            Background="{StaticResource LightBlack}"
+                            Text="{Binding CurrentPath, Mode=OneWay}"
+                            AcceptsReturn="True"
+                            TextChanged="PathInput_TextChanged"
+                            PreviewTextInput="PathInput_PreviewTextInput"
+                            IsReadOnly="True"/>
+                        
+                        <ProgressBar
+                            x:Name="DetailsProgressBar"
+                            Background="Transparent"
+                            IsIndeterminate="False"
+                            Height="10"
+                            BorderThickness="0"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+
+                <ListView
+                    ItemsSource="{Binding CurrentFiles}"
+                    Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    MouseDoubleClick="ListView_MouseDoubleClick" Style="{DynamicResource DarkListViewStyle}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn 
+                                    Header="Folder name" 
+                                    Width="200">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                
+                                <GridViewColumn 
+                                    Header="Folder name" 
+                                    Width="200">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Text="{Binding Name}"
+                                                Foreground="{Binding Color}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn 
+                                    Header="Size"
+                                    Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Foreground="White">
+                                                <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
+                                                <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn
+                                    Header="Hidden"
+                                    Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding IsHidden, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn
+                                    Header="System"
+                                    Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding IsSystem, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn
+                                    Header="Read only"
+                                    Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding IsReadOnly, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn
+                                    Header="Encrypted"
+                                    Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding IsEncrypted, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn
+                                    Header="Compressed"
+                                    Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding IsCompressed, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate> 
+                                </GridViewColumn>
+                                <GridViewColumn
+                                    Header="Device"
+                                    Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding IsDevice, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </TabItem>
+        
+    </TabControl>
 </Window>

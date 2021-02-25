@@ -1,32 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BusinessLayer.FileSystem;
+using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
+using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace MultiTool.ViewModels
 {
     public class PathItemVM : INotifyPropertyChanged, IComparable, IComparable<PathItemVM>
     {
-        private string _path;
+        private readonly string greenCheckMark = "\u2705";
+        private readonly PathItem pathItem;
         private Brush _color;
-        private long _size;
-        private string _name;
         private string _displaySizeUnit;
 
         public string Path
         {
-            get => _path;
-            set
-            {
-                _path = value;
-                NotifyPropertyChanged();
-            }
+            get => pathItem.Path;
+            set => pathItem.Path = value;
         }
+
+        public long Size
+        {
+            get => pathItem.Size;
+            set => pathItem.Size = value;
+        }
+
+        public string Name
+        {
+            get => pathItem.Name;
+            set => pathItem.Name = value;
+        }
+
+        public FileAttributes Attributes
+        {
+            get => pathItem.Attributes;
+            set => pathItem.Attributes = value;
+        }
+
+        public string IsHidden => pathItem.IsHidden ? greenCheckMark : string.Empty;
+
+        public string IsSystem => pathItem.IsSystem ? greenCheckMark : string.Empty;
+
+        public string IsReadOnly => pathItem.IsReadOnly ? greenCheckMark : string.Empty;
+
+        public string IsEncrypted => pathItem.IsEncrypted ? greenCheckMark : string.Empty;
+
+        public string IsCompressed => pathItem.IsCompressed ? greenCheckMark : string.Empty;
+
+        public string IsDevice => pathItem.IsDevice ? greenCheckMark : string.Empty;
 
         public Brush Color
         {
@@ -34,26 +57,6 @@ namespace MultiTool.ViewModels
             set
             {
                 _color = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public long Size
-        {
-            get => _size;
-            set
-            {
-                _size = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
                 NotifyPropertyChanged();
             }
         }
@@ -88,7 +91,14 @@ namespace MultiTool.ViewModels
             }
         }
 
+        protected PathItem PathItem { get => pathItem; }
+
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public PathItemVM(PathItem item)
+        {
+            pathItem = item;
+        }
 
         public int CompareTo(object obj)
         {
@@ -104,23 +114,17 @@ namespace MultiTool.ViewModels
 
         public int CompareTo(PathItemVM other)
         {
-            if (other.Size > Size)
-            {
-                return 1;
-            }
-            else if (other.Size < Size)
-            {
-                return -1;
-            }
-            else
-            {
-                return 0;
-            }
+            return pathItem.CompareTo(other.PathItem);
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void OnPropertyChange(object sender, PropertyChangedEventArgs e)
+        {
+            NotifyPropertyChanged(e.PropertyName);
         }
     }
 }

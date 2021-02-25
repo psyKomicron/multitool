@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Parsers;
+﻿using BusinessLayer.FileSystem;
+using BusinessLayer.Parsers;
 using MultiTool.Tools;
 using MultiTool.ViewModels;
 using MultiTool.Windows;
@@ -15,6 +16,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -32,11 +34,12 @@ namespace MultiTool
     {
         private string _currentPath;
         private string nextPath = string.Empty;
-        private Dictionary<string, List<PathItemVM>> cache = new Dictionary<string, List<PathItemVM>>(50);
         private UriCleaner cleaner = new UriCleaner();
-        private CancellationTokenSource cancellationTokenSource;
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool Working { get; private set; }
 
         public ExplorerWindowData Data { get; set; }
 
@@ -74,212 +77,63 @@ namespace MultiTool
             CurrentFiles = new ObservableCollection<PathItemVM>();
         }
 
+        /// <summary>
+        /// Display the files to the window.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         private async Task DisplayFiles(string path)
         {
             // Cancel tasks running in the background to remove cpu load and strange behavior
-            if (cancellationTokenSource != null)
+            if (Working)
             {
                 cancellationTokenSource.Cancel(); // cancel previous tasks
-                cancellationTokenSource.Dispose(); // dispose token
+                //cancellationTokenSource.Token.Register()
             }
-            cancellationTokenSource = new CancellationTokenSource(); // renew token
 
-            await Task.Run(() =>
+            CurrentPath = path;
+            DisplayProgressBar.IsIndeterminate = true;
+            CurrentFiles.Clear();
+
+
+            Working = true;
+
+            try
             {
+                await Task.Run(() => GetFiles(path, cancellationTokenSource), cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                cancellationTokenSource.Dispose();
+                //cancellationTokenSource = new CancellationTokenSource();
+            }
+
+            Working = false;
+            RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
+        }
+
+        private void GetFiles(string path, CancellationTokenSource tokenSource)
+        {
+            FileSystemManager manager = FileSystemManager.Get();
+
+            foreach (PathItem item in manager.GetEnumeratorFiles(path))
+            {
+                if (cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
+                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                }
+
                 RunInUIThread(() =>
                 {
-                    CurrentPath = path;
-                    DisplayProgressBar.IsIndeterminate = true;
-                    CurrentFiles.Clear();
+                    CurrentFiles.Add(
+                        new PathItemVM(item)
+                        {
+                            Color = new SolidColorBrush(item.IsDirectory ? Colors.Green : Colors.White)
+                        }
+                        );
                 });
-
-                if (cache.ContainsKey(path))
-                {
-                    List<PathItemVM> cachedData = GetFromCache(path);
-                    for (int i = 0; i < cachedData.Count; i++)
-                    {
-                        CheckCancellation(cancellationTokenSource.Token);
-
-                        Application.Current.Dispatcher.Invoke(() => CurrentFiles.Add(cachedData[i]));
-                    }
-                }
-                else
-                {
-                    GetFiles(path, cancellationTokenSource.Token);
-                }
-
-                RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
-            },
-            cancellationTokenSource.Token);
-        }
-
-        private void GetFiles(string path, CancellationToken cancellationToken)
-        {
-            if (!string.IsNullOrEmpty(path))
-            {
-                if (Directory.Exists(path))
-                {
-                    try
-                    {
-                        string[] dirs = Directory.GetDirectories(path);
-
-                        for (int i = 0; i < dirs.Length; i++)
-                        {
-                            CheckCancellation(cancellationToken);
-
-                            long size = ComputeDirectorySize(dirs[i], cancellationToken);
-
-                            RunInUIThread(() =>
-                            {
-                                CurrentFiles.Add(new PathItemVM()
-                                {
-                                    Path = dirs[i],
-                                    Color = new SolidColorBrush(Colors.Green),
-                                    Size = size,
-                                    Name = new DirectoryInfo(dirs[i]).Name
-                                });
-                            });
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        Debug.WriteLine(nameof(UnauthorizedAccessException));
-                    }
-
-                    try
-                    {
-                        SortedList<long, PathItemVM> sortedList = new SortedList<long, PathItemVM>();
-                        //sortedList.Add()
-                        string[] files = Directory.GetFiles(path);
-
-                        for (int i = 0; i < files.Length; i++)
-                        {
-                            // Check cancel
-                            CheckCancellation(cancellationToken);
-
-                            FileInfo fileInfo = new FileInfo(files[i]);
-
-                            RunInUIThread(() =>
-                            {
-                                CurrentFiles.Add(new PathItemVM()
-                                {
-                                    Path = files[i],
-                                    Color = new SolidColorBrush(Colors.White),
-                                    Size = fileInfo.Length,
-                                    Name = fileInfo.Name
-                                });
-                            });
-                        }
-
-                        RunInUIThread(() =>
-                        {
-                            IOrderedEnumerable<PathItemVM> enumerable = CurrentFiles.OrderBy(pathitem =>
-                            {
-                                return pathitem.Size;
-                            });
-                        });
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        Debug.WriteLine(nameof(UnauthorizedAccessException));
-                    }
-                }
             }
-
-            BuildCache(path);
-        }
-
-        private void BuildCache(string path)
-        {
-            if (!cache.ContainsKey(path))
-            {
-                List<PathItemVM> items = new List<PathItemVM>();
-                for (int i = 0; i < CurrentFiles.Count; i++)
-                {
-                    PathItemVM item = CurrentFiles[i];
-                    if (item != null)
-                    {
-                        items.Add(item);
-                    }
-                }
-
-                cache.Add(path, items);
-            }
-        }
-
-        private List<PathItemVM> GetFromCache(string path)
-        {
-            List<PathItemVM> cachedItems = cache[path];
-
-            if (cachedItems.Count > 0)
-            {
-                string[] dirs = Directory.GetDirectories(path);
-                string[] files = Directory.GetFiles(path);
-
-                if (dirs.Length + files.Length == cachedItems.Count)
-                {
-                    return cachedItems;
-                }
-                else
-                {
-                    if (cache.Remove(path))
-                    {
-                        Debug.WriteLine("Successfully removed cached path " + path);
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Unsucessful try to remove cached path " + path);
-                    }
-
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        private long ComputeDirectorySize(string path, CancellationToken cancellationToken)
-        {
-            long size = 0;
-
-            try
-            {
-                IEnumerable<string> subDirPaths = Directory.EnumerateDirectories(path);
-                foreach (string subDirPath in subDirPaths)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-
-                    size += ComputeDirectorySize(subDirPath, cancellationToken);
-                }
-            }
-            catch (UnauthorizedAccessException) { }
-
-            try
-            {
-                IEnumerable<string> subDirPaths = Directory.EnumerateFiles(path);
-
-                foreach (string subDirPath in subDirPaths)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-
-                    try
-                    {
-                        size += new FileInfo(subDirPath).Length;
-                    }
-                    catch (FileNotFoundException) { }
-                }
-            }
-            catch (UnauthorizedAccessException) { }
-
-            return size;
         }
 
         #region Events handlers
@@ -290,7 +144,7 @@ namespace MultiTool
             object folderName = (sender as Button)?.Content;
             if (folderName is string name)
             {
-                _ = DisplayFiles(name);
+                DisplayFiles(name);
             }
         }
 
@@ -301,7 +155,7 @@ namespace MultiTool
             {
                 string cleanText = cleaner.RemoveChariotReturns(textBox.Text);
 
-                _ = DisplayFiles(cleanText);
+                DisplayFiles(cleanText);
 
                 Data.History.Add(cleanText);
                 textBox.Text = cleanText;
@@ -316,28 +170,20 @@ namespace MultiTool
 
             if (item != null && item is PathItemVM path)
             {
-                _ = DisplayFiles(path.Path);
+                DisplayFiles(path.Path);
             }
         }
 
         private void Previous_Click(object sender, RoutedEventArgs e)
         {
-            nextPath = CurrentPath;
-            DirectoryInfo parent = Directory.GetParent(CurrentPath);
-            if (parent != null)
-            {
-                _ = DisplayFiles(parent.FullName);
-            }
+            Back();
 
             e.Handled = true;
         }
 
         private void Next_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(nextPath))
-            {
-                _ = DisplayFiles(nextPath);
-            }
+            Next();
 
             e.Handled = true;
         }
@@ -351,7 +197,50 @@ namespace MultiTool
             }
             base.OnPreviewTextInput(e);
         }
+
+        private void RefreshFileList_Click(object sender, RoutedEventArgs e)
+        {
+            FileSystemManager.Get().ClearDirectoryCache(CurrentPath);
+            DisplayFiles(CurrentPath);
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            switch (e.ChangedButton)
+            {
+                case MouseButton.XButton1:
+                    Back();
+                    break;
+                case MouseButton.XButton2:
+                    Next();
+                    break;
+            }
+        }
         #endregion
+
+        /// <summary>
+        /// Loads the previously visited directory.
+        /// </summary>
+        private void Next()
+        {
+            if (!string.IsNullOrEmpty(nextPath))
+            {
+                DisplayFiles(nextPath);
+            }
+        }
+
+        /// <summary>
+        /// Loads the current directory's parent.
+        /// </summary>
+        private void Back()
+        {
+            nextPath = CurrentPath;
+            DirectoryInfo parent = Directory.GetParent(CurrentPath);
+            if (parent != null)
+            {
+                DisplayFiles(parent.FullName);
+            }
+        }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
@@ -363,11 +252,12 @@ namespace MultiTool
             Application.Current.Dispatcher.Invoke(action);
         }
 
-        private void CheckCancellation(CancellationToken cancellationToken)
+        private void CheckCancellation(CancellationTokenSource cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested)
+            if (cancellationToken.Token.IsCancellationRequested)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
+                cancellationToken.Token.ThrowIfCancellationRequested();
             }
         }
     }

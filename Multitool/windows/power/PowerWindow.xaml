@@ -281,9 +281,10 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+                <Setter Property="Foreground" Value="White"/>
             </Style>
         </TabControl.Resources>
-        <TabItem Header="Controls" Foreground="White">
+        <TabItem Header="Controls">
             <Grid Background="{StaticResource LightBlack}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="217*"/>
