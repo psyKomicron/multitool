@@ -85,28 +85,20 @@ namespace MultiTool
         private async Task DisplayFiles(string path)
         {
             // Cancel tasks running in the background to remove cpu load and strange behavior
-            if (Working)
+            if (cancellationTokenSource != null)
             {
                 cancellationTokenSource.Cancel(); // cancel previous tasks
-                //cancellationTokenSource.Token.Register()
+                cancellationTokenSource.Dispose();
             }
+            cancellationTokenSource = new CancellationTokenSource();
 
             CurrentPath = path;
             DisplayProgressBar.IsIndeterminate = true;
             CurrentFiles.Clear();
 
-
             Working = true;
 
-            try
-            {
-                await Task.Run(() => GetFiles(path, cancellationTokenSource), cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                cancellationTokenSource.Dispose();
-                //cancellationTokenSource = new CancellationTokenSource();
-            }
+            await Task.Run(() => GetFiles(path, cancellationTokenSource), cancellationTokenSource.Token);
 
             Working = false;
             RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
@@ -115,25 +107,9 @@ namespace MultiTool
         private void GetFiles(string path, CancellationTokenSource tokenSource)
         {
             FileSystemManager manager = FileSystemManager.Get();
+            IList<PathItemVM> pathItems = CurrentFiles; 
 
-            foreach (PathItem item in manager.GetEnumeratorFiles(path))
-            {
-                if (cancellationTokenSource.Token.IsCancellationRequested)
-                {
-                    RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
-                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                }
-
-                RunInUIThread(() =>
-                {
-                    CurrentFiles.Add(
-                        new PathItemVM(item)
-                        {
-                            Color = new SolidColorBrush(item.IsDirectory ? Colors.Green : Colors.White)
-                        }
-                        );
-                });
-            }
+            manager.GetFiles(path, tokenSource.Token, pathItems, AddDelegate);
         }
 
         #region Events handlers
@@ -259,6 +235,17 @@ namespace MultiTool
                 RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
                 cancellationToken.Token.ThrowIfCancellationRequested();
             }
+        }
+
+        private void AddDelegate(IList<PathItemVM> items, PathItem item)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                items.Add(new PathItemVM(item)
+                {
+                    Color = new SolidColorBrush(item.IsDirectory ? Colors.Green : Colors.White)
+                });
+            });
         }
     }
 }

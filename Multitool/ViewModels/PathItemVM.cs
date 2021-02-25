@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace MultiTool.ViewModels
 {
-    public class PathItemVM : INotifyPropertyChanged, IComparable, IComparable<PathItemVM>
+    public class PathItemVM : IPathItem
     {
         private readonly string greenCheckMark = "\u2705";
         private readonly PathItem pathItem;
@@ -39,17 +39,33 @@ namespace MultiTool.ViewModels
             set => pathItem.Attributes = value;
         }
 
-        public string IsHidden => pathItem.IsHidden ? greenCheckMark : string.Empty;
+        #region decorator
+        public bool IsHidden => pathItem.IsHidden;
 
-        public string IsSystem => pathItem.IsSystem ? greenCheckMark : string.Empty;
+        public bool IsSystem => pathItem.IsSystem;
 
-        public string IsReadOnly => pathItem.IsReadOnly ? greenCheckMark : string.Empty;
+        public bool IsReadOnly => pathItem.IsReadOnly;
 
-        public string IsEncrypted => pathItem.IsEncrypted ? greenCheckMark : string.Empty;
+        public bool IsEncrypted => pathItem.IsEncrypted;
 
-        public string IsCompressed => pathItem.IsCompressed ? greenCheckMark : string.Empty;
+        public bool IsCompressed => pathItem.IsCompressed;
 
-        public string IsDevice => pathItem.IsDevice ? greenCheckMark : string.Empty;
+        public bool IsDevice => pathItem.IsDevice;
+
+        public bool IsDirectory => pathItem.IsDirectory;
+        #endregion
+
+        public string IsHiddenCM => pathItem.IsHidden ? greenCheckMark : string.Empty;
+
+        public string IsSystemCM => pathItem.IsSystem ? greenCheckMark : string.Empty;
+
+        public string IsReadOnlyCM => pathItem.IsReadOnly ? greenCheckMark : string.Empty;
+
+        public string IsEncryptedCM => pathItem.IsEncrypted ? greenCheckMark : string.Empty;
+
+        public string IsCompressedCM => pathItem.IsCompressed ? greenCheckMark : string.Empty;
+
+        public string IsDeviceCM => pathItem.IsDevice ? greenCheckMark : string.Empty;
 
         public Brush Color
         {
@@ -100,21 +116,19 @@ namespace MultiTool.ViewModels
             pathItem = item;
         }
 
-        public int CompareTo(object obj)
+        public int CompareTo(IPathItem other)
         {
-            if (obj is PathItemVM that)
-            {
-                return CompareTo(that);
-            }
-            else
-            {
-                return 0;
-            }
+            return pathItem.CompareTo(other);
         }
 
-        public int CompareTo(PathItemVM other)
+        public int CompareTo(object obj)
         {
-            return pathItem.CompareTo(other.PathItem);
+            return pathItem.CompareTo(obj);
+        }
+
+        public bool Equals(IPathItem other)
+        {
+            return pathItem.Equals(other);
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

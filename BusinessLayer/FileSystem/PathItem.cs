@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace BusinessLayer.FileSystem
 {
-    public class PathItem : IComparable<PathItem>, IComparable, INotifyPropertyChanged, IEquatable<PathItem>
+    public class PathItem : IPathItem
     {
         private string _path;
         private long _size;
@@ -79,7 +79,7 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        public int CompareTo(PathItem other)
+        public int CompareTo(IPathItem other)
         {
             if (other.Size > Size)
             {
@@ -100,7 +100,7 @@ namespace BusinessLayer.FileSystem
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public bool Equals(PathItem other)
+        public bool Equals(IPathItem other)
         {
             return Name.Equals(other.Name);
         }

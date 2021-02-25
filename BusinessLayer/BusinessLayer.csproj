@@ -44,11 +44,13 @@
     <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
+    <Compile Include="FileSystem\CollectionAddDelegate.cs" />
     <Compile Include="FileSystem\FileSystemCache.cs" />
     <Compile Include="FileSystem\FileSystemCacheEventArgs.cs" />
     <Compile Include="FileSystem\CacheChangedEventHandler.cs" />
     <Compile Include="FileSystem\FileSystemCacheException.cs" />
     <Compile Include="FileSystem\FileSystemManager.cs" />
+    <Compile Include="FileSystem\IPathItem.cs" />
     <Compile Include="FileSystem\PathItem.cs" />
     <Compile Include="Network\Downloader.cs" />
     <Compile Include="Network\DownloadEventArgs.cs" />

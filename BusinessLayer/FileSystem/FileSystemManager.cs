@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.FileSystem
 {
@@ -48,43 +44,78 @@ namespace BusinessLayer.FileSystem
 
         public bool IsPreloading { get; private set; }
 
-        public void ClearCache()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="ItemType">Generic param of the <see cref="IList{T}"/></typeparam>
+        /// <param name="path">System file path</param>
+        /// <param name="cancellationToken">Cancellation token to cancel this method</param>
+        /// <param name="list">Collection to add items to</param>
+        /// <param name="addDelegate">Delegate to add items to the <paramref name="list"/></param>
+        /// <exception cref="ArgumentNullException">If either <paramref name="list"/> or <paramref name="cancellationToken"/> is <see cref="null"/></exception>
+        public void GetFiles<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list, CollectionAddDelegate<ItemType> addDelegate) where ItemType : IPathItem
         {
-            cache.Clear();
-        }
-
-        public void ClearDirectoryCache(string path)
-        {
-            if (!string.IsNullOrEmpty(path) && cache.ContainsKey(path))
+            if (list == null)
             {
-                cache.Remove(path);
+                throw new ArgumentNullException(nameof(list));
             }
-        }
+            if (cancellationToken == null)
+            {
+                throw new ArgumentNullException(nameof(cancellationToken));
+            }
 
-        public void GetFiles(string path, CancellationToken cancellationToken, out List<PathItem> items)
-        {
             if (!string.IsNullOrEmpty(path))
             {
-                items = new List<PathItem>();
-
-                if (Directory.Exists(path))
+                if (cache.ContainsKey(path))
                 {
+                    FileSystemCache cachedItems = cache[path];
+
+                    for (int i = 0; i < cachedItems.Count; i++)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        addDelegate(list, cachedItems[i]);
+                    }
+                }
+                else if (Directory.Exists(path))
+                {
+                    FileSystemCache cacheItems = BuildCache(path);
+
                     try
                     {
                         string[] dirs = Directory.GetDirectories(path);
 
                         for (int i = 0; i < dirs.Length; i++)
                         {
-                            CheckCancellation(cancellationToken);
-
-                            long size = CancelableComputeDirectorySize(dirs[i], cancellationToken);
-
-                            items.Add(new PathItem()
+                            if (cancellationToken.IsCancellationRequested)
                             {
-                                Path = dirs[i],
-                                Size = size,
-                                Name = new DirectoryInfo(dirs[i]).Name
-                            });
+                                cache.Remove(path); // remove the cached path since the op was cancelled
+                                cancellationToken.ThrowIfCancellationRequested();
+                            }
+
+                            try
+                            {
+                                long size = CancelableComputeDirectorySize(dirs[i], cancellationToken);
+
+                                DirectoryInfo info = new DirectoryInfo(dirs[i]);
+
+                                PathItem item = new PathItem()
+                                {
+                                    Path = dirs[i],
+                                    Size = size,
+                                    Name = new DirectoryInfo(dirs[i]).Name,
+                                    Attributes = info.Attributes
+                                };
+
+                                cacheItems.Add(item);
+
+                                addDelegate(list, item);
+                            }
+                            catch (OperationCanceledException e)
+                            {
+                                cache.Remove(path);
+                                throw e;
+                            }
                         }
                     }
                     catch (UnauthorizedAccessException) { }
@@ -95,25 +126,29 @@ namespace BusinessLayer.FileSystem
 
                         for (int i = 0; i < files.Length; i++)
                         {
-                            CheckCancellation(cancellationToken);
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                cache.Remove(path); // remove the cached path since the op was cancelled
+                                cancellationToken.ThrowIfCancellationRequested();
+                            }
 
                             FileInfo fileInfo = new FileInfo(files[i]);
 
-                            items.Add(new PathItem()
+                            PathItem item = new PathItem()
                             {
                                 Path = files[i],
                                 Size = fileInfo.Length,
                                 Name = fileInfo.Name,
                                 Attributes = fileInfo.Attributes
-                            });
+                            };
+
+                            cacheItems.Add(item);
+
+                            addDelegate(list, item);
                         }
                     }
                     catch (UnauthorizedAccessException) { }
                 }
-            }
-            else
-            {
-                items = null;
             }
         }
 
@@ -123,7 +158,7 @@ namespace BusinessLayer.FileSystem
         /// </summary>
         /// <param name="path">System file path</param>
         /// <returns>The file in the directory, encapsulated in a <see cref="PathItem"/></returns>
-        public IEnumerable<PathItem> GetEnumeratorFiles(string path)
+        public IEnumerable<PathItem> GetFiles(string path)
         {
             if (!string.IsNullOrEmpty(path))
             {
@@ -138,7 +173,6 @@ namespace BusinessLayer.FileSystem
                 }
                 else
                 {
-
                     if (Directory.Exists(path))
                     {
                         // build cache
@@ -211,6 +245,19 @@ namespace BusinessLayer.FileSystem
             }
         }
 
+        public void ClearCache()
+        {
+            cache.Clear();
+        }
+
+        public void ClearDirectoryCache(string path)
+        {
+            if (!string.IsNullOrEmpty(path) && cache.ContainsKey(path))
+            {
+                cache.Remove(path);
+            }
+        }
+
         public static long ComputeDirectorySize(string path)
         {
             long size = 0;
@@ -250,12 +297,6 @@ namespace BusinessLayer.FileSystem
             return sysCache;
         }
 
-        private void CheckFileSystem(object changes)
-        {
-            // update previous & direct next files on system change
-
-        }
-
         private long CancelableComputeDirectorySize(string path, CancellationToken cancellationToken)
         {
             long size = 0;
@@ -265,7 +306,7 @@ namespace BusinessLayer.FileSystem
                 IEnumerable<string> subDirPaths = Directory.EnumerateDirectories(path);
                 foreach (string subDirPath in subDirPaths)
                 {
-                    CheckCancellation(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     size += CancelableComputeDirectorySize(subDirPath, cancellationToken);
                 }
@@ -278,7 +319,7 @@ namespace BusinessLayer.FileSystem
 
                 foreach (string subDirPath in subDirPaths)
                 {
-                    CheckCancellation(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     try
                     {
@@ -292,19 +333,17 @@ namespace BusinessLayer.FileSystem
             return size;
         }
 
-        private void CheckCancellation(CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-            }
-        }
-
-        //#region events
+        #region events
         private void OnFileSystemChange(object sender, FileSystemEventArgs args)
         {
 
         }
-        //#endregion
+
+        private void CheckFileSystem(object changes)
+        {
+            // update previous & direct next files on system change
+
+        }
+        #endregion
     }
 }
