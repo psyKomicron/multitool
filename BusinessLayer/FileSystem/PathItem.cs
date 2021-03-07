@@ -10,7 +10,7 @@ namespace BusinessLayer.FileSystem
         private string _path;
         private long _size;
         private string _name;
-        private FileAttributes _attributes;
+        private FileSystemInfo info;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -44,28 +44,31 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        public FileAttributes Attributes
+        public FileAttributes Attributes => info.Attributes;
+
+        public bool IsHidden => info.Attributes.HasFlag(FileAttributes.Hidden);
+
+        public bool IsSystem => info.Attributes.HasFlag(FileAttributes.System);
+
+        public bool IsReadOnly => info.Attributes.HasFlag(FileAttributes.ReadOnly);
+
+        public bool IsEncrypted => info.Attributes.HasFlag(FileAttributes.Encrypted);
+
+        public bool IsCompressed => info.Attributes.HasFlag(FileAttributes.Compressed);
+
+        public bool IsDevice => info.Attributes.HasFlag(FileAttributes.Device);
+
+        public bool IsDirectory => info.Attributes.HasFlag(FileAttributes.Directory);
+
+        public PathItem() { }
+
+        public PathItem(string path, long size, string name, FileAttributes attributes)
         {
-            get => _attributes;
-            set
-            {
-                _attributes = value;
-            }
+            _path = path;
+            _size = size;
+            _name = name;
+            _attributes = attributes;
         }
-
-        public bool IsHidden => _attributes.HasFlag(FileAttributes.Hidden);
-
-        public bool IsSystem => _attributes.HasFlag(FileAttributes.System);
-
-        public bool IsReadOnly => _attributes.HasFlag(FileAttributes.ReadOnly);
-
-        public bool IsEncrypted => _attributes.HasFlag(FileAttributes.Encrypted);
-
-        public bool IsCompressed => _attributes.HasFlag(FileAttributes.Compressed);
-
-        public bool IsDevice => _attributes.HasFlag(FileAttributes.Device);
-
-        public bool IsDirectory => _attributes.HasFlag(FileAttributes.Directory);
 
         public int CompareTo(object obj)
         {
@@ -95,14 +98,28 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public bool Equals(IPathItem other)
         {
             return Name.Equals(other.Name);
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        /// <summary>
+        /// Refreshes the internal <see cref="FileSystemInfo"/> and fires the "update" event.
+        /// </summary>
+        public void Refresh()
+        {
+            info.Refresh();
+            NotifyPropertyChanged("");
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

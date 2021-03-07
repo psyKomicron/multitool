@@ -64,9 +64,9 @@ namespace BusinessLayer.PreferencesManagers.Xml
             {
                 for (int i = 0; i < dataAsXml.ChildNodes.Count; i++)
                 {
-                    XmlNode subNode = dataAsXml.ChildNodes[i];
-                    string nodeName = subNode.Name;
-                    string nodeValue = subNode?.FirstChild?.InnerText;
+                    XmlNode dataNode = dataAsXml.ChildNodes[i];
+                    string nodeName = dataNode.Name;
+                    string nodeValue = dataNode?.FirstChild?.InnerText;
 
                     XmlNode storedNode = storedData.SelectSingleNode(".//" + nodeName);
 
@@ -83,7 +83,7 @@ namespace BusinessLayer.PreferencesManagers.Xml
                         }
                         else
                         {
-                            XmlNodeList incomingNodes = subNode.ChildNodes;
+                            XmlNodeList incomingNodes = dataNode.ChildNodes;
 
                             for (int k = 0; k < incomingNodes.Count; k++)
                             {
@@ -111,9 +111,9 @@ namespace BusinessLayer.PreferencesManagers.Xml
                         }
                     }
                     // update current node if current node value is empty and the incoming node has values
-                    else if (string.IsNullOrEmpty(storedNode.FirstChild?.Value) && subNode != null)
+                    else if (storedNode != null && string.IsNullOrEmpty(storedNode.FirstChild?.Value) && dataNode != null)
                     {
-                        XmlNodeList incomingNodes = subNode.ChildNodes;
+                        XmlNodeList incomingNodes = dataNode.ChildNodes;
                         if (incomingNodes != null)
                         {
                             foreach (XmlNode incomingNode in incomingNodes)
@@ -123,9 +123,13 @@ namespace BusinessLayer.PreferencesManagers.Xml
                             }
                         }
                     }
+                    /*else if (storedNode == null && dataNode != null)
+                    {
+
+                    }*/
                 }
             }
-            else // node is not existing
+            else // node for data doesn't exist
             {
                 XmlNode dataRoot = xmlDocument.CreateElement(name);
                 foreach (XmlNode childNode in dataAsXml.ChildNodes)

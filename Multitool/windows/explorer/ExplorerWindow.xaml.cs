@@ -32,14 +32,13 @@ namespace MultiTool
     /// </summary>
     public partial class ExplorerWindow : Window, ISerializableWindow, INotifyPropertyChanged
     {
+        private readonly UriCleaner cleaner = new UriCleaner();
+        private FileSystemManager fileSystemManager;
         private string _currentPath;
         private string nextPath = string.Empty;
-        private UriCleaner cleaner = new UriCleaner();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public bool Working { get; private set; }
 
         public ExplorerWindowData Data { get; set; }
 
@@ -64,12 +63,25 @@ namespace MultiTool
         public void Deserialize()
         {
             Data = WindowManager.GetPreferenceManager().GetWindowManager<ExplorerWindowData>(Name);
+
+            if (Data.TTL != default)
+            {
+                fileSystemManager = FileSystemManager.Get(Data.TTL);
+            }
+            else
+            {
+                fileSystemManager = FileSystemManager.Get();
+            }
+
+            _ = DisplayFiles(Data.LastUsedPath);
         }
 
         public void Serialize()
         {
+            Data.LastUsedPath = CurrentPath;
             WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
         }
+
 
         private void InitializeWindow()
         {
@@ -77,13 +89,11 @@ namespace MultiTool
             CurrentFiles = new ObservableCollection<PathItemVM>();
         }
 
-        /// <summary>
-        /// Display the files to the window.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
         private async Task DisplayFiles(string path)
         {
+            // get "real" path
+            path = fileSystemManager.GetRealPath(path);
+
             // Cancel tasks running in the background to remove cpu load and strange behavior
             if (cancellationTokenSource != null)
             {
@@ -96,20 +106,60 @@ namespace MultiTool
             DisplayProgressBar.IsIndeterminate = true;
             CurrentFiles.Clear();
 
-            Working = true;
-
             await Task.Run(() => GetFiles(path, cancellationTokenSource), cancellationTokenSource.Token);
-
-            Working = false;
+           
             RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
         }
 
         private void GetFiles(string path, CancellationTokenSource tokenSource)
         {
-            FileSystemManager manager = FileSystemManager.Get();
-            IList<PathItemVM> pathItems = CurrentFiles; 
+            IList<PathItemVM> pathItems = CurrentFiles;
+            fileSystemManager.GetFiles(path, tokenSource.Token, pathItems, AddDelegate);
+        }
 
-            manager.GetFiles(path, tokenSource.Token, pathItems, AddDelegate);
+        /// <summary>
+        /// Loads the previously visited directory.
+        /// </summary>
+        private void Next()
+        {
+            if (!string.IsNullOrEmpty(nextPath))
+            {
+                _ = DisplayFiles(nextPath);
+            }
+        }
+
+        /// <summary>
+        /// Loads the current directory's parent.
+        /// </summary>
+        private void Back()
+        {
+            nextPath = CurrentPath;
+            DirectoryInfo parent = Directory.GetParent(CurrentPath);
+            if (parent != null)
+            {
+                _ = DisplayFiles(parent.FullName);
+            }
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void RunInUIThread(Action action)
+        {
+            Application.Current.Dispatcher.Invoke(action);
+        }
+
+        private void AddDelegate(IList<PathItemVM> items, PathItem item)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                items.Add(new PathItemVM(item)
+                {
+                    Color = new SolidColorBrush(item.IsDirectory ? Colors.Green : Colors.White)
+                });
+            });
         }
 
         #region Events handlers
@@ -120,7 +170,7 @@ namespace MultiTool
             object folderName = (sender as Button)?.Content;
             if (folderName is string name)
             {
-                DisplayFiles(name);
+                _ = DisplayFiles(name);
             }
         }
 
@@ -131,7 +181,7 @@ namespace MultiTool
             {
                 string cleanText = cleaner.RemoveChariotReturns(textBox.Text);
 
-                DisplayFiles(cleanText);
+                _ = DisplayFiles(cleanText);
 
                 Data.History.Add(cleanText);
                 textBox.Text = cleanText;
@@ -146,7 +196,7 @@ namespace MultiTool
 
             if (item != null && item is PathItemVM path)
             {
-                DisplayFiles(path.Path);
+                _ = DisplayFiles(path.Path);
             }
         }
 
@@ -177,7 +227,7 @@ namespace MultiTool
         private void RefreshFileList_Click(object sender, RoutedEventArgs e)
         {
             FileSystemManager.Get().ClearDirectoryCache(CurrentPath);
-            DisplayFiles(CurrentPath);
+            _ = DisplayFiles(CurrentPath);
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -193,59 +243,5 @@ namespace MultiTool
             }
         }
         #endregion
-
-        /// <summary>
-        /// Loads the previously visited directory.
-        /// </summary>
-        private void Next()
-        {
-            if (!string.IsNullOrEmpty(nextPath))
-            {
-                DisplayFiles(nextPath);
-            }
-        }
-
-        /// <summary>
-        /// Loads the current directory's parent.
-        /// </summary>
-        private void Back()
-        {
-            nextPath = CurrentPath;
-            DirectoryInfo parent = Directory.GetParent(CurrentPath);
-            if (parent != null)
-            {
-                DisplayFiles(parent.FullName);
-            }
-        }
-
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void RunInUIThread(Action action)
-        {
-            Application.Current.Dispatcher.Invoke(action);
-        }
-
-        private void CheckCancellation(CancellationTokenSource cancellationToken)
-        {
-            if (cancellationToken.Token.IsCancellationRequested)
-            {
-                RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
-                cancellationToken.Token.ThrowIfCancellationRequested();
-            }
-        }
-
-        private void AddDelegate(IList<PathItemVM> items, PathItem item)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                items.Add(new PathItemVM(item)
-                {
-                    Color = new SolidColorBrush(item.IsDirectory ? Colors.Green : Colors.White)
-                });
-            });
-        }
     }
 }

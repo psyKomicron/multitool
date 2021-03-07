@@ -10,11 +10,14 @@ namespace MultiTool.ViewModels
     public class ExplorerWindowData : DefaultWindowData
     {
         public string LastUsedPath { get; set; }
+        
         public ObservableCollection<string> History { get; set; }
+
+        public double TTL { get; set; }
 
         public ExplorerWindowData()
         {
-            LastUsedPath = string.Empty;
+            LastUsedPath = @"c:\";
             History = new ObservableCollection<string>();
         }
     }

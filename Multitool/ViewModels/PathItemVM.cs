@@ -15,6 +15,7 @@ namespace MultiTool.ViewModels
         private Brush _color;
         private string _displaySizeUnit;
 
+        #region decorator
         public string Path
         {
             get => pathItem.Path;
@@ -39,7 +40,6 @@ namespace MultiTool.ViewModels
             set => pathItem.Attributes = value;
         }
 
-        #region decorator
         public bool IsHidden => pathItem.IsHidden;
 
         public bool IsSystem => pathItem.IsSystem;
@@ -114,6 +114,7 @@ namespace MultiTool.ViewModels
         public PathItemVM(PathItem item)
         {
             pathItem = item;
+            item.PropertyChanged += OnItemPropertyChanged;
         }
 
         public int CompareTo(IPathItem other)
@@ -136,7 +137,7 @@ namespace MultiTool.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void OnPropertyChange(object sender, PropertyChangedEventArgs e)
+        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             NotifyPropertyChanged(e.PropertyName);
         }
