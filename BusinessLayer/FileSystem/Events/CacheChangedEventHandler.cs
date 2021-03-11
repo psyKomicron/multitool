@@ -1,4 +1,4 @@
 ﻿namespace BusinessLayer.FileSystem.Events
 {
-    internal delegate void CacheChangedEventHandler(object sender, FileSystemCacheEventArgs e);
+    public delegate void CacheChangedEventHandler(object sender, FileSystemCacheEventArgs e);
 }

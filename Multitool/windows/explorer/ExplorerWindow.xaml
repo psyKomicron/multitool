@@ -192,10 +192,11 @@
                 </ListView>
 
                 <ListView
-                ItemsSource="{Binding CurrentFiles}"
-                Grid.Row="1"
-                Grid.Column="1"
-                MouseDoubleClick="ListView_MouseDoubleClick" Style="{DynamicResource DarkListViewStyle}">
+                    x:Name="MainListView"
+                    ItemsSource="{Binding CurrentFiles}"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    MouseDoubleClick="ListView_MouseDoubleClick" Style="{DynamicResource DarkListViewStyle}">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn 
@@ -290,6 +291,7 @@
                 </Grid>
 
                 <ListView
+                    x:Name="SecondListView"
                     ItemsSource="{Binding CurrentFiles}"
                     Grid.Row="1"
                     Grid.ColumnSpan="2"

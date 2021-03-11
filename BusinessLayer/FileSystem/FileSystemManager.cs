@@ -16,6 +16,8 @@ namespace BusinessLayer.FileSystem
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
         private bool preload;
 
+        public event CacheChangedEventHandler Event;
+
         public double TTL 
         {
             get => _ttl;
@@ -213,7 +215,7 @@ namespace BusinessLayer.FileSystem
         {
             if (!string.IsNullOrEmpty(path) && ContainsKey(path))
             {
-                cache[path].Refresh();
+                RefreshCache(cache[path], path);
             }
         }
 
@@ -393,41 +395,23 @@ namespace BusinessLayer.FileSystem
 
         private void RefreshCache(FileSystemCache cacheItems, string path)
         {
+            // reset the cache to avoid CacheFrozen exception
             cacheItems.Reset();
-            if (Directory.Exists(path))
+
+            for (int i = 0; i < cacheItems.Count; i++)
             {
-                string[] dirs = null;
-                try
-                {
-                    dirs = Directory.GetDirectories(path);
-                }
-                catch (UnauthorizedAccessException) { }
+                PathItem item = cacheItems[i];
+                long oldSize = item.Size;
 
-                if (dirs != null)
+                item.Refresh();
+
+                long newSize = item.Size;
+                if (oldSize != newSize && item.IsDirectory)
                 {
-                    for (int i = 0; i < dirs.Length; i++)
+                    List<PathItem> affectedItems = GetAffectedItems(item.Path);
+                    for (int j = 0; j < affectedItems.Count; j++)
                     {
-                        long size = DirectorySizeComputer.ComputeDirectorySize(dirs[i]);
-                        DirectoryInfo info = new DirectoryInfo(dirs[i]);
-                        PathItem item = new PathItem(dirs[i], size, new DirectoryInfo(dirs[i]).Name, info.Attributes);
-                        cacheItems.Add(item);
-                    }
-                }
-
-                string[] files = null;
-                try
-                {
-                    files = Directory.GetFiles(path);
-                }
-                catch (UnauthorizedAccessException) { }
-
-                if (files != null)
-                {
-                    for (int i = 0; i < files.Length; i++)
-                    {
-                        FileInfo fileInfo = new FileInfo(files[i]);
-                        PathItem item = new PathItem(files[i], fileInfo.Length, fileInfo.Name, fileInfo.Attributes);
-                        cacheItems.Add(item);
+                        affectedItems[j].Size = (affectedItems[j].Size - oldSize) + newSize;
                     }
                 }
             }

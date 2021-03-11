@@ -164,7 +164,7 @@ namespace MultiTool
 
         #region Events handlers
 
-        #region calling asynchronous
+        #region asynchronous
         private void FolderHistory_Click(object sender, RoutedEventArgs e)
         {
             object folderName = (sender as Button)?.Content;
@@ -226,8 +226,11 @@ namespace MultiTool
 
         private void RefreshFileList_Click(object sender, RoutedEventArgs e)
         {
-            FileSystemManager.Get().ClearDirectoryCache(CurrentPath);
-            _ = DisplayFiles(CurrentPath);
+            FileSystemManager.Get().Refresh(CurrentPath);
+
+            MainListView.Items.Refresh();
+            SecondListView.Items.Refresh();
+            //_ = DisplayFiles(CurrentPath);
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
