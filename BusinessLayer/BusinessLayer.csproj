@@ -46,13 +46,16 @@
     <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="FileSystem\CacheFrozenException.cs" />
     <Compile Include="FileSystem\CollectionAddDelegate.cs" />
-    <Compile Include="FileSystem\DirectorySizeComputer.cs" />
+    <Compile Include="FileSystem\DirectoryItem.cs" />
+    <Compile Include="FileSystem\Events\FileSystemManagerHandler.cs" />
     <Compile Include="FileSystem\Events\TTLReachedEventHandler.cs" />
+    <Compile Include="FileSystem\FileItem.cs" />
     <Compile Include="FileSystem\FileSystemCache.cs" />
     <Compile Include="FileSystem\Events\FileSystemCacheEventArgs.cs" />
     <Compile Include="FileSystem\Events\CacheChangedEventHandler.cs" />
     <Compile Include="FileSystem\FileSystemCacheException.cs" />
     <Compile Include="FileSystem\FileSystemManager.cs" />
+    <Compile Include="FileSystem\IFileSystemManager.cs" />
     <Compile Include="FileSystem\IPathItem.cs" />
     <Compile Include="FileSystem\PathItem.cs" />
     <Compile Include="FileSystem\Events\TTLReachedEventArgs.cs" />

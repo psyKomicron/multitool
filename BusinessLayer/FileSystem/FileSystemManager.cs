@@ -5,18 +5,23 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BusinessLayer.FileSystem
 {
-    public class FileSystemManager
+    public class FileSystemManager : IFileSystemManager
     {
         private static FileSystemManager instance;
 
+        private Stopwatch stopwatch = new Stopwatch();
         private double _ttl;
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
-        private bool preload;
 
-        public double TTL 
+        public event FileSystemManagerHandler Progress;
+
+        public bool NotifyProgress { get; set; }
+
+        public double TTL
         {
             get => _ttl;
             set
@@ -29,17 +34,17 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        protected FileSystemManager(bool preload, double ttl)
+        protected FileSystemManager(double ttl, bool notifyProgress)
         {
-            this.preload = preload;
             _ttl = ttl;
+            NotifyProgress = notifyProgress;
         }
 
-        public static FileSystemManager Get(double ttl = 300000, bool preload = true)
+        public static FileSystemManager Get(double ttl = 300000, bool notifyProgress = false)
         {
             if (instance == null)
             {
-                instance = new FileSystemManager(preload, ttl);
+                instance = new FileSystemManager(ttl, notifyProgress);
             }
 
             return instance;
@@ -64,9 +69,11 @@ namespace BusinessLayer.FileSystem
         /// <exception cref="ArgumentNullException">
         /// If either <paramref name="list"/> or <paramref name="cancellationToken"/> is <see cref="null"/>
         /// </exception>
-        public void GetFiles<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list, 
+        public void GetFiles<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list,
             CollectionAddDelegate<ItemType> addDelegate) where ItemType : IPathItem
         {
+            stopwatch.Start();
+
             if (list == null)
             {
                 throw new ArgumentNullException(nameof(list));
@@ -80,7 +87,8 @@ namespace BusinessLayer.FileSystem
             {
                 if (ContainsKey(path))
                 {
-                    Console.Out.WriteLine("Getting files from cache (for path " + path + ") ...");
+                    Debug.WriteLine("Getting files from cache (for path " + path + ") ...");
+
                     FileSystemCache cachedItems = GetFileSystemCache(path);
 
                     if (cachedItems.Partial)
@@ -103,37 +111,30 @@ namespace BusinessLayer.FileSystem
 
                     try
                     {
-                        cacheItems = BuildCache(path);
+                        cacheItems = new FileSystemCache(path, TTL);
+
+                        cacheItems.ItemChanged += OnCacheItemChanged;
+                        cacheItems.TTLReached += OnCacheTTLReached;
+
+                        cache.Add(path, cacheItems);
                     }
-                    catch (FileNotFoundException fnf) { }
+                    catch (FileNotFoundException) 
+                    {
+                        if (NotifyProgress) 
+                        {
+                            Progress?.Invoke(null, path + " not found..."); 
+                        }
+                    }
 
                     GetDirectories(path, cacheItems, list, addDelegate, cancellationToken);
 
                     GetFiles(path, cacheItems, list, addDelegate, cancellationToken);
                 }
             }
-        }
 
-        /// <summary>
-        /// Empties the whole cache.
-        /// </summary>
-        public void ClearCache()
-        {
-            throw new NotImplementedException();
-            cache.Clear();
-        }
-
-        /// <summary>
-        /// Empties the <see cref="FileSystemCache"/> associated with the <paramref name="path"/> param.
-        /// </summary>
-        /// <param name="path"></param>
-        public void ClearDirectoryCache(string path)
-        {
-            throw new NotImplementedException();
-            if (!string.IsNullOrEmpty(path) && cache.ContainsKey(path))
-            {
-                cache.Remove(path);
-            }
+            stopwatch.Stop();
+            Progress?.Invoke(this, stopwatch.Elapsed.TotalSeconds.ToString());
+            stopwatch.Reset();
         }
 
         /// <summary>
@@ -202,6 +203,7 @@ namespace BusinessLayer.FileSystem
             }
             else if (File.Exists(path))
             {
+                /* TODO */
                 FileInfo fileInfo = new FileInfo(path);
                 DirectoryInfo root = fileInfo.Directory;
             }
@@ -209,12 +211,14 @@ namespace BusinessLayer.FileSystem
             return realPath;
         }
 
-        public void Refresh(string path)
+        public void Reset()
         {
-            if (!string.IsNullOrEmpty(path) && ContainsKey(path))
+            foreach (KeyValuePair<string, FileSystemCache> pair in cache)
             {
-                cache[path].Refresh();
+                FileSystemCache cache = pair.Value;
+                cache.Delete();
             }
+            cache.Clear();
         }
 
 
@@ -250,28 +254,30 @@ namespace BusinessLayer.FileSystem
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    if (NotifyProgress)
+                    {
+                        Progress?.Invoke(null, "Working on " + toDo[i]);
+                    }
 
                     if (File.Exists(path))
                     {
                         FileInfo fileInfo = new FileInfo(toDo[i]);
-                        PathItem item = new PathItem(toDo[i], fileInfo.Length, fileInfo.Name, fileInfo.Attributes);
-
-                        cacheItems?.Add(item);
-
-                        addDelegate(list, item);
-                    }
-                    else
-                    {
-                        long size = DirectorySizeComputer.ComputeDirectorySize(toDo[i], cancellationToken);
-                        DirectoryInfo info = new DirectoryInfo(toDo[i]);
-                        PathItem item = new PathItem(toDo[i], size, info.Name, info.Attributes);
+                        PathItem item = new PathItem(fileInfo, fileInfo.Length);
 
                         cacheItems.Add(item);
 
                         addDelegate(list, item);
                     }
+                    else
+                    {
+                        long size = ComputeDirectorySize(toDo[i], cancellationToken);
+                        DirectoryInfo info = new DirectoryInfo(toDo[i]);
+                        PathItem item = new PathItem(info, size);
 
-                    
+                        cacheItems.Add(item);
+
+                        addDelegate(list, item);
+                    }
                 }
             }
             catch (UnauthorizedAccessException) { }
@@ -298,11 +304,16 @@ namespace BusinessLayer.FileSystem
 
                     try
                     {
-                        long size = DirectorySizeComputer.ComputeDirectorySize(dirPaths[i], cancellationToken);
-                        DirectoryInfo info = new DirectoryInfo(dirPaths[i]);
-                        PathItem item = new PathItem(dirPaths[i], size, info.Name, info.Attributes);
+                        if (NotifyProgress)
+                        {
+                            Progress?.Invoke(null, "Working on " + dirPaths[i]);
+                        }
 
-                        cacheItems?.Add(item);
+                        long size = ComputeDirectorySize(dirPaths[i], cancellationToken);
+                        DirectoryInfo info = new DirectoryInfo(dirPaths[i]);
+                        PathItem item = new PathItem(info, size);
+
+                        cacheItems.Add(item);
 
                         addDelegate(list, item);
                     }
@@ -332,16 +343,21 @@ namespace BusinessLayer.FileSystem
                     {
                         if (cacheItems != null)
                         {
-                            cache.Remove(path); // remove the cached path since the op was cancelled
+                            cacheItems.Partial = true; // set partial since the op was cancelled
                         }
 
                         cancellationToken.ThrowIfCancellationRequested();
                     }
 
-                    FileInfo fileInfo = new FileInfo(files[i]);
-                    PathItem item = new PathItem(files[i], fileInfo.Length, fileInfo.Name, fileInfo.Attributes);
+                    if (NotifyProgress)
+                    {
+                        Progress?.Invoke(null, "Working on " + files[i]);
+                    }
 
-                    cacheItems?.Add(item);
+                    FileInfo fileInfo = new FileInfo(files[i]);
+                    PathItem item = new PathItem(fileInfo, fileInfo.Length);
+
+                    cacheItems.Add(item);
 
                     addDelegate(list, item);
                 }
@@ -380,57 +396,50 @@ namespace BusinessLayer.FileSystem
             return false;
         }
 
-        private FileSystemCache BuildCache(string path)
+        private long ComputeDirectorySize(string path, CancellationToken cancellationToken)
         {
-            FileSystemCache sysCache = new FileSystemCache(path, TTL);
+            long size = 0;
 
-            sysCache.ItemChanged += OnCacheItemChanged;
-            sysCache.TTLReached += OnCacheTTLReached;
-
-            cache.Add(path, sysCache);
-            return sysCache;
-        }
-
-        private void RefreshCache(FileSystemCache cacheItems, string path)
-        {
-            cacheItems.Reset();
-            if (Directory.Exists(path))
+            try
             {
-                string[] dirs = null;
-                try
+                IEnumerable<string> subDirPaths = Directory.EnumerateDirectories(path);
+                foreach (string subDirPath in subDirPaths)
                 {
-                    dirs = Directory.GetDirectories(path);
-                }
-                catch (UnauthorizedAccessException) { }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                if (dirs != null)
-                {
-                    for (int i = 0; i < dirs.Length; i++)
+                    if (NotifyProgress)
                     {
-                        long size = DirectorySizeComputer.ComputeDirectorySize(dirs[i]);
-                        DirectoryInfo info = new DirectoryInfo(dirs[i]);
-                        PathItem item = new PathItem(dirs[i], size, new DirectoryInfo(dirs[i]).Name, info.Attributes);
-                        cacheItems.Add(item);
+                        Progress?.Invoke(null, "Working on " + subDirPath);
                     }
-                }
 
-                string[] files = null;
-                try
-                {
-                    files = Directory.GetFiles(path);
-                }
-                catch (UnauthorizedAccessException) { }
-
-                if (files != null)
-                {
-                    for (int i = 0; i < files.Length; i++)
-                    {
-                        FileInfo fileInfo = new FileInfo(files[i]);
-                        PathItem item = new PathItem(files[i], fileInfo.Length, fileInfo.Name, fileInfo.Attributes);
-                        cacheItems.Add(item);
-                    }
+                    size += ComputeDirectorySize(subDirPath, cancellationToken);
                 }
             }
+            catch (UnauthorizedAccessException) { }
+
+            try
+            {
+                IEnumerable<string> subDirPaths = Directory.EnumerateFiles(path);
+
+                foreach (string subDirPath in subDirPaths)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (NotifyProgress)
+                    {
+                        Progress?.Invoke(null, "Working on " + subDirPath);
+                    }
+
+                    try
+                    {
+                        size += new FileInfo(subDirPath).Length;
+                    }
+                    catch (FileNotFoundException) { }
+                }
+            }
+            catch (UnauthorizedAccessException) { }
+
+            return size;
         }
 
         private List<PathItem> GetAffectedItems(string path)
@@ -461,7 +470,7 @@ namespace BusinessLayer.FileSystem
                     }
                 }
             }
-            
+
             return itemsToChange;
         }
 
@@ -481,12 +490,25 @@ namespace BusinessLayer.FileSystem
         }
 
         #region events
-
         private void OnCacheTTLReached(object sender, TTLReachedEventArgs e)
         {
-            if (e.FromTTL)
+            if (e.TTLUpdated) return;
+
+            FileSystemCache fsCache = e.Cache;
+
+            for (int i = 0; i < fsCache.Count; i++)
             {
-                RefreshCache(e.Cache, e.Path);
+                PathItem item = fsCache[i];
+                item.RefreshInfos();
+
+                if (item.IsDirectory)
+                {
+
+                }
+                else
+                {
+
+                }
             }
         }
 
@@ -499,9 +521,12 @@ namespace BusinessLayer.FileSystem
 
             string path = e.Path;
             FileSystemCache systemCache = sender as FileSystemCache;
-            List<PathItem> itemsToChange = GetAffectedItems(path);
-        }
 
+            if (!e.ItemChanged.IsDirectory)
+            {
+                List<PathItem> itemsToChange = GetAffectedItems(path);
+            }
+        }
         #endregion
     }
 }

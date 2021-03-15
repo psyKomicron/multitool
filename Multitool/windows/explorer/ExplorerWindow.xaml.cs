@@ -72,7 +72,7 @@ namespace MultiTool
             {
                 fileSystemManager = FileSystemManager.Get();
             }
-
+            fileSystemManager.Progress += FileSystemManager_Progress;
             _ = DisplayFiles(Data.LastUsedPath);
         }
 
@@ -151,7 +151,7 @@ namespace MultiTool
             Application.Current.Dispatcher.Invoke(action);
         }
 
-        private void AddDelegate(IList<PathItemVM> items, PathItem item)
+        private void AddDelegate(IList<PathItemVM> items, IPathItem item)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -226,8 +226,11 @@ namespace MultiTool
 
         private void RefreshFileList_Click(object sender, RoutedEventArgs e)
         {
-            FileSystemManager.Get().ClearDirectoryCache(CurrentPath);
+            FileSystemManager.Get().Reset();
             _ = DisplayFiles(CurrentPath);
+
+            /*MainListView.Items.Refresh();
+            SecondListView.Items.Refresh();*/
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -241,6 +244,16 @@ namespace MultiTool
                     Next();
                     break;
             }
+        }
+
+        private void Progress_Click(object sender, RoutedEventArgs e)
+        {
+            fileSystemManager.NotifyProgress = !fileSystemManager.NotifyProgress;
+        }
+
+        private async Task FileSystemManager_Progress(object sender, string message)
+        {
+            await Task.Run(() => RunInUIThread(() => WorkingDisplay.Text = message));
         }
         #endregion
     }

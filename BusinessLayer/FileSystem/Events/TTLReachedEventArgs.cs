@@ -4,17 +4,20 @@ namespace BusinessLayer.FileSystem.Events
 {
     internal class TTLReachedEventArgs : EventArgs
     {
-        public TTLReachedEventArgs(string path, FileSystemCache cache, bool fromTTL) : base()
+        public TTLReachedEventArgs(string path, FileSystemCache cache, double ttl, bool ttlUpdated = false) : base()
         {
             Path = path;
             Cache = cache;
-            FromTTL = fromTTL;
+            TTLUpdated = ttlUpdated;
+            TTL = ttl;
         }
-
-        public string Path { get; private set; }
 
         public FileSystemCache Cache { get; private set; }
 
-        public bool FromTTL { get; private set; }
+        public string Path { get; private set; }
+
+        public bool TTLUpdated { get; private set; }
+
+        public double TTL { get; private set; }
     }
 }

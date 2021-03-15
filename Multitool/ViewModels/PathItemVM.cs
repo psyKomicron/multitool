@@ -11,34 +11,18 @@ namespace MultiTool.ViewModels
     public class PathItemVM : IPathItem
     {
         private readonly string greenCheckMark = "\u2705";
-        private readonly PathItem pathItem;
+        private readonly IPathItem pathItem;
         private Brush _color;
         private string _displaySizeUnit;
 
         #region decorator
-        public string Path
-        {
-            get => pathItem.Path;
-            set => pathItem.Path = value;
-        }
+        public string Path => pathItem.Path;
 
-        public long Size
-        {
-            get => pathItem.Size;
-            set => pathItem.Size = value;
-        }
+        public long Size => pathItem.Size;
 
-        public string Name
-        {
-            get => pathItem.Name;
-            set => pathItem.Name = value;
-        }
+        public string Name => pathItem.Name;
 
-        public FileAttributes Attributes
-        {
-            get => pathItem.Attributes;
-            set => pathItem.Attributes = value;
-        }
+        public FileAttributes Attributes => pathItem.Attributes;
 
         public bool IsHidden => pathItem.IsHidden;
 
@@ -107,11 +91,11 @@ namespace MultiTool.ViewModels
             }
         }
 
-        protected PathItem PathItem { get => pathItem; }
+        protected IPathItem PathItem { get => pathItem; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public PathItemVM(PathItem item)
+        public PathItemVM(IPathItem item)
         {
             pathItem = item;
             item.PropertyChanged += OnItemPropertyChanged;

@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace BusinessLayer.FileSystem
 {
-    public delegate void CollectionAddDelegate<ItemType>(IList<ItemType> items, PathItem item) where ItemType : IPathItem;
+    public delegate void CollectionAddDelegate<ItemType>(IList<ItemType> items, IPathItem item) where ItemType : IPathItem;
 }

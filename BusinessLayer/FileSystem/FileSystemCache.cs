@@ -22,6 +22,7 @@ namespace BusinessLayer.FileSystem
         private double ttl;
         private string path;
         private bool frozen;
+        private DateTime creationTime;
         private List<PathItem> watchedItems;
         private FileSystemWatcher watcher;
 
@@ -35,14 +36,15 @@ namespace BusinessLayer.FileSystem
         /// </summary>
         public event TTLReachedEventHandler TTLReached;
 
-        /// <summary>
-        /// Get the number of <see cref="PathItem"/> cached.
-        /// </summary>
+
         public int Count => watchedItems.Count;
 
         public bool Frozen => frozen;
 
         public bool Partial { get; set; }
+
+        public DateTime CreationTime => creationTime;
+
 
         /// <summary>
         /// Contructor.
@@ -74,9 +76,11 @@ namespace BusinessLayer.FileSystem
             }
             catch (FileNotFoundException e)
             {
-                watchedPaths.TryTake(out string key);
+                watchedPaths.TryTake(out _);
                 throw e;
             }
+
+            creationTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -109,6 +113,8 @@ namespace BusinessLayer.FileSystem
                 watchedPaths.TryTake(out string key);
                 throw e;
             }
+
+            creationTime = DateTime.UtcNow;
         }
 
         public PathItem this[int index]
@@ -124,7 +130,7 @@ namespace BusinessLayer.FileSystem
             watcher.Dispose();
         }
 
-        public void Reset()
+        public void UnFroze()
         {
             timer.Interval = ttl;
             frozen = false;
@@ -168,16 +174,21 @@ namespace BusinessLayer.FileSystem
         {
             IsFrozen();
             ttl = newTTL;
-            TTLReached?.Invoke(this, new TTLReachedEventArgs(path, this, false));
+            TTLReached?.Invoke(this, new TTLReachedEventArgs(path, this, ttl, true));
         }
 
-        public void Refresh()
+        /// <summary>
+        /// Use to discard the cache.
+        /// </summary>
+        public void Delete()
         {
-            foreach (PathItem item in watchedItems)
-            {
-                item.Refresh();
-            }
+            frozen = true;
+            watchedItems.Clear();
+            watchedPaths.TryTake(out _);
+            timer.Stop();
+            watcher.EnableRaisingEvents = false;
         }
+
 
         private void CheckPath(string path)
         {
@@ -256,7 +267,7 @@ namespace BusinessLayer.FileSystem
         {
             frozen = true;
             timer.Stop();
-            TTLReached?.Invoke(this, new TTLReachedEventArgs(path, this, true));
+            TTLReached?.Invoke(this, new TTLReachedEventArgs(path, this, ttl));
         }
 
         #region watcher events
@@ -268,11 +279,8 @@ namespace BusinessLayer.FileSystem
             }
 
             ResetTimer();
-
             PathItem item = watchedItems.Find(v => v.Path == e.FullPath);
-
             ItemChanged?.Invoke(this, new FileSystemCacheEventArgs(path, item, false, e.ChangeType));
-
             timer.Start();
         }
 
@@ -297,6 +305,7 @@ namespace BusinessLayer.FileSystem
             ResetTimer();
 
             PathItem item = watchedItems.Find(v => v.Path.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase));
+            watchedItems.Remove(item);
 
             ItemChanged?.Invoke(this, new FileSystemCacheEventArgs(path, item, false, WatcherChangeTypes.Deleted));
         }
