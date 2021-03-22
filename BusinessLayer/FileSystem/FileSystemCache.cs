@@ -3,9 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace BusinessLayer.FileSystem
@@ -17,14 +14,15 @@ namespace BusinessLayer.FileSystem
     internal class FileSystemCache : IDisposable
     {
         private static readonly ConcurrentBag<string> watchedPaths = new ConcurrentBag<string>();
-
+        // read only
+        private readonly DateTime creationTime;
+        private readonly List<FileSystemEntry> watchedItems;
+        private readonly FileSystemWatcher watcher;
         private readonly Timer timer;
+        private readonly string path;
+        // non read-only
         private double ttl;
-        private string path;
         private bool frozen;
-        private DateTime creationTime;
-        private List<PathItem> watchedItems;
-        private FileSystemWatcher watcher;
 
         /// <summary>
         /// Fired when the watched items underwent a change, and should be updated.
@@ -36,15 +34,10 @@ namespace BusinessLayer.FileSystem
         /// </summary>
         public event TTLReachedEventHandler TTLReached;
 
-
         public int Count => watchedItems.Count;
-
         public bool Frozen => frozen;
-
         public bool Partial { get; set; }
-
         public DateTime CreationTime => creationTime;
-
 
         /// <summary>
         /// Contructor.
@@ -52,7 +45,7 @@ namespace BusinessLayer.FileSystem
         /// <param name="path">File path to monitor</param>
         /// <param name="ttl">Cache time-to-live</param>
         /// <param name="items">Items to watch</param>
-        public FileSystemCache(string path, double ttl, List<PathItem> items)
+        public FileSystemCache(string path, double ttl, List<FileSystemEntry> items)
         {
             CheckPath(path);
 
@@ -65,7 +58,12 @@ namespace BusinessLayer.FileSystem
                 timer = new Timer(ttl);
                 CreateTimer();
 
-                CreateWatcher(path);
+                watcher = new FileSystemWatcher(path)
+                {
+                    NotifyFilter = GetNotifyFilters()
+                };
+
+                BuildWatcher();
                 
                 timer.Start();
             }
@@ -92,7 +90,7 @@ namespace BusinessLayer.FileSystem
         {
             CheckPath(path);
 
-            watchedItems = new List<PathItem>(10);
+            watchedItems = new List<FileSystemEntry>(10);
             this.ttl = ttl;
             this.path = path;
 
@@ -101,23 +99,28 @@ namespace BusinessLayer.FileSystem
                 timer = new Timer(ttl);
                 CreateTimer();
 
-                CreateWatcher(path);
+                watcher = new FileSystemWatcher(path)
+                {
+                    NotifyFilter = GetNotifyFilters()
+                };
+
+                BuildWatcher();
             }
             catch (ArgumentException e)
             {
-                watchedPaths.TryTake(out string key);
+                watchedPaths.TryTake(out _);
                 throw e;
             }
             catch (FileNotFoundException e)
             {
-                watchedPaths.TryTake(out string key);
+                watchedPaths.TryTake(out _);
                 throw e;
             }
 
             creationTime = DateTime.UtcNow;
         }
 
-        public PathItem this[int index]
+        public FileSystemEntry this[int index]
         {
             get
             {
@@ -137,10 +140,10 @@ namespace BusinessLayer.FileSystem
         }
 
         /// <summary>
-        /// Add an <see cref="PathItem"/> to the internal collection.
+        /// Add an <see cref="FileSystemEntry"/> to the internal collection.
         /// </summary>
-        /// <param name="item"><see cref="PathItem"/> to add</param>
-        public void Add(PathItem item)
+        /// <param name="item"><see cref="FileSystemEntry"/> to add</param>
+        public void Add(FileSystemEntry item)
         {
             IsFrozen();
 
@@ -156,11 +159,11 @@ namespace BusinessLayer.FileSystem
         }
 
         /// <summary>
-        /// Remove a <see cref="PathItem"/> from the collection.
+        /// Remove a <see cref="FileSystemEntry"/> from the collection.
         /// </summary>
-        /// <param name="item"><see cref="PathItem"/> to remove</param>
+        /// <param name="item"><see cref="FileSystemEntry"/> to remove</param>
         /// <returns><see cref="true"/> if the item was removed, <see cref="false"/> if not</returns>
-        public bool Remove(PathItem item)
+        public bool Remove(FileSystemEntry item)
         {
             IsFrozen();
             return watchedItems.Remove(item);
@@ -227,20 +230,13 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        private void CreateWatcher(string path)
+        private void BuildWatcher()
         {
-            watcher = new FileSystemWatcher(path)
-            {
-                NotifyFilter = GetNotifyFilters()
-            };
-
-            #region events subscription
             //watcher.Changed += OnFileChange;
             watcher.Created += OnFileCreated;
             watcher.Deleted += OnFileDeleted;
             watcher.Renamed += OnFileRenamed;
             watcher.Error += OnWatcherError;
-            #endregion
 
             watcher.EnableRaisingEvents = true;
         }
@@ -279,7 +275,7 @@ namespace BusinessLayer.FileSystem
             }
 
             ResetTimer();
-            PathItem item = watchedItems.Find(v => v.Path == e.FullPath);
+            FileSystemEntry item = watchedItems.Find(v => v.Path == e.FullPath);
             ItemChanged?.Invoke(this, new FileSystemCacheEventArgs(path, item, false, e.ChangeType));
             timer.Start();
         }
@@ -304,7 +300,7 @@ namespace BusinessLayer.FileSystem
 
             ResetTimer();
 
-            PathItem item = watchedItems.Find(v => v.Path.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase));
+            FileSystemEntry item = watchedItems.Find(v => v.Path.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase));
             watchedItems.Remove(item);
 
             ItemChanged?.Invoke(this, new FileSystemCacheEventArgs(path, item, false, WatcherChangeTypes.Deleted));
@@ -319,7 +315,7 @@ namespace BusinessLayer.FileSystem
 
             ResetTimer();
 
-            PathItem item = watchedItems.Find(v => v.Path.Equals(e.OldFullPath, StringComparison.OrdinalIgnoreCase));
+            FileSystemEntry item = watchedItems.Find(v => v.Path.Equals(e.OldFullPath, StringComparison.OrdinalIgnoreCase));
 
             if (item != null)
             {

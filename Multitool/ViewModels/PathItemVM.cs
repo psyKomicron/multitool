@@ -8,10 +8,10 @@ using System.Windows.Media;
 
 namespace MultiTool.ViewModels
 {
-    public class PathItemVM : IPathItem
+    public class PathItemVM : IFileSystemEntry
     {
         private readonly string greenCheckMark = "\u2705";
-        private readonly IPathItem pathItem;
+        private readonly IFileSystemEntry pathItem;
         private Brush _color;
         private string _displaySizeUnit;
 
@@ -91,17 +91,17 @@ namespace MultiTool.ViewModels
             }
         }
 
-        protected IPathItem PathItem { get => pathItem; }
+        protected IFileSystemEntry PathItem { get => pathItem; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public PathItemVM(IPathItem item)
+        public PathItemVM(IFileSystemEntry item)
         {
             pathItem = item;
             item.PropertyChanged += OnItemPropertyChanged;
         }
 
-        public int CompareTo(IPathItem other)
+        public int CompareTo(IFileSystemEntry other)
         {
             return pathItem.CompareTo(other);
         }
@@ -111,7 +111,7 @@ namespace MultiTool.ViewModels
             return pathItem.CompareTo(obj);
         }
 
-        public bool Equals(IPathItem other)
+        public bool Equals(IFileSystemEntry other)
         {
             return pathItem.Equals(other);
         }

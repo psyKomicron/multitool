@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.FileSystem
 {
-    public interface IPathItem : IComparable<IPathItem>, IComparable, INotifyPropertyChanged, IEquatable<IPathItem>
+    public interface IFileSystemEntry : IComparable, INotifyPropertyChanged, IEquatable<IFileSystemEntry>, IComparable<IFileSystemEntry>
     {
         string Path { get; }
         long Size { get; }

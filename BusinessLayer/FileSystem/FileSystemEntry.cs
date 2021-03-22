@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace BusinessLayer.FileSystem
 {
-    internal abstract class PathItem : IPathItem
+    internal abstract class FileSystemEntry : IFileSystemEntry
     {
         private string _path;
         private string _name;
@@ -13,15 +13,16 @@ namespace BusinessLayer.FileSystem
         public event PropertyChangedEventHandler PropertyChanged;
 
         public abstract long Size { get; set; }
-        public abstract FileAttributes Attributes { get; }
-        public abstract bool IsHidden { get; }
-        public abstract bool IsSystem { get; }
-        public abstract bool IsReadOnly { get; }
-        public abstract bool IsEncrypted { get; }
-        public abstract bool IsCompressed { get; }
-        public abstract bool IsDevice { get; }
-        public abstract bool IsDirectory { get; }
+        protected abstract FileSystemInfo Info { get; }
 
+        public FileAttributes Attributes => Info.Attributes;
+        public bool IsHidden => (Attributes & FileAttributes.Hidden) != 0;
+        public bool IsSystem => (Attributes & FileAttributes.System) != 0;
+        public bool IsReadOnly => (Attributes & FileAttributes.ReadOnly) != 0;
+        public bool IsEncrypted => (Attributes & FileAttributes.Encrypted) != 0;
+        public bool IsCompressed => (Attributes & FileAttributes.Compressed) != 0;
+        public bool IsDevice => (Attributes & FileAttributes.Device) != 0;
+        public bool IsDirectory => (Attributes & FileAttributes.Directory) != 0;
         public string Path
         {
             get => _path;
@@ -41,16 +42,29 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        public PathItem() { }
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="name"></param>
+        protected FileSystemEntry(FileSystemInfo info)
+        {
+            _path = info.FullName;
+            _name = info.Name;
+        }
 
         /// <summary>
         /// Refreshes the internal <see cref="FileSystemInfo"/>.
         /// </summary>
-        public abstract void RefreshInfos();
+        public void RefreshInfos()
+        {
+            Info.Refresh();
+            SetInfos();
+        }
 
         public int CompareTo(object obj)
         {
-            if (obj is PathItem that)
+            if (obj is FileSystemEntry that)
             {
                 return CompareTo(that);
             }
@@ -60,7 +74,7 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        public int CompareTo(IPathItem other)
+        public int CompareTo(IFileSystemEntry other)
         {
             if (other.Size > Size)
             {
@@ -76,7 +90,7 @@ namespace BusinessLayer.FileSystem
             }
         }
 
-        public bool Equals(IPathItem other)
+        public bool Equals(IFileSystemEntry other)
         {
             return Name.Equals(other.Name);
         }
@@ -84,6 +98,15 @@ namespace BusinessLayer.FileSystem
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Set path and name of this <see cref="FileSystemEntry"/>. Use after refreshing info.
+        /// </summary>
+        protected void SetInfos()
+        {
+            Path = Info.FullName;
+            Name = Info.Name;
         }
 
         protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

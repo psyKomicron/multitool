@@ -3,11 +3,11 @@ using System.Threading;
 
 namespace BusinessLayer.FileSystem
 {
-    public interface IFileSystemManager
+    public interface IFileSystemManager : IProgressNotifier
     {
         double TTL { get; set; }
 
-        void GetFiles<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list, CollectionAddDelegate<ItemType> addDelegate) where ItemType : IPathItem;
+        void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list, CollectionAddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry;
         string GetRealPath(string path);
         void Reset();
     }

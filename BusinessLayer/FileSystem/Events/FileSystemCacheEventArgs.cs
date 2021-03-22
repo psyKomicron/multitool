@@ -9,9 +9,9 @@ namespace BusinessLayer.FileSystem.Events
         /// Constructor.
         /// </summary>
         /// <param name="path">Where the item is from</param>
-        /// <param name="item"><see cref="PathItem"/> changed</param>
+        /// <param name="item"><see cref="FileSystemEntry"/> changed</param>
         /// <param name="ttlReached"><see cref="true"/> if the event was raised because the cache TTL reached 0</param>
-        public FileSystemCacheEventArgs(string path, PathItem item, bool ttlReached, WatcherChangeTypes changeTypes): base()
+        public FileSystemCacheEventArgs(string path, FileSystemEntry item, bool ttlReached, WatcherChangeTypes changeTypes): base()
         {
             Path = path;
             ItemChanged = item;
@@ -19,7 +19,7 @@ namespace BusinessLayer.FileSystem.Events
             ChangeTypes = changeTypes;
         }
 
-        public FileSystemCacheEventArgs(string path, PathItem item, bool ttlReached) : base()
+        public FileSystemCacheEventArgs(string path, FileSystemEntry item, bool ttlReached) : base()
         {
             Path = path;
             ItemChanged = item;
@@ -34,7 +34,7 @@ namespace BusinessLayer.FileSystem.Events
         /// <summary>
         /// Item to be changed.
         /// </summary>
-        public PathItem ItemChanged { get; private set; }
+        public FileSystemEntry ItemChanged { get; private set; }
 
         /// <summary>
         /// true if the event was raised because the cache TTL reached 0.

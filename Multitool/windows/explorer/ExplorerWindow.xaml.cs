@@ -4,26 +4,17 @@ using MultiTool.Tools;
 using MultiTool.ViewModels;
 using MultiTool.Windows;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace MultiTool
 {
@@ -33,17 +24,15 @@ namespace MultiTool
     public partial class ExplorerWindow : Window, ISerializableWindow, INotifyPropertyChanged
     {
         private readonly UriCleaner cleaner = new UriCleaner();
-        private FileSystemManager fileSystemManager;
         private string _currentPath;
         private string nextPath = string.Empty;
+        private FileSystemManager fileSystemManager;
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ExplorerWindowData Data { get; set; }
-
         public ObservableCollection<PathItemVM> CurrentFiles { get; private set; }
-
         public string CurrentPath
         {
             get => _currentPath;
@@ -66,14 +55,14 @@ namespace MultiTool
 
             if (Data.TTL != default)
             {
-                fileSystemManager = FileSystemManager.Get(Data.TTL);
+                fileSystemManager = FileSystemManager.Get(Data.TTL, true);
             }
             else
             {
                 fileSystemManager = FileSystemManager.Get();
             }
+
             fileSystemManager.Progress += FileSystemManager_Progress;
-            _ = DisplayFiles(Data.LastUsedPath);
         }
 
         public void Serialize()
@@ -91,30 +80,37 @@ namespace MultiTool
 
         private async Task DisplayFiles(string path)
         {
-            // get "real" path
+            CurrentFiles.Clear();
             path = fileSystemManager.GetRealPath(path);
 
-            // Cancel tasks running in the background to remove cpu load and strange behavior
+            string[] drives = Directory.GetLogicalDrives();
+            for (int i = 0; i < drives.Length; i++)
+            {
+                if (drives[i].Equals(path, StringComparison.OrdinalIgnoreCase))
+                {
+                    fileSystemManager.NotifyProgress = false;
+                }
+            }
+
             if (cancellationTokenSource != null)
             {
-                cancellationTokenSource.Cancel(); // cancel previous tasks
+                cancellationTokenSource.Cancel();
                 cancellationTokenSource.Dispose();
             }
             cancellationTokenSource = new CancellationTokenSource();
 
             CurrentPath = path;
             DisplayProgressBar.IsIndeterminate = true;
-            CurrentFiles.Clear();
 
             await Task.Run(() => GetFiles(path, cancellationTokenSource), cancellationTokenSource.Token);
-           
-            RunInUIThread(() => DisplayProgressBar.IsIndeterminate = false);
+
+            DisplayProgressBar.IsIndeterminate = false;
         }
 
         private void GetFiles(string path, CancellationTokenSource tokenSource)
         {
             IList<PathItemVM> pathItems = CurrentFiles;
-            fileSystemManager.GetFiles(path, tokenSource.Token, pathItems, AddDelegate);
+            fileSystemManager.GetFileSystemEntries(path, tokenSource.Token, pathItems, AddDelegate);
         }
 
         /// <summary>
@@ -151,7 +147,7 @@ namespace MultiTool
             Application.Current.Dispatcher.Invoke(action);
         }
 
-        private void AddDelegate(IList<PathItemVM> items, IPathItem item)
+        private void AddDelegate(IList<PathItemVM> items, IFileSystemEntry item)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -226,7 +222,7 @@ namespace MultiTool
 
         private void RefreshFileList_Click(object sender, RoutedEventArgs e)
         {
-            FileSystemManager.Get().Reset();
+            fileSystemManager.Reset();
             _ = DisplayFiles(CurrentPath);
 
             /*MainListView.Items.Refresh();
@@ -251,10 +247,16 @@ namespace MultiTool
             fileSystemManager.NotifyProgress = !fileSystemManager.NotifyProgress;
         }
 
-        private async Task FileSystemManager_Progress(object sender, string message)
+        private void FileSystemManager_Progress(object sender, string message)
         {
-            await Task.Run(() => RunInUIThread(() => WorkingDisplay.Text = message));
+            _ = Task.Run(() => RunInUIThread(() => WorkingDisplay.Text = message));
+            //RunInUIThread(() => WorkingDisplay.Text = message);
         }
         #endregion
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(WorkingDisplay.Text);
+        }
     }
 }

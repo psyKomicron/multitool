@@ -1,4 +1,5 @@
-﻿using BusinessLayer.FileSystem.Events;
+﻿using BusinessLayer.Events;
+using BusinessLayer.FileSystem.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,13 +12,17 @@ namespace BusinessLayer.FileSystem
 {
     public class FileSystemManager : IFileSystemManager
     {
+        public const double DEFAULT_TTL = 300000;
+        public const bool DEFAULT_NOTIFY_STATUS = false;
+
         private static FileSystemManager instance;
 
-        private Stopwatch stopwatch = new Stopwatch();
+        private ObjectPool<>
         private double _ttl;
+        private Stopwatch stopwatch = new Stopwatch();
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
 
-        public event FileSystemManagerHandler Progress;
+        public event ProgressEventHandler Progress;
 
         public bool NotifyProgress { get; set; }
 
@@ -34,19 +39,24 @@ namespace BusinessLayer.FileSystem
             }
         }
 
+        protected FileSystemManager() 
+        {
+            _ttl = DEFAULT_TTL;
+            NotifyProgress = DEFAULT_NOTIFY_STATUS;
+        }
+
         protected FileSystemManager(double ttl, bool notifyProgress)
         {
             _ttl = ttl;
             NotifyProgress = notifyProgress;
         }
 
-        public static FileSystemManager Get(double ttl = 300000, bool notifyProgress = false)
+        public static FileSystemManager Get(double ttl = DEFAULT_TTL, bool notifyProgress = DEFAULT_NOTIFY_STATUS)
         {
             if (instance == null)
             {
                 instance = new FileSystemManager(ttl, notifyProgress);
             }
-
             return instance;
         }
 
@@ -69,8 +79,8 @@ namespace BusinessLayer.FileSystem
         /// <exception cref="ArgumentNullException">
         /// If either <paramref name="list"/> or <paramref name="cancellationToken"/> is <see cref="null"/>
         /// </exception>
-        public void GetFiles<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list,
-            CollectionAddDelegate<ItemType> addDelegate) where ItemType : IPathItem
+        public void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list,
+            CollectionAddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry
         {
             stopwatch.Start();
 
@@ -91,18 +101,16 @@ namespace BusinessLayer.FileSystem
 
                     FileSystemCache cachedItems = GetFileSystemCache(path);
 
+                    for (int i = 0; i < cachedItems.Count; i++)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        addDelegate(list, cachedItems[i]);
+                    }
+
                     if (cachedItems.Partial)
                     {
                         GetPartial(path, cachedItems, list, addDelegate, cancellationToken);
-                    }
-                    else
-                    {
-                        for (int i = 0; i < cachedItems.Count; i++)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            addDelegate(list, cachedItems[i]);
-                        }
                     }
                 }
                 else if (Directory.Exists(path))
@@ -211,6 +219,9 @@ namespace BusinessLayer.FileSystem
             return realPath;
         }
 
+        /// <summary>
+        /// Cleans the internal cache.
+        /// </summary>
         public void Reset()
         {
             foreach (KeyValuePair<string, FileSystemCache> pair in cache)
@@ -222,31 +233,36 @@ namespace BusinessLayer.FileSystem
         }
 
 
-        private void GetPartial<T>(string path, FileSystemCache cacheItems, IList<T> list, CollectionAddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IPathItem
+        private void GetPartial<T>(string path, FileSystemCache cacheItems, IList<T> list, CollectionAddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                string[] dirPaths = Directory.GetDirectories(path);
-                string[] filePaths = Directory.GetFiles(path);
-                List<string> toDo = new List<string>(dirPaths.Length);
+                string[] paths = Directory.GetFileSystemEntries(path);
+                List<string> toDo = new List<string>(paths.Length - cacheItems.Count);
 
-                // compare the directories in the cache and the actual directories
-                for (int i = 0; i < dirPaths.Length; i++)
+                // compare the file entries in the cache and the system  file entries
+                for (int i = 0; i < paths.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    string filePath = dirPaths[i];
+                    string filePath = paths[i];
 
+                    bool contains = false;
                     for (int j = 0; j < cacheItems.Count; j++)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        if (!cacheItems[j].Path.Equals(filePath, StringComparison.OrdinalIgnoreCase))
+                        if (cacheItems[j].Path.Equals(filePath, StringComparison.OrdinalIgnoreCase))
                         {
-                            toDo.Add(filePath);
+                            contains = true;
                             break;
                         }
+                    }
+
+                    if (!contains)
+                    {
+                        toDo.Add(filePath);
                     }
                 }
 
@@ -259,20 +275,20 @@ namespace BusinessLayer.FileSystem
                         Progress?.Invoke(null, "Working on " + toDo[i]);
                     }
 
-                    if (File.Exists(path))
+                    if (File.Exists(toDo[i]))
                     {
                         FileInfo fileInfo = new FileInfo(toDo[i]);
-                        PathItem item = new PathItem(fileInfo, fileInfo.Length);
+                        FileSystemEntry item = new FileEntry(fileInfo);
 
                         cacheItems.Add(item);
 
                         addDelegate(list, item);
                     }
-                    else
+                    else if (Directory.Exists(toDo[i]))
                     {
                         long size = ComputeDirectorySize(toDo[i], cancellationToken);
                         DirectoryInfo info = new DirectoryInfo(toDo[i]);
-                        PathItem item = new PathItem(info, size);
+                        FileSystemEntry item = new DirectoryEntry(info, size);
 
                         cacheItems.Add(item);
 
@@ -283,7 +299,7 @@ namespace BusinessLayer.FileSystem
             catch (UnauthorizedAccessException) { }
         }
 
-        private void GetDirectories<T>(string path, FileSystemCache cacheItems, IList<T> list, CollectionAddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IPathItem
+        private void GetDirectories<T>(string path, FileSystemCache cacheItems, IList<T> list, CollectionAddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -311,7 +327,7 @@ namespace BusinessLayer.FileSystem
 
                         long size = ComputeDirectorySize(dirPaths[i], cancellationToken);
                         DirectoryInfo info = new DirectoryInfo(dirPaths[i]);
-                        PathItem item = new PathItem(info, size);
+                        FileSystemEntry item = new DirectoryEntry(info, size);
 
                         cacheItems.Add(item);
 
@@ -330,7 +346,7 @@ namespace BusinessLayer.FileSystem
             catch (UnauthorizedAccessException) { }
         }
 
-        private void GetFiles<T>(string path, FileSystemCache cacheItems, IList<T> list, CollectionAddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IPathItem
+        private void GetFiles<T>(string path, FileSystemCache cacheItems, IList<T> list, CollectionAddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -355,7 +371,7 @@ namespace BusinessLayer.FileSystem
                     }
 
                     FileInfo fileInfo = new FileInfo(files[i]);
-                    PathItem item = new PathItem(fileInfo, fileInfo.Length);
+                    FileSystemEntry item = new FileEntry(fileInfo);
 
                     cacheItems.Add(item);
 
@@ -442,9 +458,9 @@ namespace BusinessLayer.FileSystem
             return size;
         }
 
-        private List<PathItem> GetAffectedItems(string path)
+        private List<FileSystemEntry> GetAffectedItems(string path)
         {
-            List<PathItem> itemsToChange = new List<PathItem>(50);
+            List<FileSystemEntry> itemsToChange = new List<FileSystemEntry>(50);
             DirectoryInfo dir = Directory.GetParent(path);
 
             if (cache.ContainsKey(dir.FullName))
@@ -460,7 +476,7 @@ namespace BusinessLayer.FileSystem
                     {
                         if (cache.ContainsKey(parent.FullName))
                         {
-                            PathItem item = GetItemFromCache(parent.FullName, dir.FullName);
+                            FileSystemEntry item = GetItemFromCache(parent.FullName, dir.FullName);
                             itemsToChange.Add(item);
                         }
 
@@ -474,7 +490,7 @@ namespace BusinessLayer.FileSystem
             return itemsToChange;
         }
 
-        private PathItem GetItemFromCache(string cachePath, string itemPath)
+        private FileSystemEntry GetItemFromCache(string cachePath, string itemPath)
         {
             FileSystemCache systemCache = cache[cachePath];
 
@@ -498,7 +514,7 @@ namespace BusinessLayer.FileSystem
 
             for (int i = 0; i < fsCache.Count; i++)
             {
-                PathItem item = fsCache[i];
+                FileSystemEntry item = fsCache[i];
                 item.RefreshInfos();
 
                 if (item.IsDirectory)
@@ -522,9 +538,9 @@ namespace BusinessLayer.FileSystem
             string path = e.Path;
             FileSystemCache systemCache = sender as FileSystemCache;
 
-            if (!e.ItemChanged.IsDirectory)
+            if (e.ItemChanged != null && !e.ItemChanged.IsDirectory)
             {
-                List<PathItem> itemsToChange = GetAffectedItems(path);
+                List<FileSystemEntry> itemsToChange = GetAffectedItems(path);
             }
         }
         #endregion
