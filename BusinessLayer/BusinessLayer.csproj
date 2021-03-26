@@ -44,6 +44,7 @@
     <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
+    <Compile Include="Events\ObjectPool.cs" />
     <Compile Include="FileSystem\CacheFrozenException.cs" />
     <Compile Include="FileSystem\CollectionAddDelegate.cs" />
     <Compile Include="FileSystem\DirectoryEntry.cs" />
@@ -82,8 +83,6 @@
     <Compile Include="Reflection\ObjectFlatteners\XmlObjectFlattener.cs" />
     <Compile Include="Reflection\PropertyLoaders\PropertyLoader.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NewFolder1\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
