@@ -1,5 +1,4 @@
 ﻿using BusinessLayer.Controllers;
-using BusinessLayer.PreferencesManagers;
 using BusinessLayer.ProcessOptions;
 using BusinessLayer.ProcessOptions.Enums;
 using BusinessLayer.ProcessOptions.EnumTranslaters;
@@ -14,7 +13,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using BusinessLayer.PreferencesManagers.Xml;
 using MultiTool.Tools;
 
 namespace MultiTool
@@ -237,7 +235,6 @@ namespace MultiTool
 
         #region button events
 
-        #region window buttons
         private void ShutdownButton_Click(object sender, RoutedEventArgs e)
         {
             StartTimer(Shutdown);
@@ -258,14 +255,31 @@ namespace MultiTool
             StartTimer(Sleep);
         }
 
-        #endregion
-
-        #region parameter buttons
         private void GeneralOptions_Click(object sender, RoutedEventArgs e)
         {
 
         }
-        #endregion
+
+        private void MultiToolWindowChrome_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                e.Handled = true;
+                DragMove();
+            }
+        }
+
+        private void MultiToolWindowChrome_CloseClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            Close();
+        }
+
+        private void MultiToolWindowChrome_MinimizeClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            WindowState = WindowState.Minimized;
+        }
 
         #endregion
 

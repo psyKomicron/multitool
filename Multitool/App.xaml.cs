@@ -18,6 +18,8 @@ namespace MultiTool
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            //Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
             Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Debug.AutoFlush = true;
             Debug.Indent();

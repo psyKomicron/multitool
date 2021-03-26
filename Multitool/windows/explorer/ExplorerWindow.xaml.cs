@@ -250,13 +250,32 @@ namespace MultiTool
         private void FileSystemManager_Progress(object sender, string message)
         {
             _ = Task.Run(() => RunInUIThread(() => WorkingDisplay.Text = message));
-            //RunInUIThread(() => WorkingDisplay.Text = message);
         }
         #endregion
 
         private void Copy_Click(object sender, RoutedEventArgs e)
         {
             Clipboard.SetText(WorkingDisplay.Text);
+        }
+
+        private void MultiToolWindowChrome_CloseClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            Close();
+        }
+
+        private void MultiToolWindowChrome_MinimizeClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            WindowState = WindowState.Minimized;
+        }
+
+        private void MultiToolWindowChrome_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
         }
     }
 }

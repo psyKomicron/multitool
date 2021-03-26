@@ -1,12 +1,10 @@
-﻿using BusinessLayer.Events;
-using BusinessLayer.FileSystem.Events;
+﻿using BusinessLayer.FileSystem.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.FileSystem
 {
@@ -16,15 +14,14 @@ namespace BusinessLayer.FileSystem
         public const bool DEFAULT_NOTIFY_STATUS = false;
 
         private static FileSystemManager instance;
-
-        private ObjectPool<>
+        //private ObjectPool<>
         private double _ttl;
         private Stopwatch stopwatch = new Stopwatch();
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
 
-        public event ProgressEventHandler Progress;
-
         public bool NotifyProgress { get; set; }
+        
+        public event ProgressEventHandler Progress;
 
         public double TTL
         {
@@ -412,7 +409,7 @@ namespace BusinessLayer.FileSystem
             return false;
         }
 
-        private long ComputeDirectorySize(string path, CancellationToken cancellationToken)
+        private long ComputeDirectorySize(string path, CancellationToken? cancellationToken)
         {
             long size = 0;
 
@@ -421,7 +418,7 @@ namespace BusinessLayer.FileSystem
                 IEnumerable<string> subDirPaths = Directory.EnumerateDirectories(path);
                 foreach (string subDirPath in subDirPaths)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken?.ThrowIfCancellationRequested();
 
                     if (NotifyProgress)
                     {
@@ -439,7 +436,7 @@ namespace BusinessLayer.FileSystem
 
                 foreach (string subDirPath in subDirPaths)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken?.ThrowIfCancellationRequested();
 
                     if (NotifyProgress)
                     {
@@ -519,17 +516,14 @@ namespace BusinessLayer.FileSystem
 
                 if (item.IsDirectory)
                 {
-
-                }
-                else
-                {
-
+                    item.Size = ComputeDirectorySize(item.Path, null);
                 }
             }
         }
 
         private void OnCacheItemChanged(object sender, FileSystemCacheEventArgs e)
         {
+            throw new NotImplementedException();
             if (e.ChangeTypes == WatcherChangeTypes.Renamed)
             {
                 return;

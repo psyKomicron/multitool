@@ -5,6 +5,8 @@ using MultiTool.Windows;
 using System;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace MultiTool
 {
@@ -68,7 +70,27 @@ namespace MultiTool
             }.Execute();
         }
 
-        #endregion
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                e.Handled = true;
+                DragMove();
+            }
+        }
 
+        private void WindowCloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            Close();
+        }
+
+        private void WindowMinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            WindowState = WindowState.Minimized;
+        }
+
+        #endregion
     }
 }

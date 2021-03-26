@@ -9,8 +9,7 @@ namespace MultiTool.Tools
 {
     public static class WindowManager
     {
-        private static readonly List<Window> windows = new List<Window>(3);
-        private static volatile IPreferenceManager preferenceManager;
+        private static IPreferenceManager preferenceManager;
         
         public static void InitializePreferenceManager(string path)
         {
@@ -31,9 +30,19 @@ namespace MultiTool.Tools
         /// <see cref="Window"/> was already opened and thus was not created.</returns>
         public static bool Open<WindowType>() where WindowType : Window, ISerializableWindow, new()
         {
-            if (windows.Count > 0)
+            if (Application.Current.Windows.Count > 0)
             {
-                Window instance = windows.Find((w) => w is WindowType);
+                Window instance = null;
+
+                for (int i = 0; i < Application.Current.Windows.Count; i++)
+                {
+                    if (Application.Current.Windows[i].GetType() == typeof(WindowType))
+                    {
+                        instance = Application.Current.Windows[i];
+                        break;
+                    }
+                }
+
                 if (instance != null)
                 {
                     instance.Activate();
@@ -55,28 +64,14 @@ namespace MultiTool.Tools
         private static void CreateAndOpen<WindowType>() where WindowType : Window, ISerializableWindow, new()
         {
             WindowType w = new WindowType();
-            windows.Add(w);
 
             w.Closing += Window_Closing;
-            w.Closed += ChildWindow_Closed;
 
             w.Deserialize();
             w.Show();
         }
 
         #region events
-
-        private static void ChildWindow_Closed(object sender, EventArgs e)
-        {
-            if (sender is Window window)
-            {
-                Window instanceWindow = windows.Find((w) => w.Name == window.Name);
-                if (instanceWindow != null)
-                {
-                    windows.Remove(instanceWindow);
-                }
-            }
-        }
 
         private static void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {

@@ -5,8 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MultiTool"
         mc:Ignorable="d"
-        Title="DownloadView" Height="450" Width="800"
-        FontFamily="Consolas">
+        Title="DownloadView" Height="450" Width="800">
     <Grid>
         <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
             <Label x:Name="block"

@@ -8,16 +8,12 @@
     xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
     x:Class="MultiTool.ExplorerWindow"
     mc:Ignorable="d"
-    WindowStartupLocation="CenterScreen"
     Title="Explorer"
-    Height="{Binding Data.Height, Mode=TwoWay}"
     MinHeight="300"
-    Width="{Binding Data.Width, Mode=TwoWay}"
     MinWidth="700"
-    Left="{Binding Data.Left, Mode=TwoWay}"
-    Top="{Binding Data.Top, Mode=TwoWay}"
     d:DesignWidth="1000" d:DesignHeight="600"
-    MouseDown="Window_MouseDown">
+    MouseDown="Window_MouseDown"
+    Style="{StaticResource DarkWindow}">
     <Window.Resources>
 
         <SolidColorBrush x:Key="ListBorder" Color="#828790"/>
@@ -35,14 +31,13 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListView}">
-                        <Themes:ListBoxChrome 
-                            x:Name="Bd" 
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" 
-                            Background="{TemplateBinding Background}" 
-                            RenderMouseOver="False" 
-                            RenderFocused="{TemplateBinding IsKeyboardFocusWithin}" 
-                            SnapsToDevicePixels="true">
+                        <Themes:ListBoxChrome x:Name="Bd" 
+                                              BorderBrush="{TemplateBinding BorderBrush}"
+                                              BorderThickness="{TemplateBinding BorderThickness}" 
+                                              Background="{TemplateBinding Background}" 
+                                              RenderMouseOver="False" 
+                                              RenderFocused="{TemplateBinding IsKeyboardFocusWithin}" 
+                                              SnapsToDevicePixels="true">
                             <ScrollViewer 
                                 Padding="{TemplateBinding Padding}" 
                                 Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
@@ -75,213 +70,210 @@
         </Style>
 
     </Window.Resources>
-    <Window.Style>
-        <StaticResource ResourceKey="DarkWindow"/>
-    </Window.Style>
-    <TabControl Style="{StaticResource DarkTabControlTemplate}">
-        <TabControl.Resources>
-            <Style TargetType="{x:Type TabItem}">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="TabItem">
-                            <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
-                                <ContentPresenter x:Name="ContentSite"
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="20*"/>
+        </Grid.RowDefinitions>
+        <local:MultiToolWindowChrome Grid.Row="0"
+                                     MouseDown="MultiToolWindowChrome_MouseDown"
+                                     CloseClick="MultiToolWindowChrome_CloseClick"
+                                     MinimizeClick="MultiToolWindowChrome_MinimizeClick"
+                                     Title="Explorer"/>
+        <TabControl 
+            Grid.Row="1"
+            Style="{StaticResource DarkTabControlTemplate}">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
+                                    <ContentPresenter x:Name="ContentSite"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
                                         ContentSource="Header"
                                         Margin="10,2"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsSelected" Value="False">
-                                    <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Foreground" Value="White"/>
-            </Style>
-        </TabControl.Resources>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="False">
+                                        <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Foreground" Value="White"/>
+                </Style>
+            </TabControl.Resources>
 
-        <TabItem Header="Explorer" >
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" MinWidth="100"/>
-                    <ColumnDefinition Width="5*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="8*"/>
-                </Grid.RowDefinitions>
-
-                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
-                    <Button 
-                        x:Name="PreviousButton"
-                        Click="Previous_Click"
-                        Content="Previous"
-                        Margin="7,0,4,0"
-                        Width="70"
-                        Height="40"
-                        Template="{StaticResource StandardButtonCT}"/>
-                    <Button 
-                        x:Name="NextButton"
-                        Click="Next_Click" 
-                        Content="Next"
-                        Margin="7,0,4,0"
-                        Width="70"
-                        Height="40"
-                        Template="{StaticResource StandardButtonCT}"/>
-                </StackPanel>
-
-                <Grid Grid.Row="0" Grid.Column="1">
+            <TabItem Header="Explorer">
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="10*"/>
-                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*" MinWidth="100"/>
+                        <ColumnDefinition Width="5*"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="8*"/>
+                    </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Column="0">
-                        <TextBox 
-                            x:Name="PathInput"
-                            MinHeight="25"
-                            MaxHeight="50"
-                            Width="Auto"
-                            Foreground="White"
-                            Background="{StaticResource LightBlack}"
-                            Text="{Binding CurrentPath, Mode=TwoWay}"
-                            AcceptsReturn="True"
-                            TextChanged="PathInput_TextChanged"
-                            PreviewTextInput="PathInput_PreviewTextInput"/>
-
-                        <ProgressBar
-                            x:Name="DisplayProgressBar"
-                            Background="Transparent"
-                            IsIndeterminate="False"
-                            Height="10"
-                            BorderThickness="0"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Stretch"/>
-
-                        <TextBlock 
-                            x:Name="WorkingDisplay"
-                            FontSize="12"
-                            FontFamily="Consolas"/>
+                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                        <Button x:Name="PreviousButton"
+                                Click="Previous_Click"
+                                Content="Previous"
+                                Margin="7,0,4,0"
+                                Width="70"
+                                Height="40"
+                                Template="{StaticResource StandardButtonCT}"/>
+                        <Button x:Name="NextButton"
+                                Click="Next_Click" 
+                                Content="Next"
+                                Margin="7,0,4,0"
+                                Width="70"
+                                Height="40"
+                                Template="{StaticResource StandardButtonCT}"/>
                     </StackPanel>
 
-                    <Button 
-                        x:Name="RefreshFileList"
-                        Content="Refresh"
-                        Width="Auto"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Grid.Column="1"
-                        Click="RefreshFileList_Click"
-                        Template="{StaticResource StandardButtonCT}"/>
-                </Grid>
-                <ListView 
-                    Grid.Row="1" 
-                    Grid.Column="0" 
-                    ItemsSource="{Binding Data.History}"
-                    MinWidth="50">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <Button 
-                                Click="FolderHistory_Click"
-                                Template="{StaticResource StandardButtonCT}"
+                    <Grid Grid.Row="0" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBox x:Name="PathInput"
+                                     MinHeight="25"
+                                     MaxHeight="50"
+                                     Width="Auto"
+                                     Foreground="White"
+                                     Background="{StaticResource LightBlack}"
+                                     Text="{Binding CurrentPath, Mode=TwoWay}"
+                                     AcceptsReturn="True"
+                                     TextChanged="PathInput_TextChanged"
+                                     PreviewTextInput="PathInput_PreviewTextInput"/>
+
+                            <ProgressBar x:Name="DisplayProgressBar"
+                                         Background="Transparent"
+                                         IsIndeterminate="False"
+                                         Height="10"
+                                         BorderThickness="0"
+                                         VerticalAlignment="Center"
+                                         HorizontalAlignment="Stretch"/>
+
+                            <TextBlock x:Name="WorkingDisplay"
+                                       FontSize="12"/>
+                        </StackPanel>
+
+                        <Button x:Name="RefreshFileList"
+                                Content="Refresh"
                                 Width="Auto"
-                                Content="{Binding}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Grid.Column="1"
+                                Click="RefreshFileList_Click"
+                                Template="{StaticResource StandardButtonCT}"/>
+                    </Grid>
+                    <ListView Grid.Row="1" 
+                              Grid.Column="0" 
+                              ItemsSource="{Binding Data.History}"
+                              MinWidth="50"
+                              BorderBrush="{StaticResource DevBlue}"
+                              BorderThickness="1"
+                              Style="{StaticResource DarkListViewStyle}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <Button Click="FolderHistory_Click"
+                                            Template="{StaticResource StandardButtonCT}"
+                                            Width="Auto"
+                                            Content="{Binding}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
 
-                <ListView
-                    x:Name="MainListView"
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    ItemsSource="{Binding CurrentFiles}"
-                    MouseDoubleClick="ListView_MouseDoubleClick" 
-                    Style="{DynamicResource DarkListViewStyle}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel 
-                                Name="DataStackPanel"
-                                Margin="5">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="600"/>
-                                        <ColumnDefinition Width="100"/>
-                                    </Grid.ColumnDefinitions>
+                    <ListView x:Name="MainListView"
+                              Grid.Row="1"
+                              Grid.Column="1"
+                              ItemsSource="{Binding CurrentFiles}"
+                              MouseDoubleClick="ListView_MouseDoubleClick" 
+                              Style="{StaticResource DarkListViewStyle}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Name="DataStackPanel"
+                                            Margin="5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="600"/>
+                                            <ColumnDefinition Width="100"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <TextBlock
-                                        Grid.Column="0"
-                                        Text="{Binding Name}"
-                                        Foreground="{Binding Color}"/>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Name}"
+                                                   Foreground="{Binding Color}"/>
 
-                                    <TextBlock 
+                                        <TextBlock 
                                         Grid.Column="1"
                                         Foreground="White">
                                         <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
                                         <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
-                                    </TextBlock>
-                                </Grid>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
-        </TabItem>
+                                        </TextBlock>
+                                    </Grid>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </TabItem>
 
-        <TabItem Header="Details">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" MinWidth="100"/>
-                    <ColumnDefinition Width="5*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="8*"/>
-                </Grid.RowDefinitions>
-
-                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
-                    <Button 
-                        x:Name="PreviousTab"
-                        Click="Previous_Click"
-                        Content="Previous"
-                        Margin="7,0,4,0"
-                        Width="70"
-                        Height="40"
-                        Template="{StaticResource StandardButtonCT}"/>
-                    <Button 
-                        x:Name="NextTab"
-                        Click="Next_Click" 
-                        Content="Next"
-                        Margin="7,0,4,0"
-                        Width="70"
-                        Height="40"
-                        Template="{StaticResource StandardButtonCT}"/>
-                </StackPanel>
-
-                <Grid Grid.Row="0" Grid.Column="1">
+            <TabItem Header="Details">
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="10*"/>
-                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*" MinWidth="100"/>
+                        <ColumnDefinition Width="5*"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="8*"/>
+                    </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBox 
-                            MinHeight="25"
-                            MaxHeight="50"
-                            Width="Auto"
-                            Foreground="White"
-                            Background="{StaticResource LightBlack}"
-                            Text="{Binding CurrentPath, Mode=OneWay}"
-                            AcceptsReturn="True"
-                            TextChanged="PathInput_TextChanged"
-                            PreviewTextInput="PathInput_PreviewTextInput"
-                            IsReadOnly="True"/>
+                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                        <Button x:Name="PreviousTab"
+                                Click="Previous_Click"
+                                Content="Previous"
+                                Margin="7,0,4,0"
+                                Width="70"
+                                Height="40"
+                                Template="{StaticResource StandardButtonCT}"/>
+                        <Button x:Name="NextTab"
+                                Click="Next_Click" 
+                                Content="Next"
+                                Margin="7,0,4,0"
+                                Width="70"
+                                Height="40"
+                                Template="{StaticResource StandardButtonCT}"/>
+                    </StackPanel>
 
-                        <ProgressBar
+                    <Grid Grid.Row="0" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBox MinHeight="25"
+                                     MaxHeight="50"
+                                     Width="Auto"
+                                     Foreground="White"
+                                     Background="{StaticResource LightBlack}"
+                                     Text="{Binding CurrentPath, Mode=OneWay}"
+                                     AcceptsReturn="True"
+                                     TextChanged="PathInput_TextChanged"
+                                     PreviewTextInput="PathInput_PreviewTextInput"
+                                     IsReadOnly="True"/>
+
+                            <ProgressBar
                             x:Name="DetailsProgressBar"
                             Background="Transparent"
                             IsIndeterminate="False"
@@ -289,74 +281,65 @@
                             BorderThickness="0"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Stretch"/>
-                    </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView x:Name="SecondListView"
+                              ItemsSource="{Binding CurrentFiles}"
+                              Grid.Row="1"
+                              Grid.ColumnSpan="2"
+                              MouseDoubleClick="ListView_MouseDoubleClick" 
+                              Style="{DynamicResource DarkListViewStyle}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="500"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Name}"
+                                                   Foreground="{Binding Color}"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   Foreground="White">
+                                            <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
+                                            <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
+                                        </TextBlock>
+
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding IsHidden, Mode=OneWay}"/>
+
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding IsSystem, Mode=OneWay}"/>
+
+                                        <TextBlock Grid.Column="4"
+                                                   Text="{Binding IsReadOnly, Mode=OneWay}"/>
+
+                                        <TextBlock Grid.Column="5"
+                                                   Text="{Binding IsEncrypted, Mode=OneWay}"/>
+
+                                        <TextBlock Grid.Column="6"
+                                                   Text="{Binding IsCompressed, Mode=OneWay}"/>
+
+                                        <TextBlock Grid.Column="7"
+                                                   Text="{Binding IsDevice, Mode=OneWay}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </Grid>
+            </TabItem>
 
-                <ListView
-                    x:Name="SecondListView"
-                    ItemsSource="{Binding CurrentFiles}"
-                    Grid.Row="1"
-                    Grid.ColumnSpan="2"
-                    MouseDoubleClick="ListView_MouseDoubleClick" 
-                    Style="{DynamicResource DarkListViewStyle}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel
-                                Margin="5">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="500"/>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="50"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock
-                                    Grid.Column="0"
-                                    Text="{Binding Name}"
-                                    Foreground="{Binding Color}"/>
-
-                                    <TextBlock 
-                                    Grid.Column="1"
-                                    Foreground="White">
-                                    <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
-                                    <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
-                                    </TextBlock>
-
-                                    <TextBlock 
-                                    Grid.Column="2"
-                                    Text="{Binding IsHidden, Mode=OneWay}"/>
-
-                                    <TextBlock 
-                                    Grid.Column="3"
-                                    Text="{Binding IsSystem, Mode=OneWay}"/>
-
-                                    <TextBlock 
-                                    Grid.Column="4"
-                                    Text="{Binding IsReadOnly, Mode=OneWay}"/>
-
-                                    <TextBlock 
-                                    Grid.Column="5"
-                                    Text="{Binding IsEncrypted, Mode=OneWay}"/>
-
-                                    <TextBlock 
-                                    Grid.Column="6"
-                                    Text="{Binding IsCompressed, Mode=OneWay}"/>
-
-                                    <TextBlock 
-                                    Grid.Column="7"
-                                    Text="{Binding IsDevice, Mode=OneWay}"/>
-                                </Grid>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
-        </TabItem>
-
-    </TabControl>
+        </TabControl>
+    </Grid>
 </Window>

@@ -264,5 +264,23 @@ namespace MultiTool
 
         #endregion
 
+        private void MultiToolWindowChrome_MinimizeClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void MultiToolWindowChrome_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+        }
+
+        private void MultiToolWindowChrome_CloseClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            Close();
+        }
     }
 }

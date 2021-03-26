@@ -58,7 +58,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>15_multitool-512.ico</ApplicationIcon>
+    <ApplicationIcon>Images\multitool.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -90,11 +90,18 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DefaultWindowData.cs" />
+    <Compile Include="MultiToolWindowChrome.xaml.cs">
+      <DependentUpon>MultiToolWindowChrome.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\Explorer\ExplorerWindowData.cs" />
     <Compile Include="ViewModels\PathItemVM.cs" />
     <Compile Include="Windows\ISerializableWindow.cs" />
     <Compile Include="Windows\Download\DownloadData.cs" />
     <Compile Include="Windows\Power\PowerWindowData.cs" />
+    <Page Include="MultiToolWindowChrome.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\Download\DownloadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -169,21 +176,25 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="images\lock_ico.png" />
-    <Content Include="images\power_ico.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="images\sleep_ico.png">
+    <Content Include="Images\lock_ico.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="images\restart_ico.png" />
-    <Resource Include="15_multitool-512.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Content Include="images\download_ico.png">
+    <Content Include="Images\power_ico.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="images\explorer_ico.png">
+    <Content Include="Images\sleep_ico.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\restart_ico.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\multitool.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\download_ico.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\explorer_ico.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -204,6 +215,9 @@
       <Project>{545dc8fd-0e0f-43ea-917d-b6be03e43e48}</Project>
       <Name>BusinessLayer</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Fonts\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
