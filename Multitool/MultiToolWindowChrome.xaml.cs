@@ -9,8 +9,9 @@ namespace MultiTool
     /// </summary>
     public partial class MultiToolWindowChrome : UserControl
     {
-        private int closeListeners = 0;
-        private int minimizeListeners = 0;
+        private uint closeListeners = 0;
+        private uint minimizeListeners = 0;
+        private uint maximizedListeners = 0;
 
         public string Title { get; set; }
 
@@ -69,6 +70,33 @@ namespace MultiTool
             }
         }
 
+        public event RoutedEventHandler MaximizeClick
+        {
+            add
+            {
+                WindowMaximizeButton.Click += value;
+                if (!WindowMaximizeButton.IsEnabled)
+                {
+                    WindowMaximizeButton.IsEnabled = true;
+                }
+                maximizedListeners++;
+            }
+            remove
+            {
+                WindowMaximizeButton.Click -= value;
+
+                if (maximizedListeners > 0)
+                {
+                    maximizedListeners--;
+                }
+
+                if (maximizedListeners == 0)
+                {
+                    WindowMaximizeButton.IsEnabled = false;
+                }
+            }
+        }
+
         public MultiToolWindowChrome()
         {
             InitializeComponent();
@@ -101,7 +129,7 @@ namespace MultiTool
                 if (parent is Window parentWindow && parentWindow.BorderBrush != null)
                 {
                     Brush parentBrush = parentWindow.BorderBrush;
-                    ControlBorder.Background = parentBrush;
+                    ControlBorder.BorderBrush = parentBrush;
 
                     parentWindow.Activated += ParentWindow_Activated;
                     parentWindow.Deactivated += ParentWindow_Deactivated;
