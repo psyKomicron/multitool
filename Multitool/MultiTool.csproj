@@ -96,19 +96,14 @@
     <Compile Include="Windows\Explorer\ExplorerWindowData.cs" />
     <Compile Include="ViewModels\PathItemVM.cs" />
     <Compile Include="Windows\ISerializableWindow.cs" />
-    <Compile Include="Windows\Download\DownloadData.cs" />
     <Compile Include="Windows\Power\PowerWindowData.cs" />
+    <Compile Include="Windows\Special\SpreadsheetViewModel.cs" />
+    <Compile Include="Windows\Special\SpreadsheetWindow.xaml.cs">
+      <DependentUpon>SpreadsheetWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="MultiToolWindowChrome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Windows\Download\DownloadView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Windows\Download\DownloadWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -117,14 +112,6 @@
     <Compile Include="MainWindowData.cs" />
     <Compile Include="Tools\Tool.cs" />
     <Compile Include="Tools\WindowManager.cs" />
-    <Compile Include="Windows\Download\DownloadView.xaml.cs">
-      <DependentUpon>DownloadView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\UrlHistoryViewModel.cs" />
-    <Compile Include="Windows\Download\DownloadWindow.xaml.cs">
-      <DependentUpon>DownloadWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Page Include="Windows\Explorer\ExplorerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -134,6 +121,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\Power\PowerWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\Special\SpreadsheetWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -211,9 +202,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BusinessLayer\BusinessLayer.csproj">
+    <ProjectReference Include="..\BusinessLayer\Multitool_BL.csproj">
       <Project>{545dc8fd-0e0f-43ea-917d-b6be03e43e48}</Project>
-      <Name>BusinessLayer</Name>
+      <Name>Multitool_BL</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
