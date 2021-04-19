@@ -6,7 +6,6 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace MultiTool
 {
@@ -56,7 +55,7 @@ namespace MultiTool
 
         private void MultiToolMainWindow_Closed(object sender, EventArgs e) => Serialize();
 
-        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<DownloadWindow>();
+        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
 
         private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
 
