@@ -5,70 +5,22 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:MultiTool"
-    xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
-    x:Class="MultiTool.ExplorerWindow"
+    x:Class="MultiTool.Windows.ExplorerWindow"
     mc:Ignorable="d"
     Title="Explorer"
     MinHeight="300"
     MinWidth="700"
     d:DesignWidth="1000" d:DesignHeight="600"
     MouseDown="Window_MouseDown"
-    Style="{StaticResource DarkWindow}">
+    Style="{StaticResource DarkWindow}"
+    BorderBrush="{DynamicResource DevBlue}"
+    BorderThickness="0.8">
     <Window.Resources>
-
-        <SolidColorBrush x:Key="ListBorder" Color="#828790"/>
-        <Style x:Key="DarkListViewStyle" TargetType="{x:Type ListView}">
-            <Setter Property="Background" Value="{DynamicResource DarkBlack}"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
-            <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
-            <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
-            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ListView}">
-                        <Themes:ListBoxChrome x:Name="Bd" 
-                                              BorderBrush="{TemplateBinding BorderBrush}"
-                                              BorderThickness="{TemplateBinding BorderThickness}" 
-                                              Background="{TemplateBinding Background}" 
-                                              RenderMouseOver="False" 
-                                              RenderFocused="{TemplateBinding IsKeyboardFocusWithin}" 
-                                              SnapsToDevicePixels="true">
-                            <ScrollViewer 
-                                Padding="{TemplateBinding Padding}" 
-                                Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
-                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
-
-                                </ItemsPresenter>
-                            </ScrollViewer>
-                        </Themes:ListBoxChrome>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="Background" TargetName="Bd" Value="{DynamicResource LightBlack}"/>
-                            </Trigger>
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsGrouping" Value="true"/>
-                                    <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false"/>
-                                </MultiTrigger.Conditions>
-                                <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
-                            </MultiTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <Style TargetType="{x:Type Button}">
             <Setter Property="Height" Value="40"/>
             <Setter Property="Width" Value="20"/>
             <Setter Property="Margin" Value="7,0,4,0"/>
         </Style>
-
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -149,8 +101,7 @@
                                      Foreground="White"
                                      Background="{StaticResource LightBlack}"
                                      Text="{Binding CurrentPath, Mode=TwoWay}"
-                                     AcceptsReturn="True"
-                                     TextChanged="PathInput_TextChanged"
+                                     KeyUp="PathInput_KeyUp"
                                      PreviewTextInput="PathInput_PreviewTextInput"/>
 
                             <ProgressBar x:Name="DisplayProgressBar"
@@ -160,9 +111,13 @@
                                          BorderThickness="0"
                                          VerticalAlignment="Center"
                                          HorizontalAlignment="Stretch"/>
-
-                            <TextBlock x:Name="WorkingDisplay"
-                                       FontSize="12"/>
+                            <TextBox x:Name="ProgressError_TextBox"
+                                     Background="{StaticResource LightBlack}"
+                                     Foreground="Red"
+                                     BorderThickness="0"
+                                     IsReadOnly="True"
+                                     MinHeight="25"
+                                     MaxHeight="50"/>
                         </StackPanel>
 
                         <Button x:Name="RefreshFileList"
@@ -178,9 +133,12 @@
                               Grid.Column="0" 
                               ItemsSource="{Binding Data.History}"
                               MinWidth="50"
-                              BorderBrush="{StaticResource DevBlue}"
-                              BorderThickness="1"
                               Style="{StaticResource DarkListViewStyle}">
+                        <ListView.Resources>
+                            <Style TargetType="GridViewColumnHeader">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Style>
+                        </ListView.Resources>
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
@@ -191,6 +149,11 @@
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Clear" Click="HistoryListViewMenuItem_Click"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
                     </ListView>
 
                     <ListView x:Name="MainListView"
@@ -199,6 +162,11 @@
                               ItemsSource="{Binding CurrentFiles}"
                               MouseDoubleClick="ListView_MouseDoubleClick" 
                               Style="{StaticResource DarkListViewStyle}">
+                        <ListView.Resources>
+                            <Style TargetType="GridViewColumnHeader">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Style>
+                        </ListView.Resources>
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Name="DataStackPanel"
@@ -213,11 +181,10 @@
                                                    Text="{Binding Name}"
                                                    Foreground="{Binding Color}"/>
 
-                                        <TextBlock 
-                                        Grid.Column="1"
-                                        Foreground="White">
-                                        <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
-                                        <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Foreground="White">
+                                            <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
+                                            <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
                                         </TextBlock>
                                     </Grid>
                                 </StackPanel>
@@ -268,8 +235,6 @@
                                      Foreground="White"
                                      Background="{StaticResource LightBlack}"
                                      Text="{Binding CurrentPath, Mode=OneWay}"
-                                     AcceptsReturn="True"
-                                     TextChanged="PathInput_TextChanged"
                                      PreviewTextInput="PathInput_PreviewTextInput"
                                      IsReadOnly="True"/>
 
@@ -290,6 +255,11 @@
                               Grid.ColumnSpan="2"
                               MouseDoubleClick="ListView_MouseDoubleClick" 
                               Style="{DynamicResource DarkListViewStyle}">
+                        <ListView.Resources>
+                            <Style TargetType="GridViewColumnHeader">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Style>
+                        </ListView.Resources>
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="5">
