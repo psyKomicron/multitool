@@ -15,40 +15,30 @@ namespace MultiTool.ViewModels
         private Brush _color;
         private string _displaySizeUnit;
 
-        #region decorator
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected IFileSystemEntry PathItem { get => pathItem; }
+
+        #region PathItem
         public string Path => pathItem.Path;
-
         public long Size => pathItem.Size;
-
         public string Name => pathItem.Name;
-
         public FileAttributes Attributes => pathItem.Attributes;
-
         public bool IsHidden => pathItem.IsHidden;
-
         public bool IsSystem => pathItem.IsSystem;
-
         public bool IsReadOnly => pathItem.IsReadOnly;
-
         public bool IsEncrypted => pathItem.IsEncrypted;
-
         public bool IsCompressed => pathItem.IsCompressed;
-
         public bool IsDevice => pathItem.IsDevice;
-
         public bool IsDirectory => pathItem.IsDirectory;
         #endregion
 
+        #region decorator
         public string IsHiddenCM => pathItem.IsHidden ? greenCheckMark : string.Empty;
-
         public string IsSystemCM => pathItem.IsSystem ? greenCheckMark : string.Empty;
-
         public string IsReadOnlyCM => pathItem.IsReadOnly ? greenCheckMark : string.Empty;
-
         public string IsEncryptedCM => pathItem.IsEncrypted ? greenCheckMark : string.Empty;
-
         public string IsCompressedCM => pathItem.IsCompressed ? greenCheckMark : string.Empty;
-
         public string IsDeviceCM => pathItem.IsDevice ? greenCheckMark : string.Empty;
 
         public Brush Color
@@ -90,10 +80,7 @@ namespace MultiTool.ViewModels
                 NotifyPropertyChanged();
             }
         }
-
-        protected IFileSystemEntry PathItem { get => pathItem; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        #endregion
 
         public PathItemVM(IFileSystemEntry item)
         {
