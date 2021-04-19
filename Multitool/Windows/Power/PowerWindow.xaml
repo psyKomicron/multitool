@@ -266,7 +266,7 @@
         <multitool:MultiToolWindowChrome MouseDown="MultiToolWindowChrome_MouseDown"
                                          CloseClick="MultiToolWindowChrome_CloseClick"
                                          MinimizeClick="MultiToolWindowChrome_MinimizeClick"
-                                         Title="Scheduler"/>
+                                         Title="Power window"/>
 
         <TabControl Grid.Row="1"
                     Style="{StaticResource DarkTabControlTemplate}">
@@ -293,7 +293,7 @@
                     <Setter Property="Foreground" Value="White"/>
                 </Style>
             </TabControl.Resources>
-            <TabItem Header="Controls">
+            <TabItem Header="Shutdown menu">
                 <Grid Background="{StaticResource LightBlack}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="60*"/>
@@ -593,18 +593,37 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Options" Foreground="White">
+            <TabItem Header="Power plans"
+                     GotFocus="PowerPlanTabItem_GotFocus">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock x:Name="AvailablePowerPlans"
+                               Foreground="White"
+                               Margin="0,30,0,0"
+                                   Text="Nothing for now"/>
+                        <TextBlock x:Name="CurrentPowerPlan"
+                               Foreground="White"
+                                   Text="Nothing for now"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Options">
                 <Grid Background="{StaticResource LightBlack}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*"/>
                         <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
 
-                    <ListView
-                    x:Name="OptionsList"
-                    Background="Transparent"
-                    Grid.Column="0"
-                    HorizontalContentAlignment="Center">
+                    <ListView x:Name="OptionsList"
+                              Background="Transparent"
+                              Grid.Column="0"
+                              HorizontalContentAlignment="Center">
                         <ListViewItem>
                             <Button 
                             Content="General"
@@ -613,11 +632,13 @@
                         <ListViewItem>
                             <Button Content="Shutdown"/>
                         </ListViewItem>
+                        <ListViewItem>
+                            <Button Content="Get current power profile"/>
+                        </ListViewItem>
                     </ListView>
 
-                    <ScrollViewer 
-                    x:Name="ScrollViewer"
-                    Grid.Column="1">
+                    <ScrollViewer x:Name="ScrollViewer"
+                                  Grid.Column="1">
 
                         <Grid Grid.Column="1">
                             <Grid.RowDefinitions>
@@ -628,23 +649,23 @@
                             </Grid.RowDefinitions>
 
                             <StackPanel Orientation="Vertical" Grid.Row="0">
-                                <CheckBox
-                                IsChecked="True"
-                                Margin="10,10">
-                                    <TextBlock
-                                    Text="Force shutdown, restart or other actions"
-                                    ToolTip="This option will force any opened window/application to close. Unsaved open documents will not be saved"
-                                    Foreground="White"/>
+                                <CheckBox IsChecked="True"
+                                          Margin="10,10">
+
+                                    <TextBlock Text="Force shutdown, restart or other actions"
+                                               ToolTip="This option will force any opened window/application to close. Unsaved open documents will not be saved"
+                                               Foreground="White"/>
+
                                 </CheckBox>
 
-                                <CheckBox
-                                IsChecked="False"
-                                Margin="10,10">
-                                    <TextBlock
-                                    Text="Add a comment"
-                                    ToolTip="This option will add a comment to why the computer has restarted/shutdown ect... Usefull for administration purposes"
-                                    Foreground="White"/>
+                                <CheckBox IsChecked="False"
+                                          Margin="10,10">
+                                    <TextBlock Text="Add a comment"
+                                               ToolTip="This option will add a comment to why the computer has restarted/shutdown ect... Usefull for administration purposes"
+                                               Foreground="White"/>
                                 </CheckBox>
+
+                                <TextBlock x:Name="CurrentPowerProfile"/>
                             </StackPanel>
 
                         </Grid>

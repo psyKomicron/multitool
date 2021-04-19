@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using MultiTool.Tools;
+using BusinessLayer.NTInterop;
 
 namespace MultiTool
 {
@@ -27,6 +28,7 @@ namespace MultiTool
         private bool _buttonsEnabled = true;
         private Timer timer;
         private PowerController controller;
+        private PowerPlansInterop pwrPlanInterop = new PowerPlansInterop();
 
         private ElapsedEventHandler timerHandler;
 
@@ -310,5 +312,20 @@ namespace MultiTool
         #endregion
 
         #endregion
+
+        private void PowerPlanTabItem_GotFocus(object sender, RoutedEventArgs e)
+        {
+            List<string> names = pwrPlanInterop.GetPowerPlans();
+            string text = string.Empty;
+
+            foreach (string guid in names)
+            {
+                text += guid + ",\n";
+            }
+
+            AvailablePowerPlans.Text = text;
+
+            CurrentPowerPlan.Text = pwrPlanInterop.GetCurrentPowerPlan();
+        }
     }
 }
