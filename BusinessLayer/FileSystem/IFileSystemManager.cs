@@ -5,9 +5,9 @@ namespace BusinessLayer.FileSystem
 {
     public interface IFileSystemManager : IProgressNotifier
     {
-        double TTL { get; set; }
+        double CacheTimeout { get; set; }
 
-        void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list, CollectionAddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry;
+        void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken, ref IList<ItemType> list, AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry;
         string GetRealPath(string path);
         void Reset();
     }
