@@ -202,13 +202,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BusinessLayer\Multitool_BL.csproj">
+    <Folder Include="Fonts\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MultiTool_BL\Multitool_BL.csproj">
       <Project>{545dc8fd-0e0f-43ea-917d-b6be03e43e48}</Project>
       <Name>Multitool_BL</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Fonts\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

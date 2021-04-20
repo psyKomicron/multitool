@@ -1,5 +1,5 @@
-﻿using BusinessLayer.PreferencesManagers;
-using BusinessLayer.PreferencesManagers.Xml;
+﻿using MultiToolBusinessLayer.PreferencesManagers;
+using MultiToolBusinessLayer.PreferencesManagers.Xml;
 using MultiTool.Windows;
 using System;
 using System.Collections.Generic;

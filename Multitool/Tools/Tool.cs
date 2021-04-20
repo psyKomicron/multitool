@@ -1,6 +1,6 @@
-﻿using BusinessLayer.PreferencesManagers;
-using BusinessLayer.PreferencesManagers.Xml;
-using BusinessLayer.Reflection.ObjectFlatteners;
+﻿using MultiToolBusinessLayer.PreferencesManagers;
+using MultiToolBusinessLayer.PreferencesManagers.Xml;
+using MultiToolBusinessLayer.Reflection.ObjectFlatteners;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

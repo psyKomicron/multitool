@@ -1,4 +1,4 @@
-﻿using BusinessLayer.PreferencesManagers;
+﻿using MultiToolBusinessLayer.PreferencesManagers;
 using MultiTool.Tools;
 using System;
 using System.Diagnostics;

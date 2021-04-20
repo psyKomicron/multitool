@@ -1,6 +1,6 @@
-﻿using BusinessLayer;
-using BusinessLayer.FileSystem;
-using BusinessLayer.Parsers;
+﻿using MultiToolBusinessLayer;
+using MultiToolBusinessLayer.FileSystem;
+using MultiToolBusinessLayer.Parsers;
 using MultiTool.Tools;
 using MultiTool.ViewModels;
 using System;
@@ -24,10 +24,10 @@ namespace MultiTool.Windows
     /// </summary>
     public partial class ExplorerWindow : Window, ISerializableWindow, INotifyPropertyChanged
     {
-        private readonly UriCleaner cleaner = new UriCleaner();
         private string _currentPath;
-        private string nextPath = string.Empty;
-        private uint counter;
+        private string lastPath;
+        private readonly UriCleaner cleaner = new UriCleaner();
+        private Stack<string> pathHistory = new Stack<string>();
         private FileSystemManager fileSystemManager;
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private Stopwatch eventStopwatch = new Stopwatch();
@@ -83,9 +83,8 @@ namespace MultiTool.Windows
 
         private async Task DisplayFiles(string path)
         {
+            ClearDisplays();
             fileSystemManager.Notify = true;
-            CurrentFiles.Clear();
-            path = fileSystemManager.GetRealPath(path);
 
             string[] drives = Directory.GetLogicalDrives();
             for (int i = 0; i < drives.Length; i++)
@@ -104,7 +103,7 @@ namespace MultiTool.Windows
             cancellationTokenSource = new CancellationTokenSource();
 
             DisplayProgressBar.IsIndeterminate = true;
-            PathInput.IsReadOnly = true;
+            lastPath = CurrentPath;
             CurrentPath = path;
 
             await Task.Run(() => GetFiles(path, cancellationTokenSource), cancellationTokenSource.Token);
@@ -118,6 +117,7 @@ namespace MultiTool.Windows
         private void GetFiles(string path, CancellationTokenSource tokenSource)
         {
             IList<PathItemVM> pathItems = CurrentFiles;
+            eventStopwatch.Start();
             fileSystemManager.GetFileSystemEntries(path, tokenSource.Token, ref pathItems, AddDelegate);
             Application.Current.Dispatcher.Invoke(() => SortList());
         }
@@ -127,10 +127,7 @@ namespace MultiTool.Windows
         /// </summary>
         private void Next()
         {
-            if (!string.IsNullOrEmpty(nextPath))
-            {
-                _ = DisplayFiles(nextPath);
-            }
+            
         }
 
         /// <summary>
@@ -138,11 +135,9 @@ namespace MultiTool.Windows
         /// </summary>
         private void Back()
         {
-            nextPath = CurrentPath;
-            DirectoryInfo parent = Directory.GetParent(CurrentPath);
-            if (parent != null)
+            if (pathHistory.Count > 0)
             {
-                _ = DisplayFiles(parent.FullName);
+                _ = DisplayFiles(pathHistory.Pop());
             }
         }
 
@@ -157,6 +152,16 @@ namespace MultiTool.Windows
             {
                 CurrentFiles.Add(pathItems[i]);
             }
+        }
+
+        private void ClearDisplays()
+        {
+            CurrentFiles.Clear();
+
+            PathInput.Text = string.Empty;
+            PathInput.IsReadOnly = true;
+
+            ProgressError_TextBox.Text = string.Empty;
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
@@ -183,7 +188,8 @@ namespace MultiTool.Windows
             object folderName = (sender as Button)?.Content;
             if (folderName is string name)
             {
-                _ = DisplayFiles(name);
+                pathHistory.Push(CurrentPath);
+                _ = DisplayFiles(fileSystemManager.GetRealPath(name));
             }
         }
 
@@ -194,7 +200,8 @@ namespace MultiTool.Windows
                 string text = textBlock.Text;
                 if (!string.IsNullOrEmpty(text))
                 {
-                    string cleanText = cleaner.RemoveChariotReturns(text);
+                    pathHistory.Push(CurrentPath);
+                    string cleanText = fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(text));
 
                     _ = DisplayFiles(cleanText);
 
@@ -212,6 +219,7 @@ namespace MultiTool.Windows
 
             if (item != null && item is PathItemVM path)
             {
+                pathHistory.Push(CurrentPath);
                 _ = DisplayFiles(path.Path);
             }
         }
@@ -231,26 +239,18 @@ namespace MultiTool.Windows
 
         private void FileSystemManager_Progress(object sender, string message)
         {
-            if (!eventStopwatch.IsRunning)
-            {
-                eventStopwatch.Start();
-            }
-            else if (counter > 30 && eventStopwatch.ElapsedMilliseconds < 100)
-            {
-                eventStopwatch.Reset();
-                fileSystemManager.Notify = false;
-                Application.Current.Dispatcher.Invoke(() => PathInput.Text = "Progress update notifications muted for performance reasons.");
-            }
-
             if (sender == null)
             {
                 Application.Current.Dispatcher.Invoke(() => ProgressError_TextBox.Text = message);
+                return;
             }
-            else
+
+            if (eventStopwatch.ElapsedMilliseconds > 50) //ms interval between each notification
             {
                 Application.Current.Dispatcher.Invoke(() => CurrentPath = message);
+
+                eventStopwatch.Restart();
             }
-            counter++;
         }
 
         private void FileSystemManager_Exception(object sender, Exception exception)

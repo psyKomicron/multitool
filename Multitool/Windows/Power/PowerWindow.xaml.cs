@@ -1,7 +1,7 @@
-﻿using BusinessLayer.Controllers;
-using BusinessLayer.ProcessOptions;
-using BusinessLayer.ProcessOptions.Enums;
-using BusinessLayer.ProcessOptions.EnumTranslaters;
+﻿using MultiToolBusinessLayer.Controllers;
+using MultiToolBusinessLayer.ProcessOptions;
+using MultiToolBusinessLayer.ProcessOptions.Enums;
+using MultiToolBusinessLayer.ProcessOptions.EnumTranslaters;
 using MultiTool.Windows;
 using MultiTool.ViewModels;
 using System;
@@ -14,7 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using MultiTool.Tools;
-using BusinessLayer.NTInterop;
+using MultiToolBusinessLayer.NTInterop;
 
 namespace MultiTool
 {

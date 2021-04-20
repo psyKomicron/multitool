@@ -19,6 +19,8 @@ namespace MultiTool.ViewModels
         {
             LastUsedPath = @"c:\";
             History = new ObservableCollection<string>();
+
+            // new InteropFirstClass();
         }
     }
 }
