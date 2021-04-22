@@ -31,6 +31,7 @@
                                      MouseDown="MultiToolWindowChrome_MouseDown"
                                      CloseClick="MultiToolWindowChrome_CloseClick"
                                      MinimizeClick="MultiToolWindowChrome_MinimizeClick"
+                                     MaximizeClick="MultiToolWindowChrome_MaximizeClick"
                                      Title="Explorer"/>
         <TabControl 
             Grid.Row="1"
