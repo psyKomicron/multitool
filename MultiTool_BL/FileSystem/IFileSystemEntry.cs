@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     public interface IFileSystemEntry : IComparable, INotifyPropertyChanged, IEquatable<IFileSystemEntry>, IComparable<IFileSystemEntry>
     {

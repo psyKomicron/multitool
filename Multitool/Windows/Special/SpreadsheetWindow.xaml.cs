@@ -1,6 +1,11 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using Multitool.Sorting;
+using MultiTool.Tools;
+using MultiTool.ViewModels;
+using MultiTool.Windows.Special;
+using System;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -11,26 +16,76 @@ namespace MultiTool.Windows
     /// </summary>
     public partial class SpreadsheetWindow : Window, ISerializableWindow
     {
-        public ObservableCollection<SpreadsheetViewModel> Items { get; private set; }
+        public SpreadsheetWindowData Data { get; set; }
 
         public SpreadsheetWindow()
         {
             InitializeComponent();
             DataContext = this;
-            Items = new ObservableCollection<SpreadsheetViewModel>();
+            DatePicker.SelectedDate = DateTime.Now;
         }
 
+        #region ISerializableWindow
         public void Deserialize()
         {
-            
+            Data = WindowManager.PreferenceManager.GetWindowManager<SpreadsheetWindowData>(Name);
         }
 
         public void Serialize()
         {
-            
+            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
+        }
+        #endregion
+
+        private void DisplayNonValid(ValidationCodes code)
+        {
+            if ((code & ValidationCodes.EmptyName) == ValidationCodes.EmptyName)
+            {
+                NameTextBox.BorderBrush = new SolidColorBrush(Colors.Red);
+            }
+            else
+            {
+                NameTextBox.BorderBrush = new SolidColorBrush(Colors.White);
+            }
+
+            if ((code & ValidationCodes.MalformedDate) == ValidationCodes.MalformedDate)
+            {
+                DatePicker.BorderBrush = new SolidColorBrush(Colors.Red);
+            }
+            else
+            {
+                DatePicker.BorderBrush = new SolidColorBrush(Colors.White);
+            }
+
+            if ((code & ValidationCodes.EmptyRanking) == ValidationCodes.EmptyRanking)
+            {
+                RankingTextBox.BorderBrush = new SolidColorBrush(Colors.Red);
+            }
+            else
+            {
+                RankingTextBox.BorderBrush = new SolidColorBrush(Colors.White);
+            }
         }
 
-        #region event handlers
+        private async Task SortEntries()
+        {
+            await Task.Run(() =>
+            {
+                SpreadsheetVM[] spreadsheetVMs = ObservableCollectionQuickSort.Sort(Data.Items);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Data.Items.Clear();
+
+                    for (int i = spreadsheetVMs.Length - 1; i >= 0; i--)
+                    {
+                        Data.Items.Add(spreadsheetVMs[i]);
+                    }
+                });
+            });
+        }
+
+        #region events handlers
+        #region window & window chrome
         private void WindowChrome_MaximizeClick(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
@@ -63,84 +118,54 @@ namespace MultiTool.Windows
                 DragMove();
             }
         }
-
-        private void MenuItemClear_Click(object sender, RoutedEventArgs e)
-        {
-            Items.Clear();
-        }
+        #endregion
 
         private void InputTextBox_1_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                ValidationCodes validationCode = ValidateFields();
+                int ranking = 0;
+                string name = NameTextBox.Text;
+                DateTime? date = DatePicker.SelectedDate;
+                ValidationCodes validationCode = ValidationCodes.Validated;
+
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    validationCode |= ValidationCodes.EmptyName;
+                }
+                if (string.IsNullOrWhiteSpace(RankingTextBox.Text) || !int.TryParse(RankingTextBox.Text, out ranking))
+                {
+                    validationCode |= ValidationCodes.EmptyRanking;
+                }
+                if (date == null)
+                {
+                    validationCode |= ValidationCodes.MalformedDate;
+                }
+
+
                 if (validationCode == ValidationCodes.Validated)
                 {
-                    Items.Add(new SpreadsheetViewModel()
+                    Data.Items.Add(new SpreadsheetVM()
                     {
-                        Name = InputTextBox_1.Text,
-                        Ranking = InputTextBox_2.Text,
-                        Date = string.IsNullOrWhiteSpace(InputTextBox_3.Text) ? DateTime.Now.ToString() : InputTextBox_3.Text
+                        Name = name,
+                        Date = date ?? DateTime.Now,
+                        Ranking = ranking
                     });
-                }
 
-                if ((validationCode & ValidationCodes.EmptyName) == ValidationCodes.EmptyName)
-                {
-                    InputTextBox_1.BorderBrush = new SolidColorBrush(Colors.Red);
+                    _ = SortEntries();
                 }
                 else
                 {
-                    InputTextBox_1.BorderBrush = new SolidColorBrush(Colors.White);
-                }
-
-                if ((validationCode & ValidationCodes.EmptyRanking) == ValidationCodes.EmptyRanking)
-                {
-                    InputTextBox_2.BorderBrush = new SolidColorBrush(Colors.Red);
-                }
-                else
-                {
-                    InputTextBox_2.BorderBrush = new SolidColorBrush(Colors.White);
-                }
-
-                if ((validationCode & ValidationCodes.MalformedDate) == ValidationCodes.MalformedDate)
-                {
-                    InputTextBox_3.BorderBrush = new SolidColorBrush(Colors.Red);
-                }
-                else
-                {
-                    InputTextBox_3.BorderBrush = new SolidColorBrush(Colors.White);
+                    DisplayNonValid(validationCode);
                 }
             }
         }
 
-        private void MenuItemEdit_Click(object sender, RoutedEventArgs e)
+        private void MenuItemClear_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Data.Items.Clear();
         }
         #endregion
-
-        private ValidationCodes ValidateFields()
-        {
-            string name = InputTextBox_1.Text;
-            string ranking = InputTextBox_2.Text;
-            string date = InputTextBox_3.Text;
-            ValidationCodes validationCode = ValidationCodes.Validated;
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                validationCode |= ValidationCodes.EmptyName;
-            }
-            if (string.IsNullOrWhiteSpace(ranking))
-            {
-                validationCode |= ValidationCodes.EmptyRanking;
-            }
-            if (string.IsNullOrWhiteSpace(date))
-            {
-                validationCode |= ValidationCodes.MalformedDate;
-            }
-
-            return validationCode;
-        }
     }
 
     enum ValidationCodes

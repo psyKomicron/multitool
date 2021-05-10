@@ -1,8 +1,8 @@
-﻿using MultiToolBusinessLayer.Reflection.ObjectFlatteners;
+﻿using Multitool.Reflection.ObjectFlatteners;
 using System;
 using System.Collections.Generic;
 
-namespace MultiToolBusinessLayer.PreferencesManagers
+namespace Multitool.PreferencesManagers
 {
     internal sealed class WindowPreferenceManager : IEquatable<WindowPreferenceManager>
     {
@@ -45,8 +45,8 @@ namespace MultiToolBusinessLayer.PreferencesManagers
 
         public void SetProperties<T>(T o) where T : class
         {
-            XmlObjectFlattener flattener = new XmlObjectFlattener();
-            flattener.Flatten(o);
+            CommonXmlObjectFlattener flattener = new CommonXmlObjectFlattener();
+            flattener.Flatten(o, typeof(T));
         }
     }
 }

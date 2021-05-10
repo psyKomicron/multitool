@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
-namespace MultiToolBusinessLayer.Reflection.ObjectFlatteners
+namespace Multitool.Reflection.ObjectFlatteners
 {
     public interface IObjectFlattener<FlatType>
     {
-        FlatType Flatten<T>(T o) where T : class;
+        FlatType Flatten(object o, Type objectType);
     }
 }

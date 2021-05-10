@@ -1,8 +1,8 @@
-﻿using MultiToolBusinessLayer.ProcessOptions.Enums;
+﻿using Multitool.ProcessOptions.Enums;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MultiToolBusinessLayer.ProcessOptions.EnumTranslaters
+namespace Multitool.ProcessOptions.EnumTranslaters
 {
     public class PowerEnumTranslater : IEnumTranslater<PowerOptions>
     {

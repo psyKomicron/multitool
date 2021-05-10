@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     internal class DirectoryEntry : FileSystemEntry
     {

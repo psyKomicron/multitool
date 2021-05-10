@@ -1,8 +1,8 @@
-﻿using MultiToolBusinessLayer.ProcessOptions.EnumTranslaters;
+﻿using Multitool.ProcessOptions.EnumTranslaters;
 using System;
 using System.Collections.Generic;
 
-namespace MultiToolBusinessLayer.ProcessOptions
+namespace Multitool.ProcessOptions
 {
     public class StartOptions<EnumType> where EnumType : Enum
     {

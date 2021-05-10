@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiToolBusinessLayer.ProcessOptions.Enums
+namespace Multitool.ProcessOptions.Enums
 {
     public enum PowerOptions
     {

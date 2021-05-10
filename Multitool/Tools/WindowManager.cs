@@ -1,5 +1,5 @@
-﻿using MultiToolBusinessLayer.PreferencesManagers;
-using MultiToolBusinessLayer.PreferencesManagers.Xml;
+﻿using Multitool.PreferencesManagers;
+using Multitool.PreferencesManagers.Xml;
 using MultiTool.Windows;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace MultiTool.Tools
             }
         }
 
-        public static IPreferenceManager GetPreferenceManager() => preferenceManager;
+        public static IPreferenceManager PreferenceManager => preferenceManager;
 
         /// <summary>
         /// Opens a window of the <typeparamref name="WindowType"/> type if a window of <typeparamref name="WindowType"/>

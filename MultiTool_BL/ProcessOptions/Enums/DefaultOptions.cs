@@ -1,4 +1,4 @@
-﻿namespace MultiToolBusinessLayer.ProcessOptions.Enums
+﻿namespace Multitool.ProcessOptions.Enums
 {
     public enum DefaultOptions
     {

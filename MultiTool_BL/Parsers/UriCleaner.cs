@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-namespace MultiToolBusinessLayer.Parsers
+namespace Multitool.Parsers
 {
     public class UriCleaner
     {

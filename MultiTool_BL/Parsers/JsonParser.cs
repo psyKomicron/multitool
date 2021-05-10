@@ -1,10 +1,10 @@
-﻿using MultiToolBusinessLayer.Parsers.Errors;
-using MultiToolBusinessLayer.PreferencesManagers;
-using MultiToolBusinessLayer.PreferencesManagers.Json;
+﻿using Multitool.Parsers.Errors;
+using Multitool.PreferencesManagers;
+using Multitool.PreferencesManagers.Json;
 using System;
 using System.Collections.Generic;
 
-namespace MultiToolBusinessLayer.Parsers
+namespace Multitool.Parsers
 {
     internal static class JsonParser
     {

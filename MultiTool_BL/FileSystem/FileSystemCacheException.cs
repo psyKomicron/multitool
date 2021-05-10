@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     internal class FileSystemCacheException : Exception
     {

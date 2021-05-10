@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiToolBusinessLayer.Parsers.Errors
+namespace Multitool.Parsers.Errors
 {
     public class JsonFormatException : FormatException
     {

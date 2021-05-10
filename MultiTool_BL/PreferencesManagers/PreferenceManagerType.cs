@@ -1,4 +1,4 @@
-﻿namespace MultiToolBusinessLayer.PreferencesManagers
+﻿namespace Multitool.PreferencesManagers
 {
     public enum PreferenceManagerType
     {

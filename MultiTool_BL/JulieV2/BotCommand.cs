@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Multitool.Reflection.ObjectFlatteners;
+using System;
+using System.Collections.Generic;
 
-namespace MultiToolBusinessLayer.JulieV2
+namespace Multitool.JulieV2
 {
     public class BotCommand
     {
@@ -10,5 +12,7 @@ namespace MultiToolBusinessLayer.JulieV2
         public DateTime Date { get; internal set; }
         public bool Failed { get; internal set; }
         public string Name { get; internal set; }
+        [ListFlattener(nameof(Messages), typeof(CommonXmlObjectFlattener))]
+        public List<string> Messages { get; internal set; }
     }
 }

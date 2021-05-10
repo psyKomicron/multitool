@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     public class FileEntry : FileSystemEntry
     {

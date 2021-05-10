@@ -1,4 +1,4 @@
-﻿namespace MultiToolBusinessLayer
+﻿namespace Multitool
 {
     public interface IProgressNotifier
     {

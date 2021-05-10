@@ -1,7 +1,7 @@
-﻿using MultiToolBusinessLayer.Controllers;
-using MultiToolBusinessLayer.ProcessOptions;
-using MultiToolBusinessLayer.ProcessOptions.Enums;
-using MultiToolBusinessLayer.ProcessOptions.EnumTranslaters;
+﻿using Multitool.Controllers;
+using Multitool.ProcessOptions;
+using Multitool.ProcessOptions.Enums;
+using Multitool.ProcessOptions.EnumTranslaters;
 using MultiTool.Windows;
 using MultiTool.ViewModels;
 using System;
@@ -14,7 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using MultiTool.Tools;
-using MultiToolBusinessLayer.NTInterop;
+using Multitool.NTInterop;
 
 namespace MultiTool
 {
@@ -54,12 +54,12 @@ namespace MultiTool
 
         public void Serialize()
         {
-            WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
+            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
         }
 
         public void Deserialize()
         {
-            Data = WindowManager.GetPreferenceManager().GetWindowManager<PowerWindowData>(Name);
+            Data = WindowManager.PreferenceManager.GetWindowManager<PowerWindowData>(Name);
             if (Data == null)
             {
                 Data = new PowerWindowData();

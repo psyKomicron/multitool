@@ -1,4 +1,4 @@
-﻿using MultiToolBusinessLayer.Network.Events;
+﻿using Multitool.Network.Events;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiToolBusinessLayer.Network
+namespace Multitool.Network
 {
     /// <summary>
     /// Used to connect to a url and execute a GET request on it.

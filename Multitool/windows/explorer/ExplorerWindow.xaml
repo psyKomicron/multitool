@@ -8,18 +8,26 @@
     x:Class="MultiTool.Windows.ExplorerWindow"
     mc:Ignorable="d"
     Title="Explorer"
-    MinHeight="300"
-    MinWidth="700"
+    MinHeight="650"
+    MinWidth="800"
     d:DesignWidth="1000" d:DesignHeight="600"
     MouseDown="Window_MouseDown"
     Style="{StaticResource DarkWindow}"
     BorderBrush="{DynamicResource DevBlue}"
-    BorderThickness="0.8">
+    BorderThickness="0.8"
+    Loaded="Window_Loaded"
+    Closing="Window_Closing">
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Width" Value="20"/>
-            <Setter Property="Margin" Value="7,0,4,0"/>
+            <Setter Property="MinHeight" Value="35"/>
+            <Setter Property="MinWidth" Value="35"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="MaxHeight" Value="50"/>
+            <Setter Property="MaxWidth" Value="50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
         </Style>
     </Window.Resources>
     <Grid>
@@ -27,12 +35,13 @@
             <RowDefinition Height="1*"/>
             <RowDefinition Height="20*"/>
         </Grid.RowDefinitions>
-        <local:MultiToolWindowChrome Grid.Row="0"
-                                     MouseDown="MultiToolWindowChrome_MouseDown"
-                                     CloseClick="MultiToolWindowChrome_CloseClick"
-                                     MinimizeClick="MultiToolWindowChrome_MinimizeClick"
-                                     MaximizeClick="MultiToolWindowChrome_MaximizeClick"
-                                     Title="Explorer"/>
+        <local:MultiToolWindowChrome 
+            Grid.Row="0"
+            MouseDown="MultiToolWindowChrome_MouseDown"
+            CloseClick="MultiToolWindowChrome_CloseClick"
+            MinimizeClick="MultiToolWindowChrome_MinimizeClick"
+            MaximizeClick="MultiToolWindowChrome_MaximizeClick"
+            Title="Explorer"/>
         <TabControl 
             Grid.Row="1"
             Style="{StaticResource DarkTabControlTemplate}">
@@ -59,6 +68,14 @@
                     <Setter Property="Foreground" Value="White"/>
                 </Style>
             </TabControl.Resources>
+            
+            <TabItem Header="Home">
+                <Grid>
+                    <StackPanel x:Name="Disks_StackPanel"
+                                Orientation="Vertical"
+                                HorizontalAlignment="Stretch"/>
+                </Grid>
+            </TabItem>
 
             <TabItem Header="Explorer">
                 <Grid>
@@ -71,21 +88,18 @@
                         <RowDefinition Height="8*"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button x:Name="PreviousButton"
                                 Click="Previous_Click"
-                                Content="Previous"
-                                Margin="7,0,4,0"
-                                Width="70"
-                                Height="40"
-                                Template="{StaticResource StandardButtonCT}"/>
+                                Content="◀"
+                                FontSize="30"
+                                Template="{StaticResource IconButtonControlTemplate}"/>
                         <Button x:Name="NextButton"
                                 Click="Next_Click" 
-                                Content="Next"
-                                Margin="7,0,4,0"
-                                Width="70"
-                                Height="40"
-                                Template="{StaticResource StandardButtonCT}"/>
+                                Content="▶"
+                                FontSize="30"
+                                Margin="30,0,0,0"
+                                Template="{StaticResource IconButtonControlTemplate}"/>
                     </StackPanel>
 
                     <Grid Grid.Row="0" Grid.Column="1">
@@ -112,28 +126,38 @@
                                          BorderThickness="0"
                                          VerticalAlignment="Center"
                                          HorizontalAlignment="Stretch"/>
-                            <TextBox x:Name="ProgressError_TextBox"
+                            <TextBox x:Name="Progress_TextBox"
                                      Background="{StaticResource LightBlack}"
-                                     Foreground="Red"
+                                     FontFamily="Cascadia Code Light"
+                                     Foreground="White"
                                      BorderThickness="0"
                                      IsReadOnly="True"
+                                     TextAlignment="Left"
+                                     VerticalContentAlignment="Center"
                                      MinHeight="25"
                                      MaxHeight="50"/>
                         </StackPanel>
 
-                        <Button x:Name="RefreshFileList"
-                                Content="Refresh"
-                                Width="Auto"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Grid.Column="1"
-                                Click="RefreshFileList_Click"
-                                Template="{StaticResource StandardButtonCT}"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="RefreshFileList"
+                                    Content="🔄"
+                                    FontSize="20"
+                                    Click="RefreshFileList_Click"
+                                    Template="{StaticResource IconButtonControlTemplate}"/>
+                            <Button x:Name="CancelAction_Button"
+                                    Content="✖"
+                                    FontSize="20"
+                                    Click="CancelAction_Button_Click"
+                                    IsEnabled="False"
+                                    Template="{StaticResource IconButtonControlTemplate}"/>
+                        </StackPanel>
                     </Grid>
-                    <ListView Grid.Row="1" 
+                    <ListView x:Name="History_ListView"
+                              Grid.Row="1" 
                               Grid.Column="0" 
                               ItemsSource="{Binding Data.History}"
                               MinWidth="50"
+                              MouseDoubleClick="History_ListView_MouseDoubleClick"
                               Style="{StaticResource DarkListViewStyle}">
                         <ListView.Resources>
                             <Style TargetType="GridViewColumnHeader">
@@ -142,12 +166,7 @@
                         </ListView.Resources>
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel>
-                                    <Button Click="FolderHistory_Click"
-                                            Template="{StaticResource StandardButtonCT}"
-                                            Width="Auto"
-                                            Content="{Binding}"/>
-                                </StackPanel>
+                                <TextBlock Text="{Binding}" Margin="7"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                         <ListView.ContextMenu>
@@ -170,147 +189,57 @@
                         </ListView.Resources>
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Name="DataStackPanel"
-                                            Margin="5">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="600"/>
-                                            <ColumnDefinition Width="100"/>
-                                        </Grid.ColumnDefinitions>
+                                <Grid Margin="5"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition MinWidth="500"/>
+                                        <ColumnDefinition MinWidth="100"/>
+                                        <ColumnDefinition MinWidth="100"/>
+                                    </Grid.ColumnDefinitions>
 
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Name}"
-                                                   Foreground="{Binding Color}"/>
+                                    <TextBlock 
+                                        Grid.Column="0"
+                                        Text="{Binding Name}"
+                                        Foreground="{Binding Color}"
+                                        Margin="0,0,3,0"/>
 
-                                        <TextBlock Grid.Column="1"
-                                                   Foreground="White">
+                                    <TextBlock 
+                                        Grid.Column="1"
+                                        Foreground="White">
                                             <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
                                             <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
-                                        </TextBlock>
-                                    </Grid>
-                                </StackPanel>
+                                    </TextBlock>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <StackPanel.Resources>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Margin" Value="5"/>
+                                            </Style>
+                                        </StackPanel.Resources>
+                                        <TextBlock Text="{Binding IsHiddenEcon}"
+                                                   ToolTip="Hidden"/>
+                                        
+                                        <TextBlock Text="{Binding IsSystemEcon}"
+                                                   ToolTip="System"/>
+                                        
+                                        <TextBlock Text="{Binding IsReadOnlyEcon}"
+                                                   ToolTip="Read-only"/>
+                                        
+                                        <TextBlock Text="{Binding IsEncryptedEcon}"
+                                                   ToolTip="Encrypted"/>
+                                        
+                                        <TextBlock Text="{Binding IsCompressedEcon}"
+                                                   ToolTip="Compressed"/>
+                                        
+                                        <TextBlock Text="{Binding IsDeviceEcon}"
+                                                   ToolTip="Device"/>
+                                    </StackPanel>
+                                </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
                 </Grid>
             </TabItem>
-
-            <TabItem Header="Details">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*" MinWidth="100"/>
-                        <ColumnDefinition Width="5*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="8*"/>
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
-                        <Button x:Name="PreviousTab"
-                                Click="Previous_Click"
-                                Content="Previous"
-                                Margin="7,0,4,0"
-                                Width="70"
-                                Height="40"
-                                Template="{StaticResource StandardButtonCT}"/>
-                        <Button x:Name="NextTab"
-                                Click="Next_Click" 
-                                Content="Next"
-                                Margin="7,0,4,0"
-                                Width="70"
-                                Height="40"
-                                Template="{StaticResource StandardButtonCT}"/>
-                    </StackPanel>
-
-                    <Grid Grid.Row="0" Grid.Column="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="10*"/>
-                            <ColumnDefinition Width="2*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBox MinHeight="25"
-                                     MaxHeight="50"
-                                     Width="Auto"
-                                     Foreground="White"
-                                     Background="{StaticResource LightBlack}"
-                                     Text="{Binding CurrentPath, Mode=OneWay}"
-                                     PreviewTextInput="PathInput_PreviewTextInput"
-                                     IsReadOnly="True"/>
-
-                            <ProgressBar
-                            x:Name="DetailsProgressBar"
-                            Background="Transparent"
-                            IsIndeterminate="False"
-                            Height="10"
-                            BorderThickness="0"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Stretch"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <ListView x:Name="SecondListView"
-                              ItemsSource="{Binding CurrentFiles}"
-                              Grid.Row="1"
-                              Grid.ColumnSpan="2"
-                              MouseDoubleClick="ListView_MouseDoubleClick" 
-                              Style="{DynamicResource DarkListViewStyle}">
-                        <ListView.Resources>
-                            <Style TargetType="GridViewColumnHeader">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Style>
-                        </ListView.Resources>
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="5">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="500"/>
-                                            <ColumnDefinition Width="100"/>
-                                            <ColumnDefinition Width="50"/>
-                                            <ColumnDefinition Width="50"/>
-                                            <ColumnDefinition Width="50"/>
-                                            <ColumnDefinition Width="50"/>
-                                            <ColumnDefinition Width="50"/>
-                                            <ColumnDefinition Width="50"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Name}"
-                                                   Foreground="{Binding Color}"/>
-
-                                        <TextBlock Grid.Column="1"
-                                                   Foreground="White">
-                                            <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
-                                            <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
-                                        </TextBlock>
-
-                                        <TextBlock Grid.Column="2"
-                                                   Text="{Binding IsHidden, Mode=OneWay}"/>
-
-                                        <TextBlock Grid.Column="3"
-                                                   Text="{Binding IsSystem, Mode=OneWay}"/>
-
-                                        <TextBlock Grid.Column="4"
-                                                   Text="{Binding IsReadOnly, Mode=OneWay}"/>
-
-                                        <TextBlock Grid.Column="5"
-                                                   Text="{Binding IsEncrypted, Mode=OneWay}"/>
-
-                                        <TextBlock Grid.Column="6"
-                                                   Text="{Binding IsCompressed, Mode=OneWay}"/>
-
-                                        <TextBlock Grid.Column="7"
-                                                   Text="{Binding IsDevice, Mode=OneWay}"/>
-                                    </Grid>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </Grid>
-            </TabItem>
-
         </TabControl>
     </Grid>
 </Window>

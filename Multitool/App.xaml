@@ -241,9 +241,7 @@
                                               SnapsToDevicePixels="true">
                             <ScrollViewer Padding="{TemplateBinding Padding}" 
                                           Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
-                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
-
-                                </ItemsPresenter>
+                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                             </ScrollViewer>
                         </Themes:ListBoxChrome>
                         <ControlTemplate.Triggers>

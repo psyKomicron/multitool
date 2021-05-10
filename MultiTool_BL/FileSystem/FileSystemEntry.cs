@@ -1,9 +1,8 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     public abstract class FileSystemEntry : IFileSystemEntry
     {

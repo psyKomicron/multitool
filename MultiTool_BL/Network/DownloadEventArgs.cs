@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultiToolBusinessLayer.Network.Events
+namespace Multitool.Network.Events
 {
     public class DownloadEventArgs : EventArgs
     {

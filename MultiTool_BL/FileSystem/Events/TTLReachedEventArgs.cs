@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultiToolBusinessLayer.FileSystem.Events
+namespace Multitool.FileSystem.Events
 {
     internal class TTLReachedEventArgs : EventArgs
     {

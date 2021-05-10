@@ -4,7 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mt="clr-namespace:MultiTool"
+        xmlns:mt="clr-namespace:MultiTool" xmlns:usercontrols="clr-namespace:MultiTool.UserControls"
         mc:Ignorable="d"
         Title="Spreadsheet"
         Height="700"
@@ -12,8 +12,8 @@
         Style="{StaticResource DarkWindow}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*" MinHeight="20px"/>
+            <RowDefinition Height="20*"/>
         </Grid.RowDefinitions>
         <mt:MultiToolWindowChrome x:Name="WindowChrome"
                                   Grid.Row="0"
@@ -23,117 +23,74 @@
                                   MouseDown="WindowChrome_MouseDown"
                                   Title="Ayaya"/>
 
-        <TabControl Grid.Row="1"
-                    Style="{StaticResource DarkTabControlTemplate}">
-            <TabControl.Resources>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
-                                    <ContentPresenter x:Name="ContentSite"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Center"
-                                        ContentSource="Header"
-                                        Margin="10,2"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="False">
-                                        <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Foreground" Value="White"/>
-                </Style>
-            </TabControl.Resources>
-            <TabItem Header="1">
+        <Grid Margin="0,3,0,0"
+              Width="Auto"
+              Height="Auto"
+              Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="20*"/>
+            </Grid.RowDefinitions>
 
-                <Grid Margin="0,3,0,0"
+            <TextBox x:Name="NameTextBox"
+                    KeyUp="InputTextBox_1_KeyUp"
+                    VerticalContentAlignment="Center"
+                    Margin="10,0,5,0"
+                    Grid.Row="0"
+                    Grid.Column="0"/>
+
+            <DatePicker x:Name="DatePicker"
+                        KeyUp="InputTextBox_1_KeyUp"
+                        VerticalContentAlignment="Center"
+                        Margin="5,0,5,0"
+                        Grid.Row="0"
+                        Grid.Column="1"/>
+
+            <TextBox x:Name="RankingTextBox"
+                     Text="0"
+                    KeyUp="InputTextBox_1_KeyUp"
+                    VerticalContentAlignment="Center"
+                    Margin="5,0,10,0"
+                    Grid.Row="0"
+                    Grid.Column="2"/>
+
+            <ListView x:Name="ListView_1"
+                      Style="{StaticResource DarkListViewStyle}"
+                      ItemsSource="{Binding Data.Items}"
                       Width="Auto"
-                      Height="Auto">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition MaxHeight="30"/>
-                        <RowDefinition MinHeight="590"/>
-                    </Grid.RowDefinitions>
+                      VerticalAlignment="Stretch"
+                      Margin="5"
+                      Grid.Row="1"
+                      Grid.ColumnSpan="3">
+                <ListView.Resources>
+                    <Style TargetType="GridViewColumnHeader">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                    </Style>
+                </ListView.Resources>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <usercontrols:SpreadsheetItemUserControl
+                            WidthMargin="70"
+                            ItemName="{Binding Name}"
+                            ItemDate="{Binding Date}"
+                            ItemRanking="{Binding Ranking}"
+                            ItemPadding="{Binding Path=Padding, ElementName=ListView_1}"
+                            ItemWidth="{Binding Path=ActualWidth, ElementName=ListView_1}"
+                            Height="{Binding Path=ActualHeight, ElementName=ListView_1}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Clear" Click="MenuItemClear_Click"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+            </ListView>
+        </Grid>
 
-                    <TextBox x:Name="InputTextBox_1"
-                             Text="Name"
-                             KeyUp="InputTextBox_1_KeyUp"
-                             VerticalContentAlignment="Center"
-                             Margin="10,0,5,0"
-                             Grid.Row="0"
-                             Grid.Column="0"/>
-
-                    <TextBox x:Name="InputTextBox_2"
-                             KeyUp="InputTextBox_1_KeyUp"
-                             VerticalContentAlignment="Center"
-                             Margin="5,0,5,0"
-                             Grid.Row="0"
-                             Grid.Column="1"/>
-
-                    <TextBox x:Name="InputTextBox_3"
-                             KeyUp="InputTextBox_1_KeyUp"
-                             VerticalContentAlignment="Center"
-                             Margin="5,0,10,0"
-                             Grid.Row="0"
-                             Grid.Column="2"/>
-
-                    <ListView x:Name="ListView_1"
-                              Style="{StaticResource DarkListViewStyle}"
-                              ItemsSource="{Binding Items}"
-                              Margin="5"
-                              Grid.Row="1"
-                              Grid.ColumnSpan="3">
-                        <ListView.Resources>
-                            <Style TargetType="GridViewColumnHeader">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Style>
-                        </ListView.Resources>
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="10*"/>
-                                            <ColumnDefinition Width="2*"/>
-                                            <ColumnDefinition Width="6*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Label Content="{Binding Name}"
-                                               Foreground="White"
-                                               Grid.Column="0"/>
-
-                                        <Label Content="{Binding Date}"
-                                               Foreground="White"
-                                               Grid.Column="1"/>
-
-                                        <Label Content="{Binding Ranking}"
-                                               Foreground="White"
-                                               Grid.Column="2"/>
-                                    </Grid>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                        <ListView.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Clear" Click="MenuItemClear_Click"/>
-                                <MenuItem Header="Edit" Click="MenuItemEdit_Click"/>
-                            </ContextMenu>
-                        </ListView.ContextMenu>
-                    </ListView>
-                </Grid>
-
-            </TabItem>
-
-            <TabItem Header="2">
-
-            </TabItem>
-        </TabControl>
     </Grid>
 </Window>

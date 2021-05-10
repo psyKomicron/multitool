@@ -1,8 +1,6 @@
-using BusinessLayer;
-using BusinessLayer.FileSystem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MultiToolBusinessLayer;
-using MultiToolBusinessLayer.FileSystem;
+using Multitool.FileSystem;
+using Multitool.Sorting;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +8,7 @@ using System.Threading;
 
 namespace BusinessLayer.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class QuickSortUnitTest
     {
         [TestMethod]
@@ -74,7 +72,7 @@ namespace BusinessLayer.Tests
         public void QuickSortFullTest()
         {
             FileSystemManager manager = FileSystemManager.Get();
-            CancellationToken cancellationToken = new CancellationToken();
+            CancellationToken cancellationToken = new();
             IList<IFileSystemEntry> entries = new List<IFileSystemEntry>();
             string path = @"C:\Users\julie\Documents";
 
@@ -88,6 +86,24 @@ namespace BusinessLayer.Tests
             for (int i = 0; i < array.Length - 1; i++)
             {
                 Assert.IsFalse(array[i].CompareTo(array[i + 1]) > 0, nameof(array) + " is not sorted.");
+            }
+        }
+
+        [TestMethod]
+        public void SortPerfTest()
+        {
+            List<int> randomList = new(100);
+            Random rand = new();
+            for (int i = 0; i < 100; i++)
+            {
+                randomList.Add(rand.Next());
+            }
+
+            for (int i = 0; i < 1000000; i++)
+            {
+                int[] array = new int[randomList.Count];
+                randomList.CopyTo(array, 0);
+                QuickSort.Sort(array, 0, array.Length - 1);
             }
         }
     }

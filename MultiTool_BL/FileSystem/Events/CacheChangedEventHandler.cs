@@ -1,4 +1,4 @@
-﻿namespace MultiToolBusinessLayer.FileSystem.Events
+﻿namespace Multitool.FileSystem.Events
 {
     internal delegate void CacheChangedEventHandler(object sender, FileSystemCacheEventArgs e);
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     internal class CacheFrozenException : Exception
     {

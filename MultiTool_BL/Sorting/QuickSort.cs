@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace MultiToolBusinessLayer
+namespace Multitool.Sorting
 {
-    public static class QuickSort
+    public class QuickSort
     {
         static void Swap<T>(T[] array, int i, int j)
         {
@@ -29,6 +29,21 @@ namespace MultiToolBusinessLayer
 
         public static void Sort<T>(T[] array, int low, int high) where T : IComparable<T>
         {
+            #region bounds checks && null array
+            if (high >= array.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(high));
+            } 
+            if (low < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(low));
+            }
+            if (array == null)
+            {
+                throw new ArgumentException("Array was null", nameof(array));
+            }
+            #endregion
+
             if (low < high)
             {
                 int pIndex = Partition(array, low, high);

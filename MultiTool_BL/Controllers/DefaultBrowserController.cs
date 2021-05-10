@@ -1,8 +1,8 @@
-﻿using MultiToolBusinessLayer.ProcessOptions.Enums;
+﻿using Multitool.ProcessOptions.Enums;
 using System;
 using System.Diagnostics;
 
-namespace MultiToolBusinessLayer.Controllers
+namespace Multitool.Controllers
 {
     public class DefaultBrowserController : Controller<DefaultOptions>
     {

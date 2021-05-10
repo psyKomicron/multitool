@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MultiToolBusinessLayer.ProcessOptions.EnumTranslaters
+namespace Multitool.ProcessOptions.EnumTranslaters
 {
     public interface IEnumTranslater<EnumType> where EnumType : Enum
     {

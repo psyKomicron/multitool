@@ -1,14 +1,14 @@
-﻿using MultiToolBusinessLayer.Parsers;
-using MultiToolBusinessLayer.Parsers.Errors;
-using MultiToolBusinessLayer.Reflection.ObjectFlatteners;
-using MultiToolBusinessLayer.Reflection.PropertyLoaders;
+﻿using Multitool.Parsers;
+using Multitool.Parsers.Errors;
+using Multitool.Reflection.ObjectFlatteners;
+using Multitool.Reflection.PropertyLoaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace MultiToolBusinessLayer.PreferencesManagers.Json
+namespace Multitool.PreferencesManagers.Json
 {
     public class JsonPreferenceManager : IPreferenceManager
     {
@@ -60,7 +60,7 @@ namespace MultiToolBusinessLayer.PreferencesManagers.Json
         {
             WindowPreferenceManager manager = new WindowPreferenceManager()
             {
-                Properties = new BasicObjectFlattener().Flatten(data),
+                Properties = new BasicObjectFlattener().Flatten(data, typeof(DataType)),
                 ItemName = name
             };
 

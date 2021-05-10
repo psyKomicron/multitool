@@ -1,5 +1,4 @@
-﻿using MultiToolBusinessLayer.FileSystem;
-using System;
+﻿using Multitool.FileSystem;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -8,10 +7,17 @@ using System.Windows.Media;
 
 namespace MultiTool.ViewModels
 {
-    public class PathItemVM : IFileSystemEntry
+    public class PathItemViewModel : IFileSystemEntry
     {
-        private readonly string greenCheckMark = "\u2705";
+        private const string HIDDEN = "👁";
+        private const string SYSTEM = "⚙";
+        private const string READONLY = "❌";
+        private const string ENCRYPTED = "🔒";
+        private const string COMPRESSED = "💾";
+        private const string DEVICE = "‍💻";
+
         private readonly IFileSystemEntry pathItem;
+        private string[] units = new string[] { "b", "Kb", "Mb", "Gb", "Tb" };
         private Brush _color;
         private string _displaySizeUnit;
 
@@ -34,12 +40,12 @@ namespace MultiTool.ViewModels
         #endregion
 
         #region decorator
-        public string IsHiddenCM => pathItem.IsHidden ? greenCheckMark : string.Empty;
-        public string IsSystemCM => pathItem.IsSystem ? greenCheckMark : string.Empty;
-        public string IsReadOnlyCM => pathItem.IsReadOnly ? greenCheckMark : string.Empty;
-        public string IsEncryptedCM => pathItem.IsEncrypted ? greenCheckMark : string.Empty;
-        public string IsCompressedCM => pathItem.IsCompressed ? greenCheckMark : string.Empty;
-        public string IsDeviceCM => pathItem.IsDevice ? greenCheckMark : string.Empty;
+        public string IsHiddenEcon => pathItem.IsHidden ? HIDDEN : string.Empty;
+        public string IsSystemEcon => pathItem.IsSystem ? SYSTEM : string.Empty;
+        public string IsReadOnlyEcon => pathItem.IsReadOnly ? READONLY : string.Empty;
+        public string IsEncryptedEcon => pathItem.IsEncrypted ? ENCRYPTED : string.Empty;
+        public string IsCompressedEcon => pathItem.IsCompressed ? COMPRESSED : string.Empty;
+        public string IsDeviceEcon => pathItem.IsDevice ? DEVICE : string.Empty;
 
         public Brush Color
         {
@@ -64,8 +70,7 @@ namespace MultiTool.ViewModels
                     unit++;
                 }
 
-                string[] u = new string[] { "b", "Kb", "Mb", "Gb", "Tb" };
-                DisplaySizeUnit = u[unit];
+                DisplaySizeUnit = units[unit];
 
                 return currentSize.ToString("F2", CultureInfo.InvariantCulture);
             }
@@ -82,7 +87,7 @@ namespace MultiTool.ViewModels
         }
         #endregion
 
-        public PathItemVM(IFileSystemEntry item)
+        public PathItemViewModel(IFileSystemEntry item)
         {
             pathItem = item;
             item.PropertyChanged += OnItemPropertyChanged;

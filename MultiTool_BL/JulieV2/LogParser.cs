@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiToolBusinessLayer.JulieV2
+namespace Multitool.JulieV2
 {
     public class LogParser : ILogParser
     {

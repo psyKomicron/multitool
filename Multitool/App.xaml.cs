@@ -1,8 +1,9 @@
-﻿using MultiToolBusinessLayer.PreferencesManagers;
+﻿using Multitool.PreferencesManagers;
 using MultiTool.Tools;
 using System;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Media;
 
 namespace MultiTool
 {
@@ -18,14 +19,13 @@ namespace MultiTool
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            //Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-
+            Tool.GetRessource<SolidColorBrush>("DevBlue");
             Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
             Debug.AutoFlush = true;
-            Debug.Indent();
+            Debug.Flush();
 
             WindowManager.InitializePreferenceManager("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.xml");
-            WindowManager.GetPreferenceManager().DeserializePreferenceManager();
+            WindowManager.PreferenceManager.DeserializePreferenceManager();
         }
 
         private void SerializeApplication()
@@ -37,7 +37,7 @@ namespace MultiTool
             stopwatch.Start();
             /* timed instructions here */
 
-            IPreferenceManager tool = WindowManager.GetPreferenceManager();
+            IPreferenceManager tool = WindowManager.PreferenceManager;
             tool.SerializePreferenceManager();
 
             /* end timed instructions */

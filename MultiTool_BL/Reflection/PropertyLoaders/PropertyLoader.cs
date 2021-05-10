@@ -3,16 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
-using System.Xml.Linq;
 
-namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
+namespace Multitool.Reflection.PropertyLoaders
 {
-    internal class PropertyLoader
+    public class PropertyLoader
     {
+        public bool HaltOnException { get; set; }
+
+        [Obsolete]
         public DtoType LoadFromStringDictionary<DtoType>(Dictionary<string, string> dictionary) where DtoType : class, new()
         {
             DtoType dto = new DtoType();
-            PropertyInfo[] properties = GetProperties<DtoType>();
+            PropertyInfo[] properties = ReflectionHelper.GetPropertyInfos<DtoType>();
 
             for (int i = 0; i < properties.Length; i++)
             {
@@ -33,7 +35,7 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
             return RecursiveLoadFromXml(xml, typeof(DtoType)) as DtoType;
         }
 
-        private object RecursiveLoadFromXml(XmlNode xml, Type dtoType = null)
+        private object RecursiveLoadFromXml(XmlNode xml, Type dtoType)
         {
             ConstructorInfo constructor = dtoType.GetConstructor(new Type[0]);
             if (constructor != null)
@@ -60,7 +62,7 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
                         }
                         else if (node.HasChildNodes)
                         {
-                            if (IsIList(property.PropertyType))
+                            if (ReflectionHelper.Implements<IList>(property.PropertyType))
                             {
                                 SafeInstanciateProperty(property, dto);
                                 Type generic = property.PropertyType.GetGenericArguments()[0];
@@ -71,7 +73,12 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
 
                                 foreach (XmlNode listItem in childNodes)
                                 {
-                                    if (!string.IsNullOrEmpty(listItem.FirstChild?.Value))
+                                    if (listItem.Name != generic.Name)
+                                    {
+                                        throw new ArrayTypeMismatchException();
+                                    }
+
+                                    if (listItem.HasChildNodes)
                                     {
                                         var item = Convert.ChangeType(RecursiveLoadFromXml(listItem, generic), generic);
                                         list.Add(item);
@@ -80,7 +87,8 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
                             }
                             else
                             {
-                                var data = RecursiveLoadFromXml(node, property.PropertyType); // recursive, should instanciate object and properties
+                                // recursive, should instanciate object and properties
+                                var data = RecursiveLoadFromXml(node, property.PropertyType);
                                 SafeLoadIntoProperty(property, dto, data);
                             }
                         }
@@ -119,10 +127,12 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
                 }
                 catch (InvalidCastException ice)
                 {
+                    if (HaltOnException) throw;
                     HandleICE(ice, property);
                 }
                 catch (TargetInvocationException tie)
                 {
+                    if (HaltOnException) throw;
                     HandleTIE(tie, property);
                 }
             }
@@ -142,10 +152,12 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
                 }
                 catch (InvalidCastException ice)
                 {
+                    if (HaltOnException) throw;
                     HandleICE(ice, property);
                 }
                 catch (TargetInvocationException tie)
                 {
+                    if (HaltOnException) throw;
                     HandleTIE(tie, property);
                 }
             }
@@ -156,11 +168,6 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
             }
         }
 
-        private PropertyInfo[] GetProperties<T>() where T : class
-        {
-            return typeof(T).GetProperties();
-        }
-
         private Dictionary<string, PropertyInfo> ToDictionnary(PropertyInfo[] propertyInfos)
         {
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
@@ -169,20 +176,6 @@ namespace MultiToolBusinessLayer.Reflection.PropertyLoaders
                 properties.Add(propertyInfos[i].Name, propertyInfos[i]);
             }
             return properties;
-        }
-
-        private bool IsIList(Type t)
-        {
-            Type[] interfaces = t.GetInterfaces();
-            for (int i = 0; i < interfaces.Length; i++)
-            {
-                Type type = interfaces[i];
-                if (type.Equals(typeof(IList)))
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         #region exceptions handlers

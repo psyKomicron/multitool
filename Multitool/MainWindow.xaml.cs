@@ -1,4 +1,4 @@
-﻿using MultiToolBusinessLayer.Controllers;
+﻿using Multitool.Controllers;
 using MultiTool.ViewModels;
 using MultiTool.Tools;
 using MultiTool.Windows;
@@ -28,12 +28,12 @@ namespace MultiTool
 
         public void Serialize()
         {
-            WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
+            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
         }
 
         public void Deserialize()
         {
-            Data = WindowManager.GetPreferenceManager().GetWindowManager<MainWindowData>(Name);
+            Data = WindowManager.PreferenceManager.GetWindowManager<MainWindowData>(Name);
 
             if (Data == null)
             {

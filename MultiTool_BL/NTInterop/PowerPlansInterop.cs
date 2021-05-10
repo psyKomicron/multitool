@@ -1,9 +1,9 @@
-﻿using MultiToolBusinessLayer.NTInterop.Codes;
+﻿using Multitool.NTInterop.Codes;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace MultiToolBusinessLayer.NTInterop
+namespace Multitool.NTInterop
 {
     public class PowerPlansInterop
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{545DC8FD-0E0F-43EA-917D-B6BE03E43E48}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BusinessLayer</RootNamespace>
-    <AssemblyName>BusinessLayer</AssemblyName>
+    <RootNamespace>Multitool</RootNamespace>
+    <AssemblyName>Multitool_BL</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -29,6 +29,24 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -51,6 +69,7 @@
     <Compile Include="FailedTaskEventHandler.cs" />
     <Compile Include="FileSystem\CacheFrozenException.cs" />
     <Compile Include="FileSystem\AddDelegate.cs" />
+    <Compile Include="FileSystem\Completion\PathCompletor.cs" />
     <Compile Include="FileSystem\DirectoryEntry.cs" />
     <Compile Include="FileSystem\Events\TTLReachedEventHandler.cs" />
     <Compile Include="FileSystem\FileEntry.cs" />
@@ -68,6 +87,7 @@
     <Compile Include="JulieV2\ILogParser.cs" />
     <Compile Include="JulieV2\LogParser.cs" />
     <Compile Include="JulieV2\User.cs" />
+    <Compile Include="JulieV2\UserFactory.cs" />
     <Compile Include="Network\Downloader.cs" />
     <Compile Include="Network\DownloadEventArgs.cs" />
     <Compile Include="NTInterop\AccessFlags.cs" />
@@ -88,11 +108,14 @@
     <Compile Include="ProcessOptions\StartOptions.cs" />
     <Compile Include="ProgressEventHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QuickSort.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\PrimitiveXmlFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\ListFlattenerAttribute.cs" />
+    <Compile Include="Reflection\ReflectionHelper.cs" />
+    <Compile Include="Sorting\ObservableCollectionQuickSort.cs" />
+    <Compile Include="Sorting\QuickSort.cs" />
     <Compile Include="Reflection\ObjectFlatteners\BasicObjectFlattener.cs" />
     <Compile Include="Reflection\ObjectFlatteners\IObjectFlattener.cs" />
-    <Compile Include="Reflection\ObjectFlatteners\ObjectFlattener.cs" />
-    <Compile Include="Reflection\ObjectFlatteners\XmlObjectFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\CommonXmlObjectFlattener.cs" />
     <Compile Include="Reflection\PropertyLoaders\PropertyLoader.cs" />
   </ItemGroup>
   <ItemGroup />

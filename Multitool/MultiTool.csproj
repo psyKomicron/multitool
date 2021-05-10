@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{ED20BFEB-D01C-4483-BA90-1DA41DFA1D10}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>MultiTool</RootNamespace>
-    <AssemblyName>MultiTool</AssemblyName>
+    <RootNamespace>MultitoolWPF</RootNamespace>
+    <AssemblyName>Multitool</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -66,11 +66,30 @@
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -90,18 +109,29 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DefaultWindowData.cs" />
-    <Compile Include="MultiToolWindowChrome.xaml.cs">
+    <Compile Include="UserControls\ExplorerHome.xaml.cs">
+      <DependentUpon>ExplorerHome.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\MultiToolWindowChrome.xaml.cs">
       <DependentUpon>MultiToolWindowChrome.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\SpreadsheetItemUserControl.xaml.cs">
+      <DependentUpon>SpreadsheetItemUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\Explorer\ExplorerWindowData.cs" />
-    <Compile Include="ViewModels\PathItemVM.cs" />
+    <Compile Include="ViewModels\PathItemViewModel.cs" />
     <Compile Include="Windows\ISerializableWindow.cs" />
     <Compile Include="Windows\Power\PowerWindowData.cs" />
-    <Compile Include="Windows\Special\SpreadsheetViewModel.cs" />
+    <Compile Include="ViewModels\SpreadsheetVM.cs" />
     <Compile Include="Windows\Special\SpreadsheetWindow.xaml.cs">
       <DependentUpon>SpreadsheetWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="MultiToolWindowChrome.xaml">
+    <Compile Include="Windows\Special\SpreadsheetWindowData.cs" />
+    <Page Include="UserControls\ExplorerHome.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\MultiToolWindowChrome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -112,6 +142,10 @@
     <Compile Include="MainWindowData.cs" />
     <Compile Include="Tools\Tool.cs" />
     <Compile Include="Tools\WindowManager.cs" />
+    <Page Include="UserControls\SpreadsheetItemUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\Explorer\ExplorerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -206,7 +240,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MultiTool_BL\Multitool_BL.csproj">
-      <Project>{545dc8fd-0e0f-43ea-917d-b6be03e43e48}</Project>
+      <Project>{545DC8FD-0E0F-43EA-917D-B6BE03E43E48}</Project>
       <Name>Multitool_BL</Name>
     </ProjectReference>
   </ItemGroup>

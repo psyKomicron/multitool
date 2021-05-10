@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MultiToolBusinessLayer.FileSystem.Events
+namespace Multitool.FileSystem.Events
 {
     internal class FileSystemCacheEventArgs : EventArgs
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace MultiToolBusinessLayer.JulieV2
+namespace Multitool.JulieV2
 {
     public interface ILogParser
     {

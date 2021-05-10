@@ -1,4 +1,4 @@
-﻿using MultiToolBusinessLayer.FileSystem.Events;
+﻿using Multitool.FileSystem.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     public class FileSystemManager : IFileSystemManager
     {
@@ -164,6 +164,7 @@ namespace MultiToolBusinessLayer.FileSystem
                         if (fileInfo.Name.Equals(directoryInfo.Name, StringComparison.OrdinalIgnoreCase))
                         {
                             parents.Add(fileInfo.Name);
+                            break;
                         }
                     }
 
@@ -177,6 +178,7 @@ namespace MultiToolBusinessLayer.FileSystem
                                 if (fileInfo.Name.Equals(parent.Name, StringComparison.OrdinalIgnoreCase))
                                 {
                                     parents.Add(fileInfo.Name);
+                                    break;
                                 }
                             }
                         }
@@ -226,6 +228,61 @@ namespace MultiToolBusinessLayer.FileSystem
                 cache.Delete();
             }
             cache.Clear();
+        }
+
+        public long ComputeDirectorySize(string path, CancellationToken? cancellationToken)
+        {
+            long size = 0;
+
+            try
+            {
+                IEnumerable<string> subDirPaths = Directory.EnumerateDirectories(path);
+                foreach (string subDirPath in subDirPaths)
+                {
+                    cancellationToken?.ThrowIfCancellationRequested();
+                    InvokeProgress("Working on " + subDirPath);
+
+                    size += ComputeDirectorySize(subDirPath, cancellationToken);
+                }
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                InvokeException(e);
+            }
+            catch (DirectoryNotFoundException de)
+            {
+                InvokeException(de);
+            }
+
+            try
+            {
+                IEnumerable<string> subDirPaths = Directory.EnumerateFiles(path);
+
+                foreach (string subDirPath in subDirPaths)
+                {
+                    cancellationToken?.ThrowIfCancellationRequested();
+                    InvokeProgress("Working on " + subDirPath);
+
+                    try
+                    {
+                        size += new FileInfo(subDirPath).Length;
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        InvokeException(e);
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                InvokeException(e);
+            }
+            catch (FileNotFoundException fe)
+            {
+                InvokeException(fe);
+            }
+
+            return size;
         }
 
         private void GetPartial<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
@@ -401,61 +458,6 @@ namespace MultiToolBusinessLayer.FileSystem
                 }
             }
             return false;
-        }
-
-        private long ComputeDirectorySize(string path, CancellationToken? cancellationToken)
-        {
-            long size = 0;
-
-            try
-            {
-                IEnumerable<string> subDirPaths = Directory.EnumerateDirectories(path);
-                foreach (string subDirPath in subDirPaths)
-                {
-                    cancellationToken?.ThrowIfCancellationRequested();
-                    InvokeProgress("Working on " + subDirPath);
-
-                    size += ComputeDirectorySize(subDirPath, cancellationToken);
-                }
-            }
-            catch (UnauthorizedAccessException e) 
-            {
-                InvokeException(e);
-            }
-            catch (DirectoryNotFoundException de)
-            {
-                InvokeException(de);
-            }
-
-            try
-            {
-                IEnumerable<string> subDirPaths = Directory.EnumerateFiles(path);
-
-                foreach (string subDirPath in subDirPaths)
-                {
-                    cancellationToken?.ThrowIfCancellationRequested();
-                    InvokeProgress("Working on " + subDirPath);
-
-                    try
-                    {
-                        size += new FileInfo(subDirPath).Length;
-                    }
-                    catch (FileNotFoundException e) 
-                    {
-                        InvokeException(e);
-                    }
-                }
-            }
-            catch (UnauthorizedAccessException e) 
-            {
-                InvokeException(e);
-            }
-            catch (FileNotFoundException fe)
-            {
-                InvokeException(fe);
-            }
-
-            return size;
         }
 
         private List<FileSystemEntry> GetAffectedItems(string path)

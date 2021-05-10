@@ -1,11 +1,11 @@
-﻿using MultiToolBusinessLayer.FileSystem.Events;
+﻿using Multitool.FileSystem.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Timers;
 
-namespace MultiToolBusinessLayer.FileSystem
+namespace Multitool.FileSystem
 {
     /// <summary>
     /// Provides logic to watch a directory for changes, and to signal the changes.

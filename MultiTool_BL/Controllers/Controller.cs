@@ -1,11 +1,11 @@
-﻿using MultiToolBusinessLayer.ProcessOptions;
+﻿using Multitool.ProcessOptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiToolBusinessLayer.Controllers
+namespace Multitool.Controllers
 {
     /// <summary>
     /// Abstract class to use for classes interacting with command lines

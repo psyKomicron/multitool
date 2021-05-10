@@ -1,0 +1,166 @@
+﻿<UserControl x:Name="ExplorerHomeControl"
+             x:Class="MultitoolWPF.UserControls.ExplorerHome"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             Foreground="White"
+             MinWidth="400"
+             MinHeight="200"
+             Height="Auto"
+             Width="Auto"
+             Background="{StaticResource DarkBlack}"
+             BorderBrush="{StaticResource LightBlack}"
+             BorderThickness="3.5"
+             Margin="10"
+             Loaded="Control_Loaded"
+             d:DesignHeight="220" d:DesignWidth="500">
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="3*"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="DriveName_TextBlock"
+                   Text="{Binding Path=DriveName, ElementName=ExplorerHomeControl}"
+                   FontSize="20"
+                   FontWeight="DemiBold"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   Grid.Column="0"
+                   Grid.Row="0"/>
+        <TextBlock x:Name="DriveSize_TextBlock"
+                   Text="{Binding Path=DriveCapacity, ElementName=ExplorerHomeControl}"
+                   FontSize="20"
+                   Margin="0,0,10,0"
+                   Grid.Column="1" 
+                   Grid.Row="0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"/>
+        <TextBlock x:Name="DriveFreeSpace_TextBlock"
+                   Text="{Binding Path=DriveFreeSpace, ElementName=ExplorerHomeControl}"
+                   FontSize="20"
+                   Margin="0,0,10,0"
+                   Grid.Column="2" 
+                   Grid.Row="0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"/>
+        <TextBlock x:Name="DriveTakenSpace_TextBlock"
+                   FontSize="20"
+                   Margin="0,0,10,0"
+                   Grid.Column="3" 
+                   Grid.Row="0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left">
+            <Run Text="{Binding Path=DriveFreeSpacePercentage, ElementName=ExplorerHomeControl, StringFormat=F2, Mode=OneWay}"/>
+            <Run Text=" %"/>
+        </TextBlock>
+
+        <Grid x:Name="Stats_Grid"
+                Grid.Row="1"
+                Grid.ColumnSpan="10"
+              Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="10px"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="🗑"
+                       Grid.Row="0"
+                       Grid.Column="0"
+                       FontSize="40"
+                       ToolTip="Recycle bin statistics (size on disk)"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="🔧"
+                       Grid.Row="2"
+                       Grid.Column="0"
+                       FontSize="40"
+                       ToolTip="System files statistics (size on disk)"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <TextBlock x:Name="RecycleBinSize_TextBlock"
+                       Text="{Binding Path=RecycleBinSize, ElementName=ExplorerHomeControl}"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       Grid.Column="1"
+                       Margin="0,0,0,5"/>
+            <TextBlock x:Name="RecycleBinPercentage_TextBlock"
+                       VerticalAlignment="Center"
+                       Grid.Row="0"
+                       Grid.Column="2"
+                       FontSize="20">
+                    <Run Text="{Binding Path=RecycleBinPercentage, ElementName=ExplorerHomeControl, StringFormat=F2, Mode=OneWay}"/>
+                    <Run Text=" %"/>
+            </TextBlock>
+
+            <TextBlock x:Name="SysFilesSize_TextBlock"
+                       Text="{Binding Path=SysFilesSize, ElementName=ExplorerHomeControl}"
+                       FontSize="20"
+                       VerticalAlignment="Center"
+                       Grid.Column="1" 
+                       Grid.Row="2" 
+                       Margin="0,0,0,5"/>
+            <TextBlock x:Name="SysFilesSizePercentage_TextBlock"
+                       FontSize="20"
+                       VerticalAlignment="Center"
+                       Grid.Column="2"
+                       Grid.Row="2">
+                    <Run Text="{Binding Path=SysFilesPercentage, ElementName=ExplorerHomeControl, StringFormat=F2, Mode=OneWay}"/>
+                    <Run Text=" %"/>
+            </TextBlock>
+        </Grid>
+        
+    </Grid>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="UserControl.MouseEnter" SourceName="ExplorerHomeControl">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation x:Name="HeightMouseEnter_Animation"
+                        Storyboard.TargetName="ExplorerHomeControl"
+                        Storyboard.TargetProperty="Height"
+                        By="100"
+                        Duration="0:0:0.2"
+                        AutoReverse="False"/>
+                    <DoubleAnimation x:Name="WidthMouseEnter_Animation"
+                        Storyboard.TargetName="ExplorerHomeControl"
+                        Storyboard.TargetProperty="Width"
+                        By="100"
+                        Duration="0:0:0.2"
+                        AutoReverse="False"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="UserControl.MouseLeave" SourceName="ExplorerHomeControl">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation x:Name="HeightMouseLeave_Animation"
+                            Storyboard.TargetName="ExplorerHomeControl"
+                            Storyboard.TargetProperty="Height" 
+                            Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                    <DoubleAnimation x:Name="WidthMouseLeave_Animation"
+                            Storyboard.TargetName="ExplorerHomeControl"
+                            Storyboard.TargetProperty="Width" 
+                            Duration="0:0:0.2"
+                            AutoReverse="False"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+        
+    </UserControl.Triggers>
+</UserControl>

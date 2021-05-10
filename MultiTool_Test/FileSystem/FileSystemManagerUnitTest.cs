@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
-using MultiToolBusinessLayer.FileSystem;
+using Multitool.FileSystem;
 
 namespace BusinessLayer.FileSystem.Tests
 {
@@ -63,11 +63,8 @@ namespace BusinessLayer.FileSystem.Tests
             string realPath = manager.GetRealPath(@"c:\users\julie\documents");
             Assert.AreEqual(@"C:\Users\julie\Documents", realPath);
 
-            realPath = manager.GetRealPath(@"c:\users\julie\documents\");
-            Assert.AreEqual(@"C:\Users\julie\Documents", realPath);
-
-            realPath = manager.GetRealPath(@"e:\julie\Videos\Nyotengu(April 10th, 2021)");
-            Assert.AreEqual(@"E:\julie\Videos\Nyotengu(April 10th, 2021)", realPath);
+            //realPath = manager.GetRealPath(@"e:\julie\Videos\Nyotengu(April 10th, 2021)");
+            //Assert.AreEqual(@"E:\julie\Videos\Nyotengu(April 10th, 2021)", realPath);
         }
 
         [TestMethod()]

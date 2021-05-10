@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace MultiToolBusinessLayer.Reflection.ObjectFlatteners
+namespace Multitool.Reflection.ObjectFlatteners
 {
-    public class BasicObjectFlattener : ObjectFlattener<Dictionary<string, string>>
+    [Obsolete]
+    public class BasicObjectFlattener : IObjectFlattener<Dictionary<string, string>>
     {
-        public override Dictionary<string, string> Flatten<T>(T o)
+        public Dictionary<string, string> Flatten(object o, Type objectType)
         {
             Dictionary<string, string> flatProperties = new Dictionary<string, string>();
-            PropertyInfo[] properties = GetPropertyInfos<T>();
+            PropertyInfo[] properties = ReflectionHelper.GetPropertyInfos(objectType);
 
             for (int i = 0; i < properties.Length; i++)
             {
@@ -27,7 +27,7 @@ namespace MultiToolBusinessLayer.Reflection.ObjectFlatteners
                         }
                         else 
                         {
-                            Dictionary<string, string> props = Flatten(o);
+                            Dictionary<string, string> props = Flatten(o, value.GetType());
                             StringBuilder stringBuilder = new StringBuilder();
                             foreach (var prop in props)
                             {

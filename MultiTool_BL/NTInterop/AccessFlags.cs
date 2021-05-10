@@ -1,4 +1,4 @@
-﻿namespace MultiToolBusinessLayer.NTInterop
+﻿namespace Multitool.NTInterop
 {
     internal enum AccessFlags : uint
     {

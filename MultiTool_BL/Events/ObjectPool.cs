@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiToolBusinessLayer.Events
+namespace Multitool.Events
 {
     internal class ObjectPool<EventType> where EventType : class, new()
     {

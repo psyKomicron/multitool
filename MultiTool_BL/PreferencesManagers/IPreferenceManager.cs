@@ -1,10 +1,17 @@
-﻿namespace MultiToolBusinessLayer.PreferencesManagers
+﻿namespace Multitool.PreferencesManagers
 {
     public interface IPreferenceManager
     {
         string Path { get; set; }
         PreferenceManagerType Type { get; }
 
+        /// <summary>
+        /// Adds a <typeparamref name="DataType"/> object to the preference file. <paramref name="name"/> will be used to name
+        /// the data so it can be retreived later by <see cref="GetWindowManager{DataType}(string)"/>.
+        /// </summary>
+        /// <typeparam name="DataType">Type of <paramref name="data"/>.</typeparam>
+        /// <param name="data">Data to add to the preference file.</param>
+        /// <param name="name">Key parameter of the <see cref="GetWindowManager{DataType}(string)"/> method.</param>
         void AddWindowManager<DataType>(DataType data, string name) where DataType : class;
         void DeserializePreferenceManager();
         /// <summary>
