@@ -13,8 +13,6 @@
     d:DesignWidth="1000" d:DesignHeight="600"
     MouseDown="Window_MouseDown"
     Style="{StaticResource DarkWindow}"
-    BorderBrush="{DynamicResource DevBlue}"
-    BorderThickness="0.8"
     Loaded="Window_Loaded"
     Closing="Window_Closing">
     <Window.Resources>
@@ -30,103 +28,112 @@
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
     </Window.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="20*"/>
-        </Grid.RowDefinitions>
-        <local:MultiToolWindowChrome 
-            Grid.Row="0"
-            MouseDown="MultiToolWindowChrome_MouseDown"
-            CloseClick="MultiToolWindowChrome_CloseClick"
-            MinimizeClick="MultiToolWindowChrome_MinimizeClick"
-            MaximizeClick="MultiToolWindowChrome_MaximizeClick"
-            Title="Explorer"/>
-        <TabControl 
+    <Border x:Name="WindowBorder"
+            BorderBrush="{DynamicResource DevBlue}"
+            Background="Transparent"
+            BorderThickness="1"
+            MouseDown="WindowBorder_MouseDown"
+            IsMouseDirectlyOverChanged="Explorer_IsMouseDirectlyOverChanged">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20*"/>
+            </Grid.RowDefinitions>
+            <local:MultiToolWindowChrome 
+                Grid.Row="0"
+                MouseDown="MultiToolWindowChrome_MouseDown"
+                CloseClick="MultiToolWindowChrome_CloseClick"
+                MinimizeClick="MultiToolWindowChrome_MinimizeClick"
+                MaximizeClick="MultiToolWindowChrome_MaximizeClick"
+                Title="Explorer"/>
+            <TabControl x:Name="Window_TabControl"
             Grid.Row="1"
             Style="{StaticResource DarkTabControlTemplate}">
-            <TabControl.Resources>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
-                                    <ContentPresenter x:Name="ContentSite"
+                <TabControl.Resources>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
+                                        <ContentPresenter x:Name="ContentSite"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
                                         ContentSource="Header"
                                         Margin="10,2"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="False">
-                                        <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Foreground" Value="White"/>
-                </Style>
-            </TabControl.Resources>
-            
-            <TabItem Header="Home">
-                <Grid>
-                    <StackPanel x:Name="Disks_StackPanel"
-                                Orientation="Vertical"
-                                HorizontalAlignment="Stretch"/>
-                </Grid>
-            </TabItem>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Style>
+                </TabControl.Resources>
 
-            <TabItem Header="Explorer">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*" MinWidth="100"/>
-                        <ColumnDefinition Width="5*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="8*"/>
-                    </Grid.RowDefinitions>
+                <TabItem Header="Home">
+                    <ScrollViewer>
+                        <Grid x:Name="Disks_Grid"
+                          HorizontalAlignment="Center">
+                        </Grid>
+                    </ScrollViewer>
 
-                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button x:Name="PreviousButton"
+                </TabItem>
+
+                <TabItem Header="Explorer">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" MinWidth="100"/>
+                            <ColumnDefinition Width="5*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="8*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="PreviousButton"
                                 Click="Previous_Click"
                                 Content="◀"
                                 FontSize="30"
                                 Template="{StaticResource IconButtonControlTemplate}"/>
-                        <Button x:Name="NextButton"
+                            <Button x:Name="NextButton"
                                 Click="Next_Click" 
                                 Content="▶"
                                 FontSize="30"
                                 Margin="30,0,0,0"
                                 Template="{StaticResource IconButtonControlTemplate}"/>
-                    </StackPanel>
+                        </StackPanel>
 
-                    <Grid Grid.Row="0" Grid.Column="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="10*"/>
-                            <ColumnDefinition Width="2*"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Row="0" Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="10*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0">
-                            <TextBox x:Name="PathInput"
-                                     MinHeight="25"
-                                     MaxHeight="50"
-                                     Width="Auto"
-                                     Foreground="White"
-                                     Background="{StaticResource LightBlack}"
-                                     Text="{Binding CurrentPath, Mode=TwoWay}"
-                                     KeyUp="PathInput_KeyUp"
-                                     PreviewTextInput="PathInput_PreviewTextInput"/>
+                            <StackPanel Grid.Column="0">
+                                <ComboBox 
+                                x:Name="PathInput"
+                                MinHeight="25"
+                                MaxHeight="50"
+                                Width="Auto"
+                                Foreground="Black"
+                                IsEditable="True"
+                                IsTextSearchEnabled="True"
+                                KeyUp="PathInput_KeyUp"
+                                ItemsSource="{Binding PathAutoCompletion}"
+                                Text="{Binding CurrentPath, Mode=TwoWay}"/>
 
-                            <ProgressBar x:Name="DisplayProgressBar"
+                                <ProgressBar x:Name="DisplayProgressBar"
                                          Background="Transparent"
                                          IsIndeterminate="False"
                                          Height="10"
                                          BorderThickness="0"
                                          VerticalAlignment="Center"
                                          HorizontalAlignment="Stretch"/>
-                            <TextBox x:Name="Progress_TextBox"
+                                <TextBox x:Name="Progress_TextBox"
                                      Background="{StaticResource LightBlack}"
                                      FontFamily="Cascadia Code Light"
                                      Foreground="White"
@@ -136,110 +143,119 @@
                                      VerticalContentAlignment="Center"
                                      MinHeight="25"
                                      MaxHeight="50"/>
-                        </StackPanel>
+                            </StackPanel>
 
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="RefreshFileList"
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button x:Name="RefreshFileList"
                                     Content="🔄"
                                     FontSize="20"
                                     Click="RefreshFileList_Click"
                                     Template="{StaticResource IconButtonControlTemplate}"/>
-                            <Button x:Name="CancelAction_Button"
+                                <Button x:Name="CancelAction_Button"
                                     Content="✖"
                                     FontSize="20"
                                     Click="CancelAction_Button_Click"
                                     IsEnabled="False"
                                     Template="{StaticResource IconButtonControlTemplate}"/>
-                        </StackPanel>
-                    </Grid>
-                    <ListView x:Name="History_ListView"
+                            </StackPanel>
+                        </Grid>
+                        <ListView x:Name="History_ListView"
                               Grid.Row="1" 
                               Grid.Column="0" 
                               ItemsSource="{Binding Data.History}"
                               MinWidth="50"
                               MouseDoubleClick="History_ListView_MouseDoubleClick"
                               Style="{StaticResource DarkListViewStyle}">
-                        <ListView.Resources>
-                            <Style TargetType="GridViewColumnHeader">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Style>
-                        </ListView.Resources>
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" Margin="7"/>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                        <ListView.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Clear" Click="HistoryListViewMenuItem_Click"/>
-                            </ContextMenu>
-                        </ListView.ContextMenu>
-                    </ListView>
+                            <ListView.Resources>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </Style>
+                            </ListView.Resources>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Margin="7"/>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                            <ListView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Clear" Click="HistoryListViewMenuItem_Click"/>
+                                </ContextMenu>
+                            </ListView.ContextMenu>
+                        </ListView>
 
-                    <ListView x:Name="MainListView"
+                        <ListView x:Name="MainListView"
                               Grid.Row="1"
                               Grid.Column="1"
                               ItemsSource="{Binding CurrentFiles}"
                               MouseDoubleClick="ListView_MouseDoubleClick" 
                               Style="{StaticResource DarkListViewStyle}">
-                        <ListView.Resources>
-                            <Style TargetType="GridViewColumnHeader">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Style>
-                        </ListView.Resources>
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="5"
+                            <ListView.Resources>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </Style>
+                            </ListView.Resources>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="5"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition MinWidth="500"/>
-                                        <ColumnDefinition MinWidth="100"/>
-                                        <ColumnDefinition MinWidth="100"/>
-                                    </Grid.ColumnDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition MinWidth="500"/>
+                                            <ColumnDefinition MinWidth="100"/>
+                                            <ColumnDefinition MinWidth="100"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <TextBlock 
+                                        <TextBlock 
                                         Grid.Column="0"
                                         Text="{Binding Name}"
                                         Foreground="{Binding Color}"
                                         Margin="0,0,3,0"/>
 
-                                    <TextBlock 
+                                        <TextBlock 
                                         Grid.Column="1"
                                         Foreground="White">
                                             <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
                                             <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
-                                    </TextBlock>
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <StackPanel.Resources>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Margin" Value="5"/>
-                                            </Style>
-                                        </StackPanel.Resources>
-                                        <TextBlock Text="{Binding IsHiddenEcon}"
+                                        </TextBlock>
+                                        <!--#region icons stackpanel-->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <StackPanel.Resources>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Margin" Value="5"/>
+                                                </Style>
+                                            </StackPanel.Resources>
+                                            <TextBlock Text="{Binding IsHiddenEcon}"
                                                    ToolTip="Hidden"/>
-                                        
-                                        <TextBlock Text="{Binding IsSystemEcon}"
+
+                                            <TextBlock Text="{Binding IsSystemEcon}"
                                                    ToolTip="System"/>
-                                        
-                                        <TextBlock Text="{Binding IsReadOnlyEcon}"
+
+                                            <TextBlock Text="{Binding IsReadOnlyEcon}"
                                                    ToolTip="Read-only"/>
-                                        
-                                        <TextBlock Text="{Binding IsEncryptedEcon}"
+
+                                            <TextBlock Text="{Binding IsEncryptedEcon}"
                                                    ToolTip="Encrypted"/>
-                                        
-                                        <TextBlock Text="{Binding IsCompressedEcon}"
+
+                                            <TextBlock Text="{Binding IsCompressedEcon}"
                                                    ToolTip="Compressed"/>
-                                        
-                                        <TextBlock Text="{Binding IsDeviceEcon}"
+
+                                            <TextBlock Text="{Binding IsDeviceEcon}"
                                                    ToolTip="Device"/>
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </Grid>
-            </TabItem>
-        </TabControl>
-    </Grid>
+                                        </StackPanel>
+                                        <!--#endregion-->
+                                        <Grid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Delete" Click="PathItemDelete_Click"/>
+                                            </ContextMenu>
+                                        </Grid.ContextMenu>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+    </Border>
 </Window>
