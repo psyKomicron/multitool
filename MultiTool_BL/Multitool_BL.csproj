@@ -49,32 +49,44 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\Multitool\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
-    <Compile Include="Events\ObjectPool.cs" />
+    <Compile Include="FileSystem\Events\WatcherErrorEventHandler.cs" />
+    <Compile Include="FileSystem\Events\WatcherErrorTypes.cs" />
+    <Compile Include="FileSystem\Factory\WatcherDelegates.cs" />
+    <Compile Include="FileSystem\Factory\WatcherFactory.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="NTInterop\CursorPosition.cs" />
+    <Compile Include="Optimisation\FreeObjectEventHandler.cs" />
+    <Compile Include="Optimisation\IPoolableObject.cs" />
+    <Compile Include="Optimisation\ObjectPool.cs" />
     <Compile Include="FailedTaskEventHandler.cs" />
     <Compile Include="FileSystem\CacheFrozenException.cs" />
     <Compile Include="FileSystem\AddDelegate.cs" />
+    <Compile Include="FileSystem\Completion\IPathCompletor.cs" />
     <Compile Include="FileSystem\Completion\PathCompletor.cs" />
     <Compile Include="FileSystem\DirectoryEntry.cs" />
+    <Compile Include="FileSystem\Events\ChangeEventArgs.cs" />
     <Compile Include="FileSystem\Events\TTLReachedEventHandler.cs" />
     <Compile Include="FileSystem\FileEntry.cs" />
     <Compile Include="FileSystem\FileSystemCache.cs" />
-    <Compile Include="FileSystem\Events\FileSystemCacheEventArgs.cs" />
     <Compile Include="FileSystem\Events\CacheChangedEventHandler.cs" />
     <Compile Include="FileSystem\FileSystemCacheException.cs" />
     <Compile Include="FileSystem\FileSystemManager.cs" />
@@ -93,6 +105,7 @@
     <Compile Include="NTInterop\AccessFlags.cs" />
     <Compile Include="NTInterop\PowerPlansInterop.cs" />
     <Compile Include="NTInterop\Codes\SystemCodes.cs" />
+    <Compile Include="Optimisation\PoolObjectStateException.cs" />
     <Compile Include="Parsers\Errors\JsonFormatException.cs" />
     <Compile Include="Parsers\JsonParser.cs" />
     <Compile Include="Parsers\UriCleaner.cs" />
