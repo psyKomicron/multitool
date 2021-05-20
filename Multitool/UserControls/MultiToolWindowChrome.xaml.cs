@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace MultiTool
@@ -13,7 +14,17 @@ namespace MultiTool
         private uint minimizeListeners = 0;
         private uint maximizedListeners = 0;
 
+        public MultiToolWindowChrome()
+        {
+            InitializeComponent();
+            Loaded += MultiToolWindowChrome_Loaded;
+            LayoutUpdated += MultiToolWindowChrome_LayoutUpdated;
+            DataContext = this;
+        }
+
         public string Title { get; set; }
+
+        #region events
 
         public event RoutedEventHandler CloseClick
         {
@@ -97,13 +108,9 @@ namespace MultiTool
             }
         }
 
-        public MultiToolWindowChrome()
-        {
-            InitializeComponent();
-            Loaded += MultiToolWindowChrome_Loaded;
-            LayoutUpdated += MultiToolWindowChrome_LayoutUpdated;
-            DataContext = this;
-        }
+        #endregion
+
+        #region private
 
         private void MultiToolWindowChrome_LayoutUpdated(object sender, System.EventArgs e)
         {
@@ -151,6 +158,10 @@ namespace MultiTool
             }
         }
 
+        #endregion
+
+        #region events handlers
+
         private void ParentWindow_Deactivated(object sender, System.EventArgs e)
         {
             Opacity = 0.5;
@@ -160,5 +171,7 @@ namespace MultiTool
         {
             Opacity = 1;
         }
+
+        #endregion
     }
 }
