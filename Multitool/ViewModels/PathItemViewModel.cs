@@ -21,11 +21,18 @@ namespace MultiTool.ViewModels
         private Brush _color;
         private string _displaySizeUnit;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        /// <summary>Constructor.</summary>
+        /// <param name="item"><see cref="IFileSystemEntry"/> to decorate</param>
+        public PathItemViewModel(IFileSystemEntry item)
+        {
+            pathItem = item;
+            item.PropertyChanged += OnItemPropertyChanged;
+        }
 
-        protected IFileSystemEntry PathItem { get => pathItem; }
+        #region properties
 
-        #region PathItem
+        #region IFileSystemEntry
+        public FileSystemInfo Info { get => pathItem.Info; }
         public string Path => pathItem.Path;
         public long Size => pathItem.Size;
         public string Name => pathItem.Name;
@@ -39,12 +46,18 @@ namespace MultiTool.ViewModels
         public bool IsDirectory => pathItem.IsDirectory;
         #endregion
 
-        #region decorator
+        public IFileSystemEntry FileSystemEntry => pathItem;
+
         public string IsHiddenEcon => pathItem.IsHidden ? HIDDEN : string.Empty;
+
         public string IsSystemEcon => pathItem.IsSystem ? SYSTEM : string.Empty;
+
         public string IsReadOnlyEcon => pathItem.IsReadOnly ? READONLY : string.Empty;
+
         public string IsEncryptedEcon => pathItem.IsEncrypted ? ENCRYPTED : string.Empty;
+
         public string IsCompressedEcon => pathItem.IsCompressed ? COMPRESSED : string.Empty;
+
         public string IsDeviceEcon => pathItem.IsDevice ? DEVICE : string.Empty;
 
         public Brush Color
@@ -87,35 +100,69 @@ namespace MultiTool.ViewModels
         }
         #endregion
 
-        public PathItemViewModel(IFileSystemEntry item)
-        {
-            pathItem = item;
-            item.PropertyChanged += OnItemPropertyChanged;
-        }
+        public event PropertyChangedEventHandler PropertyChanged;
 
+        #region public
+        ///<inheritdoc/>
         public int CompareTo(IFileSystemEntry other)
         {
             return pathItem.CompareTo(other);
         }
 
+        ///<inheritdoc/>
         public int CompareTo(object obj)
         {
             return pathItem.CompareTo(obj);
         }
 
+        ///<inheritdoc/>
         public bool Equals(IFileSystemEntry other)
         {
             return pathItem.Equals(other);
+        }
+
+        ///<inheritdoc/>
+        public void Delete()
+        {
+            pathItem.Delete();
+        }
+
+        ///<inheritdoc/>
+        public void Rename(string newName)
+        {
+            pathItem.Rename(newName);
+        }
+
+        ///<inheritdoc/>
+        public void Move(string newPath)
+        {
+            pathItem.Move(newPath);
+        }
+
+        ///<inheritdoc/>
+        public void CopyTo(string newPath)
+        {
+            pathItem.CopyTo(newPath);
+        }
+        #endregion
+
+        #region private
+        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Size))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplaySizeUnit)));
+            }
+            else
+            {
+                PropertyChanged?.Invoke(this, e);
+            }
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            NotifyPropertyChanged(e.PropertyName);
-        }
+        #endregion
     }
 }
