@@ -1,6 +1,8 @@
 ﻿using Multitool.FileSystem;
+
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,6 +23,8 @@ namespace MultitoolWPF.UserControls
         private double _sysFilesPercentage;
         private long _sysFilesSize;
 
+        private Stopwatch stopwatch = new Stopwatch();
+
         public ExplorerHome()
         {
             InitializeComponent();
@@ -33,7 +37,7 @@ namespace MultitoolWPF.UserControls
             _ = LoadComponents();
         }
 
-        #region display properties
+        #region properties
         public DriveInfo DriveInfo { get; set; }
         public string DriveName => DriveInfo.Name + "(" + DriveInfo?.VolumeLabel + ")";
         public string DriveCapacity => FormatSize(DriveInfo?.TotalSize ?? 0);
@@ -71,9 +75,6 @@ namespace MultitoolWPF.UserControls
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RecycleBinPercentage)));
             }
         }
-        #endregion
-
-        #region methods
         public double SysFilesPercentage
         {
             get => _sysFilesPercentage;
@@ -83,14 +84,17 @@ namespace MultitoolWPF.UserControls
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SysFilesPercentage)));
             }
         }
+        #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        #region methods
         private async Task LoadComponents()
         {
             if (DriveInfo == null) return;
 
             FileSystemManager manager = FileSystemManager.Get();
+
             long size = await Task.Run(() => manager.ComputeDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", null));
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -98,26 +102,75 @@ namespace MultitoolWPF.UserControls
                 RecycleBinPercentage = size / (double)DriveInfo.TotalSize * 100;
             });
 
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                _sysFilesSize = GetStaticSysFilesSize();
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SysFilesSize)));
-                SysFilesPercentage = _sysFilesSize / (double)DriveInfo.TotalSize * 100;
-            });
+            await Task.Run(() => GetStaticSysFilesSize());
         }
 
-        private long GetStaticSysFilesSize()
+        private void GetStaticSysFilesSize()
         {
-            long size = 0;
+            stopwatch.Start();
+
             for (int i = 0; i < sysFiles.Length; i++)
             {
                 if (File.Exists(DriveInfo.Name + sysFiles[i]))
                 {
-                    size += new FileInfo(DriveInfo.Name + sysFiles[i]).Length;
+                    _sysFilesSize += new FileInfo(DriveInfo.Name + sysFiles[i]).Length;
                 }
             }
+            DisplaySysFileSize();
 
-            return size;
+            ComputeSysFiles(DriveInfo.Name);
+        }
+
+        private void ComputeSysFiles(string path)
+        {
+            try
+            {
+                string[] dirs = Directory.GetDirectories(path);
+                for (int i = 0; i < dirs.Length; i++)
+                {
+                    ComputeSysFiles(dirs[i]);
+                }
+            }
+            catch (UnauthorizedAccessException) { }
+            catch (DirectoryNotFoundException) { }
+
+            try
+            {
+                string[] files = Directory.GetFiles(path);
+                FileInfo fileInfo;
+                for (int i = 0; i < files.Length; i++)
+                {
+                    if (files[i].EndsWith(".sys"))
+                    {
+                        try
+                        {
+                            fileInfo = new FileInfo(files[i]);
+                            _sysFilesSize += fileInfo.Length;
+                            DisplaySysFileSize();
+                        }
+                        catch (UnauthorizedAccessException) { }
+                        catch (FileNotFoundException) { }
+                    }
+                }
+            } 
+            catch (UnauthorizedAccessException) { }
+            catch (DirectoryNotFoundException) { }
+        }
+
+        private void DisplaySysFileSize()
+        {
+            if (stopwatch.ElapsedMilliseconds > 150)
+            {
+                stopwatch.Reset();
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SysFilesSize)));
+                    SysFilesPercentage = _sysFilesSize / (double)DriveInfo.TotalSize * 100;
+                });
+
+                stopwatch.Start();
+            }
         }
 
         private string FormatSize(long size)
@@ -157,6 +210,11 @@ namespace MultitoolWPF.UserControls
             HeightMouseLeave_Animation.To = controlHeight;
             WidthMouseEnter_Animation.To = controlWidth + widthAnimationDelta;
             WidthMouseLeave_Animation.To = controlWidth;
+        }
+
+        private void ClearTrashBin_Click(object sender, RoutedEventArgs e)
+        {
+
         }
         #endregion
     }

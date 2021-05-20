@@ -6,8 +6,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              Foreground="White"
-             MinWidth="400"
              MinHeight="200"
+             MinWidth="600"
              Height="Auto"
              Width="Auto"
              Background="{StaticResource DarkBlack}"
@@ -15,11 +15,10 @@
              BorderThickness="3.5"
              Margin="10"
              Loaded="Control_Loaded"
-             d:DesignHeight="220" d:DesignWidth="500">
+             d:DesignHeight="220" d:DesignWidth="300">
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
@@ -27,37 +26,38 @@
             <RowDefinition Height="1*"/>
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
-        <TextBlock x:Name="DriveName_TextBlock"
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="0"
+                    Grid.Column="0">
+            <TextBlock x:Name="DriveName_TextBlock"
                    Text="{Binding Path=DriveName, ElementName=ExplorerHomeControl}"
                    FontSize="20"
                    FontWeight="DemiBold"
                    HorizontalAlignment="Left"
                    VerticalAlignment="Center"
-                   Grid.Column="0"
-                   Grid.Row="0"/>
-        <TextBlock x:Name="DriveSize_TextBlock"
+                       Margin="0,0,20,0"/>
+            <TextBlock x:Name="DriveSize_TextBlock"
                    Text="{Binding Path=DriveCapacity, ElementName=ExplorerHomeControl}"
+                   FontSize="20"
+                   Margin="0,0,10,0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"/>
+        </StackPanel>
+        <TextBlock x:Name="DriveFreeSpace_TextBlock"
+                   Text="{Binding Path=DriveFreeSpace, ElementName=ExplorerHomeControl}"
                    FontSize="20"
                    Margin="0,0,10,0"
                    Grid.Column="1" 
                    Grid.Row="0"
                    VerticalAlignment="Center"
-                   HorizontalAlignment="Left"/>
-        <TextBlock x:Name="DriveFreeSpace_TextBlock"
-                   Text="{Binding Path=DriveFreeSpace, ElementName=ExplorerHomeControl}"
+                   HorizontalAlignment="Center"/>
+        <TextBlock x:Name="DriveTakenSpace_TextBlock"
                    FontSize="20"
                    Margin="0,0,10,0"
                    Grid.Column="2" 
                    Grid.Row="0"
                    VerticalAlignment="Center"
-                   HorizontalAlignment="Left"/>
-        <TextBlock x:Name="DriveTakenSpace_TextBlock"
-                   FontSize="20"
-                   Margin="0,0,10,0"
-                   Grid.Column="3" 
-                   Grid.Row="0"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Left">
+                   HorizontalAlignment="Center">
             <Run Text="{Binding Path=DriveFreeSpacePercentage, ElementName=ExplorerHomeControl, StringFormat=F2, Mode=OneWay}"/>
             <Run Text=" %"/>
         </TextBlock>
@@ -68,7 +68,6 @@
               Margin="0,20,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
@@ -96,11 +95,13 @@
             <TextBlock x:Name="RecycleBinSize_TextBlock"
                        Text="{Binding Path=RecycleBinSize, ElementName=ExplorerHomeControl}"
                        VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
                        FontSize="20"
                        Grid.Column="1"
                        Margin="0,0,0,5"/>
             <TextBlock x:Name="RecycleBinPercentage_TextBlock"
                        VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
                        Grid.Row="0"
                        Grid.Column="2"
                        FontSize="20">
@@ -112,17 +113,29 @@
                        Text="{Binding Path=SysFilesSize, ElementName=ExplorerHomeControl}"
                        FontSize="20"
                        VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
                        Grid.Column="1" 
                        Grid.Row="2" 
                        Margin="0,0,0,5"/>
             <TextBlock x:Name="SysFilesSizePercentage_TextBlock"
                        FontSize="20"
                        VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
                        Grid.Column="2"
                        Grid.Row="2">
                     <Run Text="{Binding Path=SysFilesPercentage, ElementName=ExplorerHomeControl, StringFormat=F2, Mode=OneWay}"/>
                     <Run Text=" %"/>
             </TextBlock>
+
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Clear recycle/trash bin"
+                              Click="ClearTrashBin_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Clear system files"
+                              IsEnabled="False"/>
+                </ContextMenu>
+            </Grid.ContextMenu>
         </Grid>
         
     </Grid>
