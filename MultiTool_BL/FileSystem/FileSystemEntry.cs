@@ -17,10 +17,12 @@ namespace Multitool.FileSystem
         {
             _path = info.FullName;
             _name = info.Name;
+            Info = info;
         }
 
         public abstract long Size { get; set; }
-        public abstract FileSystemInfo Info { get; }
+        
+        public FileSystemInfo Info { get; private set; }
 
         /// <inheritdoc/>
         public FileAttributes Attributes => Info.Attributes;

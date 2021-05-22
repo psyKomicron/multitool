@@ -17,8 +17,10 @@ namespace Multitool.FileSystem
         public const bool   DEFAULT_NOTIFY_STATUS = false;
 
         private static FileSystemManager instance;
+
+        private volatile int tasks;
+
         private double ttl;
-        private Stopwatch stopwatch = new Stopwatch();
         private ObjectPool<ChangeEventArgs> objectPool = new ObjectPool<ChangeEventArgs>();  
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
 
@@ -50,8 +52,9 @@ namespace Multitool.FileSystem
         }
 
         public event ProgressEventHandler Progress;
-        public event FailedTaskEventHandler Exception;
-        public event FileSystemManagerEventHandler Change;
+        public event ItemChangedEventHandler Change;
+        public event TaskFailedEventHandler Exception;
+        public event TaskCompletedEventHandler Completed;
 
         public static FileSystemManager Get(double cacheTimeout = DEFAULT_CACHE_TIMEOUT, bool notifyProgress = DEFAULT_NOTIFY_STATUS)
         {
@@ -83,7 +86,6 @@ namespace Multitool.FileSystem
                 throw new ArgumentNullException(nameof(cancellationToken));
             #endregion
 
-            stopwatch.Start();
             if (!string.IsNullOrEmpty(path))
             {
                 if (ContainsKey(path))
@@ -121,10 +123,6 @@ namespace Multitool.FileSystem
                     GetFiles(path, cacheItems, list, addDelegate, cancellationToken);
                 }
             }
-
-            stopwatch.Stop();
-            Progress?.Invoke(null, "Done in " + stopwatch.Elapsed.TotalSeconds.ToString() + " s.");
-            stopwatch.Reset();
         }
 
         /// <inheritdoc/>
@@ -263,6 +261,7 @@ namespace Multitool.FileSystem
         }
 
         #region file get
+
         private void GetPartial<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -299,7 +298,7 @@ namespace Multitool.FileSystem
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    InvokeProgress("Working on " + toDo[i]);
+                    InvokeProgress(toDo[i]);
 
                     if (File.Exists(toDo[i]))
                     {
@@ -326,6 +325,8 @@ namespace Multitool.FileSystem
             {
                 InvokeException(e);
             }
+
+            Completed?.Invoke();
         }
 
         private void GetDirectories<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
@@ -349,15 +350,21 @@ namespace Multitool.FileSystem
 
                     try
                     {
-                        InvokeProgress("Working on " + dirPaths[i]);
+                        InvokeProgress(dirPaths[i]);
 
-                        //long size = ComputeDirectorySize(dirPaths[i], cancellationToken);
                         string currentPath = dirPaths[i];
-                        FileSystemEntry item = new DirectoryEntry(new DirectoryInfo(dirPaths[i]), 0);
+                        FileSystemEntry item = new DirectoryEntry(new DirectoryInfo(dirPaths[i]));
 
                         Task.Run(() =>
                         {
+                            tasks++;
                             item.Size = ComputeDirectorySize(currentPath, cancellationToken);
+                            tasks--;
+
+                            if (tasks == 0)
+                            {
+                                Completed?.Invoke();
+                            }
                         }, cancellationToken);
 
                         cacheItems.Add(item);
@@ -397,7 +404,7 @@ namespace Multitool.FileSystem
                         cancellationToken.ThrowIfCancellationRequested();
                     }
 
-                    InvokeProgress("Working on " + files[i]);
+                    InvokeProgress(files[i]);
 
                     FileSystemEntry item = new FileEntry(new FileInfo(files[i]));
                     cacheItems.Add(item);
@@ -409,6 +416,7 @@ namespace Multitool.FileSystem
                 InvokeException(e);
             }
         }
+        
         #endregion
 
         private FileSystemCache GetFileSystemCache(string key)
@@ -490,6 +498,7 @@ namespace Multitool.FileSystem
         }*/
 
         #region events
+
         private void OnCacheTTLReached(object sender, TTLReachedEventArgs e)
         {
             if (e.TTLUpdated) return;
@@ -537,6 +546,7 @@ namespace Multitool.FileSystem
                 }
             }
         }
+        
         #endregion
 
         #region event invoke

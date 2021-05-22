@@ -8,10 +8,15 @@ namespace Multitool.FileSystem
     {
         double CacheTimeout { get; set; }
 
-        event FileSystemManagerEventHandler Change;
+        /// <summary>
+        /// Fired when the one or more items in the cache have changed.
+        /// </summary>
+        event ItemChangedEventHandler Change;
 
         /// <summary>
-        /// <para>List the content of a directory as a <see cref="IList{T}"/>.</para>
+        /// <para>
+        /// List the content of a directory as a <see cref="IList{T}"/>.
+        /// </para>
         /// <para>
         /// Because each directory size is calculated, the task can be 
         /// cancelled with the <paramref name="cancellationToken"/>.</para>
@@ -39,5 +44,5 @@ namespace Multitool.FileSystem
         void Reset();
     }
 
-    public delegate void FileSystemManagerEventHandler(object sender, ChangeEventArgs data);
+    public delegate void ItemChangedEventHandler(object sender, ChangeEventArgs data);
 }

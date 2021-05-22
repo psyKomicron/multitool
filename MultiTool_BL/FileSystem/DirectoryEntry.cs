@@ -4,14 +4,18 @@ namespace Multitool.FileSystem
 {
     internal class DirectoryEntry : FileSystemEntry
     {
-        private readonly DirectoryInfo _info;
         private long _size;
+
+        public DirectoryEntry(DirectoryInfo info) : base(info)
+        {
+            DirectoryInfo = info;
+            _size = -1;
+        }
 
         public DirectoryEntry(DirectoryInfo info, long size) : base(info)
         {
-            _info = info;
-            _size = size;
             DirectoryInfo = info;
+            _size = size;
         }
 
         public override long Size
@@ -23,8 +27,6 @@ namespace Multitool.FileSystem
                 NotifyPropertyChanged();
             }
         }
-
-        public override FileSystemInfo Info => _info;
 
         public override void Delete()
         {
