@@ -126,7 +126,7 @@
                                 ItemsSource="{Binding PathAutoCompletion}"
                                 Text="{Binding CurrentPath, Mode=TwoWay}"/>
 
-                                <ProgressBar x:Name="DisplayProgressBar"
+                                <ProgressBar x:Name="Files_ProgressBar"
                                          Background="Transparent"
                                          IsIndeterminate="False"
                                          Height="10"
@@ -214,8 +214,8 @@
                                         <TextBlock 
                                         Grid.Column="1"
                                         Foreground="White">
-                                            <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneTime}"/>
-                                            <Run Text="{Binding DisplaySizeUnit, Mode=OneTime}"/>
+                                            <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneWay}"/>
+                                            <Run Text="{Binding DisplaySizeUnit, Mode=OneWay}"/>
                                         </TextBlock>
                                         <!--#region icons stackpanel-->
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">

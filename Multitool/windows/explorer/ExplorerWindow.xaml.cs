@@ -53,8 +53,9 @@ namespace MultiTool.Windows
         }
 
         #region properties
+
         public ExplorerWindowData Data { get; set; }
-        public ObservableCollection<PathItemViewModel> CurrentFiles { get; private set; }
+        public ObservableCollection<FileSystemEntryViewModel> CurrentFiles { get; private set; }
         public ObservableCollection<string> PathAutoCompletion { get; private set; }
         public string CurrentPath
         {
@@ -65,6 +66,7 @@ namespace MultiTool.Windows
                 NotifyPropertyChanged();
             }
         }
+        
         #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -87,7 +89,11 @@ namespace MultiTool.Windows
             fileSystemManager.Progress += FileSystemManager_Progress;
             fileSystemManager.Exception += FileSystemManager_Exception;
             fileSystemManager.Change += FileSystemManager_Change;
-            _ = DisplayFiles(CurrentPath);
+            fileSystemManager.Completed += FileSystemManager_Completed;
+            if (!string.IsNullOrEmpty(CurrentPath))
+            {
+                _ = DisplayFiles(CurrentPath);
+            }
         }
 
         public void Serialize()
@@ -98,10 +104,11 @@ namespace MultiTool.Windows
         #endregion
 
         #region private
+
         private void InitializeWindow()
         {
             DataContext = this;
-            CurrentFiles = new ObservableCollection<PathItemViewModel>();
+            CurrentFiles = new ObservableCollection<FileSystemEntryViewModel>();
             pathCompletor = new PathCompletor();
             PathAutoCompletion = new ObservableCollection<string>();
 
@@ -147,11 +154,6 @@ namespace MultiTool.Windows
 
         private async Task DisplayFiles(string path)
         {
-            #region clear displays
-            CurrentFiles.Clear();
-            PathInput.Text = string.Empty;
-            Progress_TextBox.Text = string.Empty;
-            #endregion
             #region renew cancellation token
             if (cancellationTokenSource != null)
             {
@@ -161,9 +163,11 @@ namespace MultiTool.Windows
             cancellationTokenSource = new CancellationTokenSource();
             #endregion
 
-            fileSystemManager.Notify = true;
-            DisplayProgressBar.IsIndeterminate = true;
             CurrentPath = path;
+            CurrentFiles.Clear();
+            PathInput.Text = string.Empty;
+            fileSystemManager.Notify = true;
+            Files_ProgressBar.IsIndeterminate = true;
             CancelAction_Button.IsEnabled = true;
 
             try
@@ -173,22 +177,16 @@ namespace MultiTool.Windows
             catch (OperationCanceledException)
             {
                 Progress_TextBox.Text = "Operation cancelled";
-            }
-            finally
-            {
                 eventStopwatch.Reset();
                 CancelAction_Button.IsEnabled = false;
-                CurrentPath = path;
-                DisplayProgressBar.IsIndeterminate = false;
             }
         }
 
         private void GetFiles(string path, CancellationTokenSource tokenSource)
         {
-            IList<PathItemViewModel> pathItems = CurrentFiles;
+            IList<FileSystemEntryViewModel> pathItems = CurrentFiles;
             eventStopwatch.Start();
             fileSystemManager.GetFileSystemEntries(path, tokenSource.Token, ref pathItems, AddDelegate);
-            Application.Current.Dispatcher.Invoke(() => SortList());
         }
 
         private void Next()
@@ -211,7 +209,7 @@ namespace MultiTool.Windows
 
         private void SortList()
         {
-            PathItemViewModel[] pathItems =  ObservableCollectionQuickSort.Sort(CurrentFiles);
+            FileSystemEntryViewModel[] pathItems =  ObservableCollectionQuickSort.Sort(CurrentFiles);
             CurrentFiles.Clear();
             for (int i = 0; i < pathItems.Length; i++)
             {
@@ -224,16 +222,45 @@ namespace MultiTool.Windows
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void AddDelegate(IList<PathItemViewModel> items, IFileSystemEntry item)
+        private void AddDelegate(IList<FileSystemEntryViewModel> items, IFileSystemEntry item)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                items.Add(new PathItemViewModel(item)
+                items.Add(new FileSystemEntryViewModel(item)
                 {
                     Color = item.IsDirectory ? Tool.GetRessource<SolidColorBrush>("DevBlue") : new SolidColorBrush(Colors.White)
                 });
             });
         }
+
+        private async void DisplayMessage(string message, bool error = false, bool force = false)
+        {
+            await Task.Run(() =>
+            {
+                Console.WriteLine(message);
+                if (force || eventStopwatch.ElapsedMilliseconds > 20) //ms interval between each notification
+                {
+                    if (error)
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            Progress_TextBox.Foreground = RED;
+                            Progress_TextBox.Text = message;
+                        });
+                    }
+                    else
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            Progress_TextBox.Foreground = WHITE;
+                            Progress_TextBox.Text = message;
+                        });
+                    }
+                    eventStopwatch.Restart();
+                }
+            });
+        }
+
         #endregion
 
         #region events handlers
@@ -364,7 +391,7 @@ namespace MultiTool.Windows
         {
             object item = (e.Source as ListView)?.SelectedItem;
 
-            if (item != null && item is PathItemViewModel path)
+            if (item != null && item is FileSystemEntryViewModel path)
             {
                 if (path.IsDirectory)
                 {
@@ -437,7 +464,7 @@ namespace MultiTool.Windows
             System.Collections.IList items = MainListView.SelectedItems;
             foreach (object item in items)
             {
-                if (item is PathItemViewModel pathItem)
+                if (item is FileSystemEntryViewModel pathItem)
                 {
                     try
                     {
@@ -453,47 +480,23 @@ namespace MultiTool.Windows
         #endregion
 
         #region file system manager
-        private async void DisplayMessage(string message, bool error = false, bool force = false)
-        {
-            await Task.Run(() =>
-            {
-                if (eventStopwatch.ElapsedMilliseconds > 70 || force) //ms interval between each notification
-                {
-                    if (error)
-                    {
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            Progress_TextBox.Foreground = RED;
-                            Progress_TextBox.Text = message;
-                        });
-                    }
-                    else
-                    {
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            Progress_TextBox.Foreground = WHITE;
-                            Progress_TextBox.Text = message;
-                        });
-                    }
-                    eventStopwatch.Restart();
-                }
-            });
-        }
 
-        private void FileSystemManager_Progress(object sender, string message)
-        {
-            if (sender == null)
-            {
-                DisplayMessage(message, false, true);
-            }
-            else
-            {
-                DisplayMessage(message);
-            }
-        }
+        private void FileSystemManager_Progress(object sender, string message) => DisplayMessage(message, false, sender == null);
 
         private void FileSystemManager_Exception(object sender, Exception exception) => DisplayMessage(exception.Message, true);
 
+        private void FileSystemManager_Completed()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                eventStopwatch.Reset();
+                CancelAction_Button.IsEnabled = false;
+                Progress_TextBox.Text = string.Empty;
+                Files_ProgressBar.IsIndeterminate = false;
+                SortList();
+            });
+        }
+        
         private void FileSystemManager_Change(object sender, Multitool.FileSystem.Events.ChangeEventArgs data)
         {
             switch (data.ChangeTypes)
@@ -522,6 +525,7 @@ namespace MultiTool.Windows
             }
             data.InUse = false;
         }
+
         #endregion
 
         #region window chrome

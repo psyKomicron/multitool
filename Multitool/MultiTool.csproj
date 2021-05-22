@@ -119,7 +119,7 @@
       <DependentUpon>SpreadsheetItemUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\Explorer\ExplorerWindowData.cs" />
-    <Compile Include="ViewModels\PathItemViewModel.cs" />
+    <Compile Include="ViewModels\FileSystemEntryViewModel.cs" />
     <Compile Include="Windows\ISerializableWindow.cs" />
     <Compile Include="Windows\Power\PowerWindowData.cs" />
     <Compile Include="ViewModels\SpreadsheetVM.cs" />

@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace MultiTool.ViewModels
 {
-    public class PathItemViewModel : IFileSystemEntry
+    public class FileSystemEntryViewModel : IFileSystemEntry
     {
         private const string HIDDEN = "👁";
         private const string SYSTEM = "⚙";
@@ -23,7 +23,7 @@ namespace MultiTool.ViewModels
 
         /// <summary>Constructor.</summary>
         /// <param name="item"><see cref="IFileSystemEntry"/> to decorate</param>
-        public PathItemViewModel(IFileSystemEntry item)
+        public FileSystemEntryViewModel(IFileSystemEntry item)
         {
             pathItem = item;
             item.PropertyChanged += OnItemPropertyChanged;
@@ -74,24 +74,31 @@ namespace MultiTool.ViewModels
         {
             get
             {
-                int unit = 0;
-                decimal currentSize = Size;
-
-                while (currentSize > 1024 && unit != 4)
+                if (Size >= 0)
                 {
-                    currentSize /= 1024;
-                    unit++;
+                    int unit = 0;
+                    decimal currentSize = Size;
+
+                    while (currentSize > 1024 && unit != 4)
+                    {
+                        currentSize /= 1024;
+                        unit++;
+                    }
+
+                    DisplaySizeUnit = units[unit];
+
+                    return currentSize.ToString("F2", CultureInfo.InvariantCulture);
                 }
-
-                DisplaySizeUnit = units[unit];
-
-                return currentSize.ToString("F2", CultureInfo.InvariantCulture);
+                else
+                {
+                    return string.Empty;
+                } 
             }
         }
 
         public string DisplaySizeUnit
         {
-            get => _displaySizeUnit;
+            get => Size >= 0 ? _displaySizeUnit : string.Empty;
             set
             {
                 _displaySizeUnit = value;
@@ -151,7 +158,7 @@ namespace MultiTool.ViewModels
         {
             if (e.PropertyName == nameof(Size))
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplaySizeUnit)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplaySize)));
             }
             else
             {
