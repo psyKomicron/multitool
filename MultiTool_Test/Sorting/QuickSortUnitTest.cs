@@ -69,14 +69,14 @@ namespace BusinessLayer.Tests
         }
 
         [TestMethod]
-        public void QuickSortFullTest()
+        public async void QuickSortFullTest()
         {
             FileSystemManager manager = FileSystemManager.Get();
             CancellationToken cancellationToken = new();
             IList<IFileSystemEntry> entries = new List<IFileSystemEntry>();
             string path = @"C:\Users\julie\Documents";
 
-            manager.GetFileSystemEntries(path, cancellationToken, ref entries, (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
+            await manager.GetFileSystemEntries(path, cancellationToken, entries, (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
 
             IFileSystemEntry[] array = new IFileSystemEntry[entries.Count];
             entries.CopyTo(array, 0);
