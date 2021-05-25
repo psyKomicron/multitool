@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -94,8 +95,8 @@ namespace MultitoolWPF.UserControls
             if (DriveInfo == null) return;
 
             FileSystemManager manager = FileSystemManager.Get();
+            long size = await Task.Run(() => manager.ComputeDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", CancellationToken.None), CancellationToken.None);
 
-            long size = await Task.Run(() => manager.ComputeDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", null));
             Application.Current.Dispatcher.Invoke(() =>
             {
                 RecycleBinSize = FormatSize(size);

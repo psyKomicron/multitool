@@ -43,7 +43,7 @@ namespace MultiTool
             /* end timed instructions */
             stopwatch.Stop();
 
-            Console.WriteLine("\tPreference file creation/writing time : " + stopwatch.ElapsedMilliseconds + "ms");
+            Console.WriteLine("\tPreference file creation/writing time : " + (stopwatch.ElapsedTicks * (TimeSpan.TicksPerMillisecond / 10^6)) + " ns");
             Console.WriteLine(new string('-', 80));
         }
     }

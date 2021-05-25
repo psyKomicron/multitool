@@ -154,7 +154,7 @@
                                 <Button x:Name="CancelAction_Button"
                                     Content="✖"
                                     FontSize="20"
-                                    Click="CancelAction_Button_Click"
+                                    Click="Cancel_Button_Click"
                                     IsEnabled="False"
                                     Template="{StaticResource IconButtonControlTemplate}"/>
                             </StackPanel>

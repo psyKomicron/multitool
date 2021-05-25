@@ -14,11 +14,6 @@ namespace Multitool
         event TaskFailedEventHandler Exception;
 
         /// <summary>
-        /// Fired when the task (and subtasks) is completed.
-        /// </summary>
-        event TaskCompletedEventHandler Completed;
-
-        /// <summary>
         /// Set it to true to allow to fire the <see cref="Progress"/> event.
         /// </summary>
         bool Notify { get; set; }

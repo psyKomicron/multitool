@@ -1,6 +1,8 @@
 ﻿using Multitool.FileSystem.Events;
+
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Multitool.FileSystem
 {
@@ -29,7 +31,9 @@ namespace Multitool.FileSystem
         /// <exception cref="System.ArgumentNullException">
         /// If either <paramref name="list"/> or <paramref name="cancellationToken"/> is <see cref="null"/>
         /// </exception>
-        void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken, ref IList<ItemType> list, AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry;
+        Task GetFileSystemEntries<ItemType>(
+            string path, CancellationToken cancellationToken, IList<ItemType> list,
+            AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry;
 
         /// <summary>
         /// Get the case sensitive path for the <paramref name="path"/> parameter.

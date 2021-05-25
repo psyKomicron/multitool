@@ -203,10 +203,7 @@ namespace Multitool.PreferencesManagers.Json
                     stream.Write(bytes, 0, bytes.Length);
                 }
             }
-            catch (IOException e)
-            {
-                Console.Error.WriteLine(e.ToString());
-            }
+            catch (IOException){ }
         }
 
         private bool IsControlChar(char c) => c == '\r' || c == '\n' || c == '\t' || c == ' ';

@@ -113,18 +113,10 @@
                 Grid.Column="2"
                 Grid.Row="3"/>
             <TextBlock
-                x:Name="LeftPosition"
-                Text="{Binding Path=Left, Mode=OneWay}"
+                x:Name="CpuUsage"
                 VerticalAlignment="Center"
-                HorizontalAlignment="Right"
+                HorizontalAlignment="Left"
                 Grid.Column="1"
-                Grid.Row="3"/>
-            <TextBlock
-                x:Name="TopPosition"
-                Text="{Binding Path=Top, Mode=OneWay}"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Right"
-                Grid.Column="0"
                 Grid.Row="3"/>
 
             <Grid.Triggers>

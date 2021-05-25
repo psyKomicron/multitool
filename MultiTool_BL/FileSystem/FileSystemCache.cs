@@ -70,6 +70,7 @@ namespace Multitool.FileSystem
             this.ttl = ttl;
             this.path = path;
             watchedItems = new List<FileSystemEntry>(10);
+            
             try
             {
                 watcher = WatcherFactory.CreateWatcher(path, new WatcherDelegates()
@@ -80,19 +81,19 @@ namespace Multitool.FileSystem
                     RenamedHandler = OnFileRenamed
                 });
                 watcher.EnableRaisingEvents = true;
-                CreateTimer();
-                timer.Start();
-                creationTime = DateTime.UtcNow;
             }
-            catch (Exception e)
+            catch (Exception e) // catching exception because we are re-throwing it
             {
                 lock (_lock)
                 {
                     watchedPaths.Remove(path);
                 }
-                timer.Stop();
                 throw e;
             }
+
+            CreateTimer();
+            timer.Start();
+            creationTime = DateTime.UtcNow;
         }
 
         /// <summary>Gets the internal item count.</summary>
@@ -291,11 +292,18 @@ namespace Multitool.FileSystem
             // throw new FileSystemCacheException("FileSystemWatcher raised an error : \n" + e.GetException().ToString());
             if (e.GetException() != null)
             {
-                Console.Error.WriteLine(e.GetException().ToString());
                 if (e.GetException().InnerException == null)
                 {
                     WatcherError?.Invoke(this, e.GetException(), WatcherErrorTypes.PathDeleted);
                 }
+                else
+                {
+                    throw e.GetException();
+                }
+            }
+            else
+            {
+                throw new Exception("Watcher error");
             }
         }
         #endregion

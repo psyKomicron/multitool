@@ -6,7 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              Foreground="White"
-             MinHeight="200"
+             MinHeight="250"
              MinWidth="600"
              Height="Auto"
              Width="Auto"
@@ -65,7 +65,7 @@
         <Grid x:Name="Stats_Grid"
                 Grid.Row="1"
                 Grid.ColumnSpan="10"
-              Margin="0,20,0,0">
+              Margin="0,30,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="2*"/>
@@ -73,7 +73,7 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
-                <RowDefinition Height="10px"/>
+                <RowDefinition Height="20px"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
 

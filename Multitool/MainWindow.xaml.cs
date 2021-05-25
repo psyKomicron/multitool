@@ -6,6 +6,8 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
+using Multitool.Monitoring;
+using System.Timers;
 
 namespace MultiTool
 {
@@ -14,7 +16,9 @@ namespace MultiTool
     /// </summary>
     public partial class MainWindow : Window, ISerializableWindow
     {
-        private readonly string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
+        private const string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
+        private CpuMonitor cpuMonitor = new CpuMonitor();
+        private Timer cpuTimer = new Timer(500);
 
         public string AppVersion { get; set; }
 
@@ -49,11 +53,32 @@ namespace MultiTool
             DataContext = this;
 
             AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            cpuTimer.Elapsed += CpuTimer_Elapsed;
+            cpuTimer.Start();
         }
 
         #region events
 
-        private void MultiToolMainWindow_Closed(object sender, EventArgs e) => Serialize();
+        private void CpuTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (!cpuMonitor.Ready)
+            {
+                return;
+            }
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                CpuUsage.Text = cpuMonitor.GetCpuUsage().ToString();
+            });
+        }
+
+        private void MultiToolMainWindow_Closed(object sender, EventArgs e)
+        {
+            cpuTimer.Stop();
+            cpuTimer.Dispose();
+            cpuMonitor.Dispose();
+            Serialize();
+        }
 
         private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
 

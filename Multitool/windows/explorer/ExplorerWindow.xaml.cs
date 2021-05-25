@@ -22,6 +22,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml.XPath;
 
 namespace MultiTool.Windows
 {
@@ -34,8 +35,9 @@ namespace MultiTool.Windows
         private static SolidColorBrush WHITE = new SolidColorBrush(Colors.White);
 
         private Stopwatch eventStopwatch = new Stopwatch();
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private Stack<string> pathHistory = new Stack<string>(10);
+        private Stopwatch taskStopwatch = new Stopwatch();
+        private CancellationTokenSource cancellationTokenSource;
+        private Stack<string> previousStackPath = new Stack<string>(10);
         private Stack<string> nextPathStack = new Stack<string>(10);
         private CursorPosition cursorPosition = new CursorPosition();
         private UriCleaner cleaner = new UriCleaner();
@@ -89,7 +91,7 @@ namespace MultiTool.Windows
             fileSystemManager.Progress += FileSystemManager_Progress;
             fileSystemManager.Exception += FileSystemManager_Exception;
             fileSystemManager.Change += FileSystemManager_Change;
-            fileSystemManager.Completed += FileSystemManager_Completed;
+
             if (!string.IsNullOrEmpty(CurrentPath))
             {
                 _ = DisplayFiles(CurrentPath);
@@ -117,7 +119,7 @@ namespace MultiTool.Windows
         }
 
         private void LoadHome()
-        {    
+        {
             DriveInfo[] driveInfo = DriveInfo.GetDrives();
 
             int rows, column;
@@ -135,7 +137,7 @@ namespace MultiTool.Windows
             {
                 Disks_Grid.RowDefinitions.Add(new RowDefinition() 
                 {
-                    Height = new GridLength(230)
+                    Height = new GridLength(280)
                 });
             }
 
@@ -154,57 +156,81 @@ namespace MultiTool.Windows
 
         private async Task DisplayFiles(string path)
         {
-            #region renew cancellation token
             if (cancellationTokenSource != null)
             {
                 cancellationTokenSource.Cancel();
-                //cancellationTokenSource.Dispose();
             }
             cancellationTokenSource = new CancellationTokenSource();
-            #endregion
 
-            CurrentPath = path;
+            //previousStackPath.Push(fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(CurrentPath)));
+            string cleanPath = fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(path));
+            CurrentPath = cleanPath;
+            if (!Data.History.Contains(string.Format("{0, 10}", cleanPath)))
+            {
+                Data.History.Add(string.Format("{0, 10}", cleanPath));
+            }
+            PathInput.Text = cleanPath;
+
+            PathAutoCompletion.Clear();
             CurrentFiles.Clear();
-            PathInput.Text = string.Empty;
-            fileSystemManager.Notify = true;
-            Files_ProgressBar.IsIndeterminate = true;
-            CancelAction_Button.IsEnabled = true;
-
+            Progress_TextBox.Text = string.Empty;
+            fileSystemManager.Notify = Files_ProgressBar.IsIndeterminate = CancelAction_Button.IsEnabled = true;
+            
             try
             {
-                await Task.Run(() => GetFiles(path, cancellationTokenSource), cancellationTokenSource.Token);
+                IList<FileSystemEntryViewModel> pathItems = CurrentFiles;
+                eventStopwatch.Start();
+                taskStopwatch.Start();
+
+                await fileSystemManager.GetFileSystemEntries(cleanPath, cancellationTokenSource.Token, pathItems, AddDelegate);
+
+                taskStopwatch.Reset();
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = null;
+
+                if (taskStopwatch.Elapsed.TotalSeconds > 0)
+                {
+                    Progress_TextBox.Text = "Completed in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s";
+                }
+                else
+                {
+                    Progress_TextBox.Text = "Completed in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms" ;
+                }
+                SortList();
             }
             catch (OperationCanceledException)
             {
                 Progress_TextBox.Text = "Operation cancelled";
+            }
+            finally
+            {
                 eventStopwatch.Reset();
                 CancelAction_Button.IsEnabled = false;
+                Files_ProgressBar.IsIndeterminate = false;
             }
-        }
-
-        private void GetFiles(string path, CancellationTokenSource tokenSource)
-        {
-            IList<FileSystemEntryViewModel> pathItems = CurrentFiles;
-            eventStopwatch.Start();
-            fileSystemManager.GetFileSystemEntries(path, tokenSource.Token, ref pathItems, AddDelegate);
         }
 
         private void Next()
         {
             if (nextPathStack.Count > 0)
             {
-                pathHistory.Push(CurrentPath);
-                _ = DisplayFiles(nextPathStack.Pop());
+                previousStackPath.Push(CurrentPath);
+                 _ = DisplayFiles(nextPathStack.Pop());
             }
         }
 
         private void Back()
         {
-            if (pathHistory.Count > 0)
+            if (previousStackPath.Count > 0)
             {
                 nextPathStack.Push(CurrentPath);
-                _ = DisplayFiles(pathHistory.Pop());
+                _ = DisplayFiles(previousStackPath.Pop());
             }
+            else
+            {
+                nextPathStack.Push(CurrentPath);
+                _ = DisplayFiles(Directory.GetParent(CurrentPath).FullName);
+            } 
         }
 
         private void SortList()
@@ -237,7 +263,6 @@ namespace MultiTool.Windows
         {
             await Task.Run(() =>
             {
-                Console.WriteLine(message);
                 if (force || eventStopwatch.ElapsedMilliseconds > 20) //ms interval between each notification
                 {
                     if (error)
@@ -305,7 +330,6 @@ namespace MultiTool.Windows
             if (resizing)
             {
                 cursorPosition.GetCursorPosition(out int x, out int y);
-                Console.WriteLine(x + ", " + y);
                 double width, height;
                 width = previousCursor.X - x;
                 height = previousCursor.Y - y;
@@ -328,9 +352,11 @@ namespace MultiTool.Windows
                 try
                 {
                     cancellationTokenSource.Cancel();
+                    //cancellationTokenSource.Dispose();
                 }
                 catch (ObjectDisposedException) { }
             }
+            eventStopwatch.Stop();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) => LoadHome();
@@ -355,13 +381,7 @@ namespace MultiTool.Windows
                 string text = PathInput.Text;
                 if (!string.IsNullOrEmpty(text))
                 {
-                    pathHistory.Push(string.Format("{0, 10}", CurrentPath));
-                    string cleanText = fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(text));
-
-                    _ = DisplayFiles(cleanText);
-                    Data.History.Add(cleanText);
-                    PathInput.Text = cleanText;
-                    PathAutoCompletion.Clear();
+                    _ = DisplayFiles(text);   
                 }
             }
             else
@@ -382,8 +402,7 @@ namespace MultiTool.Windows
             object folderName = (sender as Button)?.Content;
             if (folderName is string name)
             {
-                pathHistory.Push(CurrentPath);
-                _ = DisplayFiles(fileSystemManager.GetRealPath(name));
+                _ = DisplayFiles(name);
             }
         }
 
@@ -395,7 +414,6 @@ namespace MultiTool.Windows
             {
                 if (path.IsDirectory)
                 {
-                    pathHistory.Push(CurrentPath);
                     _ = DisplayFiles(path.Path);
                 }
                 else
@@ -435,15 +453,13 @@ namespace MultiTool.Windows
             _ = DisplayFiles(CurrentPath);
         }
 
-        private void CancelAction_Button_Click(object sender, RoutedEventArgs e)
+        private void Cancel_Button_Click(object sender, RoutedEventArgs e)
         {
-            e.Handled = true;
             if (cancellationTokenSource != null)
             {
                 cancellationTokenSource.Cancel();
-                //cancellationTokenSource.Dispose();
             }
-            cancellationTokenSource = new CancellationTokenSource();
+            e.Handled = true;
         }
 
         private void HistoryListViewMenuItem_Click(object sender, RoutedEventArgs e)
@@ -484,18 +500,6 @@ namespace MultiTool.Windows
         private void FileSystemManager_Progress(object sender, string message) => DisplayMessage(message, false, sender == null);
 
         private void FileSystemManager_Exception(object sender, Exception exception) => DisplayMessage(exception.Message, true);
-
-        private void FileSystemManager_Completed()
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                eventStopwatch.Reset();
-                CancelAction_Button.IsEnabled = false;
-                Progress_TextBox.Text = string.Empty;
-                Files_ProgressBar.IsIndeterminate = false;
-                SortList();
-            });
-        }
         
         private void FileSystemManager_Change(object sender, Multitool.FileSystem.Events.ChangeEventArgs data)
         {
@@ -529,6 +533,7 @@ namespace MultiTool.Windows
         #endregion
 
         #region window chrome
+
         private void MultiToolWindowChrome_CloseClick(object sender, RoutedEventArgs e)
         {
             e.Handled = true;

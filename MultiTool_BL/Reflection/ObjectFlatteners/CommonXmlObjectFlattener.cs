@@ -21,9 +21,8 @@ namespace Multitool.Reflection.ObjectFlatteners
             {
                 return RecursiveFlatten(o, xmlDocument, objectType.Name);
             }
-            catch (ArgumentNullException ane)
+            catch (ArgumentNullException)
             {
-                Console.Error.WriteLine(ane);
                 return xmlDocument.CreateElement("properties");
             }
         }
