@@ -23,19 +23,15 @@ namespace MultitoolWPF.UserControls
         private double _recycleBinPercentage;
         private double _sysFilesPercentage;
         private long _sysFilesSize;
-
+        private DirectorySizeCalculator calculator = new DirectorySizeCalculator();
         private Stopwatch stopwatch = new Stopwatch();
 
-        public ExplorerHome()
-        {
-            InitializeComponent();
-        }
-
-        public ExplorerHome(DriveInfo driveInfo)
+        public ExplorerHome(DriveInfo driveInfo, CancellationTokenSource cancelToken)
         {
             DriveInfo = driveInfo;
             InitializeComponent();
-            _ = LoadComponents();
+            cancelToken.Token.ThrowIfCancellationRequested();
+            _ = LoadComponents(cancelToken);
         }
 
         #region properties
@@ -90,46 +86,64 @@ namespace MultitoolWPF.UserControls
         public event PropertyChangedEventHandler PropertyChanged;
 
         #region methods
-        private async Task LoadComponents()
+        private async Task LoadComponents(CancellationTokenSource cancelTokenSource)
         {
-            if (DriveInfo == null) return;
+            if (DriveInfo == null) 
+                return;
+
+            CancellationToken cancelToken = cancelTokenSource.Token;
+            cancelToken.ThrowIfCancellationRequested();
 
             FileSystemManager manager = FileSystemManager.Get();
-            long size = await Task.Run(() => manager.ComputeDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", CancellationToken.None), CancellationToken.None);
+            long size = await Task.Run(() => 
+            {
+                return calculator.AsyncCalculateDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", cancelToken);
+            }, cancelToken);
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 RecycleBinSize = FormatSize(size);
                 RecycleBinPercentage = size / (double)DriveInfo.TotalSize * 100;
             });
+            RecycleBin_TextBlock.Opacity = 1;
 
-            await Task.Run(() => GetStaticSysFilesSize());
+            cancelToken.ThrowIfCancellationRequested();
+
+            await GetStaticSysFilesSize(cancelToken);
+            SysFiles_TextBlock.Opacity = 1;
+            cancelTokenSource.Dispose();
         }
 
-        private void GetStaticSysFilesSize()
+        private async Task GetStaticSysFilesSize(CancellationToken cancelToken)
         {
-            stopwatch.Start();
-
-            for (int i = 0; i < sysFiles.Length; i++)
+            await Task.Run(() =>
             {
-                if (File.Exists(DriveInfo.Name + sysFiles[i]))
-                {
-                    _sysFilesSize += new FileInfo(DriveInfo.Name + sysFiles[i]).Length;
-                }
-            }
-            DisplaySysFileSize();
+                stopwatch.Start();
 
-            ComputeSysFiles(DriveInfo.Name);
+                for (int i = 0; i < sysFiles.Length; i++)
+                {
+                    cancelToken.ThrowIfCancellationRequested();
+                    if (File.Exists(DriveInfo.Name + sysFiles[i]))
+                    {
+                        _sysFilesSize += new FileInfo(DriveInfo.Name + sysFiles[i]).Length;
+                    }
+                }
+                DisplaySysFileSize();
+            }, cancelToken);
+
+            cancelToken.ThrowIfCancellationRequested();
+            await Task.Run(() => ComputeSysFiles(DriveInfo.Name, cancelToken), cancelToken); 
         }
 
-        private void ComputeSysFiles(string path)
+        private void ComputeSysFiles(string path, CancellationToken cancelToken)
         {
             try
             {
                 string[] dirs = Directory.GetDirectories(path);
                 for (int i = 0; i < dirs.Length; i++)
                 {
-                    ComputeSysFiles(dirs[i]);
+                    cancelToken.ThrowIfCancellationRequested();
+                    ComputeSysFiles(dirs[i], cancelToken);
                 }
             }
             catch (UnauthorizedAccessException) { }
@@ -141,6 +155,7 @@ namespace MultitoolWPF.UserControls
                 FileInfo fileInfo;
                 for (int i = 0; i < files.Length; i++)
                 {
+                    cancelToken.ThrowIfCancellationRequested();
                     if (files[i].EndsWith(".sys"))
                     {
                         try

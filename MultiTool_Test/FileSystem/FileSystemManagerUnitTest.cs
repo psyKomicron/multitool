@@ -25,7 +25,7 @@ namespace BusinessLayer.FileSystem.Tests
         }
 
         [TestMethod()]
-        public async void GetFileSystemEntriesTest()
+        public void GetFileSystemEntriesTest()
         {
             #region instanciations
             FileSystemManager manager = FileSystemManager.Get();
@@ -35,7 +35,7 @@ namespace BusinessLayer.FileSystem.Tests
 
             string path = @"C:\Users\julie\Documents";
             string[] items = Directory.GetFileSystemEntries(path);
-            await manager.GetFileSystemEntries(path, cancellationToken, entries, (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
+            manager.GetFileSystemEntries(path, cancellationToken, entries, (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
 
             Assert.AreEqual(items.Length, entries.Count);
 

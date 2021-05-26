@@ -18,8 +18,9 @@ namespace Multitool.FileSystem
         private static FileSystemManager instance;
 
         private double ttl;
-        private ObjectPool<ChangeEventArgs> objectPool = new ObjectPool<ChangeEventArgs>();  
+        private ObjectPool<ChangeEventArgs> objectPool = new ObjectPool<ChangeEventArgs>();
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
+        private DirectorySizeCalculator calculator = new DirectorySizeCalculator();
 
         protected FileSystemManager()
         {
@@ -48,8 +49,9 @@ namespace Multitool.FileSystem
             }
         }
 
-        public event ProgressEventHandler Progress;
+        public event TaskProgressEventHandler Progress;
         public event TaskFailedEventHandler Exception;
+        public event TaskCompletedEventHandler Completed;
 
         public event ItemChangedEventHandler Change;
 
@@ -74,7 +76,7 @@ namespace Multitool.FileSystem
         }
 
         /// <inheritdoc/>
-        public async Task GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken,
+        public void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken,
             IList<ItemType> list, AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry
         {
             #region not null
@@ -99,6 +101,8 @@ namespace Multitool.FileSystem
                     {
                         GetPartial(path, cachedItems, list, addDelegate, cancellationToken);
                     }
+
+                    Completed?.Invoke();
                 }
                 else if (Directory.Exists(path))
                 {
@@ -117,8 +121,8 @@ namespace Multitool.FileSystem
                         InvokeException(e);
                     }
 
-                    await GetDirectories(path, cacheItems, list, addDelegate, cancellationToken);
                     GetFiles(path, cacheItems, list, addDelegate, cancellationToken);
+                    GetDirectories(path, cacheItems, list, addDelegate, cancellationToken);
                 }
             }
         }
@@ -200,62 +204,6 @@ namespace Multitool.FileSystem
             cache.Clear();
         }
 
-        public long ComputeDirectorySize(string path, CancellationToken cancellationToken)
-        {
-            long size = 0;
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                string[] subDirPaths = Directory.GetDirectories(path);
-                for (int i = 0; i < subDirPaths.Length; i++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    size += ComputeDirectorySize(subDirPaths[i], cancellationToken);
-                }
-            }
-            catch (UnauthorizedAccessException e)
-            {
-                InvokeException(e);
-            }
-            catch (DirectoryNotFoundException de)
-            {
-                InvokeException(de);
-            }
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                string[] subDirPaths = Directory.GetFiles(path);
-
-                for (int i = 0; i < subDirPaths.Length; i++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        size += new FileInfo(subDirPaths[i]).Length;
-                    }
-                    catch (FileNotFoundException e)
-                    {
-                        InvokeException(e);
-                    }
-                }
-            }
-            catch (UnauthorizedAccessException e)
-            {
-                InvokeException(e);
-            }
-            catch (FileNotFoundException fe)
-            {
-                InvokeException(fe);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return size;
-        }
-
         #region private
 
         #region file get
@@ -309,7 +257,7 @@ namespace Multitool.FileSystem
                     }
                     else if (Directory.Exists(toDo[i]))
                     {
-                        long size = ComputeDirectorySize(toDo[i], cancellationToken);
+                        long size = calculator.AsyncCalculateDirectorySize(toDo[i], cancellationToken);
                         DirectoryInfo info = new DirectoryInfo(toDo[i]);
                         item = new DirectoryEntry(info, size);
 
@@ -326,14 +274,14 @@ namespace Multitool.FileSystem
             }
         }
 
-        private async Task GetDirectories<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
+        private void GetDirectories<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
                 string[] dirPaths = Directory.GetDirectories(path);
-
+                List<Task> tasks = new List<Task>(dirPaths.Length);
                 for (int i = 0; i < dirPaths.Length; i++)
                 {
                     CheckCancellation(cancellationToken, cacheItems);
@@ -345,8 +293,10 @@ namespace Multitool.FileSystem
                     cacheItems.Add(item);
                     addDelegate(list, item);
 
-                    await RunDirsParallel(item, currentPath, cacheItems, cancellationToken);
+                    tasks.Add(RunDirsParallel(item, currentPath, cacheItems, cancellationToken));
                 }
+
+                Task.WhenAll(tasks).ContinueWith((Task _) => Completed?.Invoke());
             }
             catch (UnauthorizedAccessException e) 
             {
@@ -388,7 +338,7 @@ namespace Multitool.FileSystem
                 CheckCancellation(cancellationToken, cacheItems);
                 try
                 {
-                    item.Size = ComputeDirectorySize(currentPath, cancellationToken);
+                    item.Size = calculator.AsyncCalculateDirectorySize(currentPath, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -428,40 +378,6 @@ namespace Multitool.FileSystem
                 }
             }
             return false;
-        }
-
-        private long ComputeDirectorySize(string path)
-        {
-            long size = 0;
-
-            try
-            {
-                string[] subDirPaths = Directory.GetDirectories(path);
-                for (int i = 0; i < subDirPaths.Length; i++)
-                {
-                    size += ComputeDirectorySize(subDirPaths[i]);
-                }
-            }
-            catch (UnauthorizedAccessException) { }
-            catch (DirectoryNotFoundException) { }
-
-            try
-            {
-                string[] subDirPaths = Directory.GetFiles(path);
-
-                for (int i = 0; i < subDirPaths.Length; i++)
-                {
-                    try
-                    {
-                        size += new FileInfo(subDirPaths[i]).Length;
-                    }
-                    catch (FileNotFoundException) { }
-                }
-            }
-            catch (UnauthorizedAccessException) { }
-            catch (FileNotFoundException) { }
-
-            return size;
         }
 
         private void CheckCancellation(CancellationToken token, FileSystemCache cacheItems)
@@ -540,7 +456,7 @@ namespace Multitool.FileSystem
 
                 if (item.IsDirectory)
                 {
-                    item.Size = ComputeDirectorySize(item.Path);
+                    item.Size = calculator.SyncCalculateDirectorySize(item.Path);
                 }
             }
         }
@@ -551,7 +467,7 @@ namespace Multitool.FileSystem
             {
                 if (Directory.Exists(path))
                 {
-                    long size = ComputeDirectorySize(path);
+                    long size = calculator.SyncCalculateDirectorySize(path);
                     entry = new DirectoryEntry(new DirectoryInfo(path), size);
                 }
                 else

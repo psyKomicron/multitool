@@ -7,11 +7,13 @@ namespace Multitool
         /// <summary>
         /// Fires each time a subtask is completed.
         /// </summary>
-        event ProgressEventHandler Progress;
+        event TaskProgressEventHandler Progress;
         /// <summary>
         /// Fired when the task fails. Carries the exception that caused the failure.
         /// </summary>
         event TaskFailedEventHandler Exception;
+
+        event TaskCompletedEventHandler Completed;
 
         /// <summary>
         /// Set it to true to allow to fire the <see cref="Progress"/> event.

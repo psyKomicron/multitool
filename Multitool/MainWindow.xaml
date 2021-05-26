@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:multitool="clr-namespace:MultiTool"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="MultiTool"
+        Title="Multitool"
         Name="MultiToolMainWindow"
         Closed="MultiToolMainWindow_Closed"
         MinHeight="395" 
@@ -29,30 +29,68 @@
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="20*"/>
         </Grid.RowDefinitions>
+
         <!--Window custom chrome-->
         <multitool:MultiToolWindowChrome
             x:Name="Chrome"
             MouseDown="Grid_MouseDown"
             CloseClick="WindowCloseButton_Click"
             MinimizeClick="WindowMinimizeButton_Click"
-            Title="MultiTool"/>
+            Title="{Binding Title, ElementName=MultiToolMainWindow}"
+            Grid.Row="0"/>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="100*"/>
-                <RowDefinition Height="40*"/>
-                <RowDefinition Height="10*"/>
-            </Grid.RowDefinitions>
+        <TabControl
+            x:Name="Window_TabControl"
+            Grid.Row="1"
+            Style="{StaticResource DarkTabControlTemplate}"
+            SelectionChanged="Window_TabControl_SelectionChanged">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="#037ffc">
+                                    <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="False">
+                                        <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Foreground" Value="White"/>
+                </Style>
+            </TabControl.Resources>
 
-            <Button 
+            <TabItem Header="Home">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="20*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="100*"/>
+                            <RowDefinition Height="40*"/>
+                            <RowDefinition Height="10*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button 
                 x:Name="OpenDownload" 
                 Margin="10,50" 
                 Background="Transparent" 
@@ -60,36 +98,36 @@
                 Grid.Row="0" 
                 Grid.Column="0" 
                 Template="{StaticResource IconButtonControlTemplate}">
-                <Image 
+                            <Image 
                     Source="Images/download_ico.png" 
                     RenderOptions.BitmapScalingMode="HighQuality"/>
-            </Button>
+                        </Button>
 
-            <Button 
+                        <Button 
                 x:Name="OpenExplorer" 
                 Grid.Column="1" 
                 Grid.Row="0" 
                 Margin="10,50" 
                 Click="OpenExplorer_Click" 
                 Template="{StaticResource IconButtonControlTemplate}">
-                <Image 
+                            <Image 
                     Source="Images/explorer_ico.png" 
                     RenderOptions.BitmapScalingMode="HighQuality"/>
-            </Button>
+                        </Button>
 
-            <Button 
+                        <Button 
                 x:Name="OpenPowerSettings" 
                 Grid.Column="2" 
                 Grid.Row="0" 
                 Margin="10,50" 
                 Click="OpenPowerSettings_Click" 
                 Template="{StaticResource IconButtonControlTemplate}">
-                <Image 
+                            <Image 
                     Source="Images/power_ico.png" 
                     RenderOptions.BitmapScalingMode="HighQuality" />
-            </Button>
+                        </Button>
 
-            <Button 
+                        <Button 
                 x:Name="OpenSoon" 
                 ToolTip="Travel to GitHub (with ❤)"
                 Foreground="White" 
@@ -97,159 +135,181 @@
                 Template="{StaticResource IconButtonControlTemplate}" 
                 Grid.Column="1" 
                 Grid.Row="1">
-                <TextBlock x:Name="ComingSoonText" 
+                            <TextBlock x:Name="ComingSoonText" 
                            FontSize="19" 
                            TextAlignment="Center">
                            COMING <LineBreak/>
                            SOON
-                </TextBlock>
-            </Button>
+                            </TextBlock>
+                        </Button>
 
-            <TextBlock
+                        <StackPanel 
+                Grid.Row="3"
+                Grid.Column="1"
+                Orientation="Horizontal">
+                            <TextBlock 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center"
+                    Text="CPU usage "/>
+                            <TextBlock
+                    x:Name="CpuUsage"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <TextBlock
                 x:Name="VersionTextBlock"
-                Text="{Binding Path=AppVersion, Mode=OneTime}"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Right"
+                Margin="10"
                 Grid.Column="2"
-                Grid.Row="3"/>
-            <TextBlock
-                x:Name="CpuUsage"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Left"
-                Grid.Column="1"
-                Grid.Row="3"/>
+                Grid.Row="3">
+                <Run Text="Version "/>
+                <Run Text="{Binding Path=AppVersion, Mode=OneWay}"/>
+                        </TextBlock>
 
-            <Grid.Triggers>
-                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenPowerSettings">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                        <Grid.Triggers>
+                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenPowerSettings">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenPowerSettings"
                             Storyboard.TargetProperty="Width"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
                             AutoReverse="False"/>
-                            <DoubleAnimation
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenPowerSettings"
                             Storyboard.TargetProperty="Height"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenPowerSettings">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenPowerSettings">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenPowerSettings"
                             Storyboard.TargetProperty="Width"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
                             Duration="0:0:0.2"
                             AutoReverse="False"/>
-                            <DoubleAnimation
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenPowerSettings"
                             Storyboard.TargetProperty="Height" 
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
                             Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
 
-                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenExplorer">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenExplorer">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenExplorer"
                             Storyboard.TargetProperty="Width"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
                             AutoReverse="False"/>
-                            <DoubleAnimation
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenExplorer"
                             Storyboard.TargetProperty="Height"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenExplorer">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenExplorer">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenExplorer"
                             Storyboard.TargetProperty="Width"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
                             Duration="0:0:0.2"
                             AutoReverse="False"/>
-                            <DoubleAnimation
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenExplorer"
                             Storyboard.TargetProperty="Height" 
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
                             Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
 
-                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenDownload">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenDownload">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenDownload"
                             Storyboard.TargetProperty="Width"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
                             AutoReverse="False"/>
-                            <DoubleAnimation
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenDownload"
                             Storyboard.TargetProperty="Height"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenDownload">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenDownload">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenDownload"
                             Storyboard.TargetProperty="Width"
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
                             Duration="0:0:0.2"
                             AutoReverse="False"/>
-                            <DoubleAnimation
+                                        <DoubleAnimation
                             Storyboard.TargetName="OpenDownload"
                             Storyboard.TargetProperty="Height" 
                             To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
                             Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
 
-                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenSoon">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="OpenSoon">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="ComingSoonText"
                             Storyboard.TargetProperty="FontSize"
                             To="23" By="200" Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenSoon">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="OpenSoon">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
                             Storyboard.TargetName="ComingSoonText"
                             Storyboard.TargetProperty="FontSize"
                             To="19"
                             Duration="0:0:0.2"
                             AutoReverse="False"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Grid.Triggers>
-        </Grid>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Grid.Triggers>
+                    </Grid>
+
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Others">
+                <Grid 
+                    x:Name="Others_Grid"
+                    Height="Auto"
+                    Width="Auto"/>
+            </TabItem>
+        </TabControl>
 
     </Grid>
 </Window>

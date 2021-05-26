@@ -1,7 +1,6 @@
 ﻿using Multitool.Sorting;
 using MultiTool.Tools;
 using MultiTool.ViewModels;
-using MultiTool.Windows.Special;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,14 +15,14 @@ namespace MultiTool.Windows
     /// </summary>
     public partial class SpreadsheetWindow : Window, ISerializableWindow
     {
-        public SpreadsheetWindowData Data { get; set; }
-
         public SpreadsheetWindow()
         {
             InitializeComponent();
             DataContext = this;
             DatePicker.SelectedDate = DateTime.Now;
         }
+
+        public SpreadsheetWindowData Data { get; set; }
 
         #region ISerializableWindow
         public void Deserialize()

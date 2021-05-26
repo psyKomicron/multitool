@@ -1,13 +1,16 @@
 ﻿using Multitool.Controllers;
-using MultiTool.ViewModels;
+using Multitool.Monitoring;
+
 using MultiTool.Tools;
+using MultiTool.ViewModels;
 using MultiTool.Windows;
+
 using System;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Input;
-using Multitool.Monitoring;
 using System.Timers;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace MultiTool
 {
@@ -18,7 +21,7 @@ namespace MultiTool
     {
         private const string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
         private CpuMonitor cpuMonitor = new CpuMonitor();
-        private Timer cpuTimer = new Timer(500);
+        private Timer cpuTimer = new Timer(250);
 
         public string AppVersion { get; set; }
 
@@ -30,6 +33,7 @@ namespace MultiTool
             InitializeWindow();
         }
 
+        #region serialise/deserialise
         public void Serialize()
         {
             WindowManager.PreferenceManager.AddWindowManager(Data, Name);
@@ -46,6 +50,9 @@ namespace MultiTool
                 UpdateLayout();
             }
         }
+        #endregion
+
+        #region private
 
         private void InitializeWindow()
         {
@@ -58,42 +65,11 @@ namespace MultiTool
             cpuTimer.Start();
         }
 
+        #endregion private
+
         #region events
 
-        private void CpuTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            if (!cpuMonitor.Ready)
-            {
-                return;
-            }
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                CpuUsage.Text = cpuMonitor.GetCpuUsage().ToString();
-            });
-        }
-
-        private void MultiToolMainWindow_Closed(object sender, EventArgs e)
-        {
-            cpuTimer.Stop();
-            cpuTimer.Dispose();
-            cpuMonitor.Dispose();
-            Serialize();
-        }
-
-        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
-
-        private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
-
-        private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => WindowManager.Open<PowerWindow>();
-
-        private void OpenSoon_Click(object sender, RoutedEventArgs e) 
-        {
-            new DefaultBrowserController()
-            {
-                Uri = new Uri(gitHub)
-            }.Execute();
-        }
-
+        #region chrome
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -113,6 +89,51 @@ namespace MultiTool
         {
             e.Handled = true;
             WindowState = WindowState.Minimized;
+        }
+        #endregion
+
+        #region home menu
+        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
+
+        private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
+
+        private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => WindowManager.Open<PowerWindow>();
+
+        private void OpenSoon_Click(object sender, RoutedEventArgs e)
+        {
+            new DefaultBrowserController()
+            {
+                Uri = new Uri(gitHub)
+            }.Execute();
+        }
+        #endregion
+
+        private void CpuTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (!cpuMonitor.Ready)
+            {
+                return;
+            }
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                CpuUsage.Text = (cpuMonitor.GetCpuUsage() / 100).ToString("P");
+            });
+        }
+
+        private void MultiToolMainWindow_Closed(object sender, EventArgs e)
+        {
+            cpuTimer.Stop();
+            cpuTimer.Dispose();
+            cpuMonitor.Dispose();
+            Serialize();
+        }
+
+        private void Window_TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Window_TabControl.SelectedIndex == 1)
+            {
+                // draw a dick
+            }
         }
 
         #endregion

@@ -46,9 +46,10 @@
                 MinimizeClick="MultiToolWindowChrome_MinimizeClick"
                 MaximizeClick="MultiToolWindowChrome_MaximizeClick"
                 Title="Explorer"/>
-            <TabControl x:Name="Window_TabControl"
-            Grid.Row="1"
-            Style="{StaticResource DarkTabControlTemplate}">
+            <TabControl 
+                x:Name="Window_TabControl"
+                Grid.Row="1"
+                Style="{StaticResource DarkTabControlTemplate}">
                 <TabControl.Resources>
                     <Style TargetType="{x:Type TabItem}">
                         <Setter Property="Template">

@@ -20,7 +20,7 @@ namespace BusinessLayer.Tests
         }
 
         [TestMethod]
-        void SortTest<T>() where T : IComparable<T>
+        public void SortTest<T>() where T : IComparable<T>
         {
             SortTestIntArray_1();
             SortTestIntArray_2();
@@ -69,14 +69,14 @@ namespace BusinessLayer.Tests
         }
 
         [TestMethod]
-        public async void QuickSortFullTest()
+        public void QuickSortFullTest()
         {
             FileSystemManager manager = FileSystemManager.Get();
             CancellationToken cancellationToken = new();
             IList<IFileSystemEntry> entries = new List<IFileSystemEntry>();
             string path = @"C:\Users\julie\Documents";
 
-            await manager.GetFileSystemEntries(path, cancellationToken, entries, (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
+            manager.GetFileSystemEntries(path, cancellationToken, entries, (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
 
             IFileSystemEntry[] array = new IFileSystemEntry[entries.Count];
             entries.CopyTo(array, 0);

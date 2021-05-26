@@ -77,20 +77,26 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="🗑"
-                       Grid.Row="0"
-                       Grid.Column="0"
-                       FontSize="40"
-                       ToolTip="Recycle bin statistics (size on disk)"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
-            <TextBlock Text="🔧"
-                       Grid.Row="2"
-                       Grid.Column="0"
-                       FontSize="40"
-                       ToolTip="System files statistics (size on disk)"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
+            <TextBlock 
+                x:Name="RecycleBin_TextBlock"
+                Text="🗑"
+                Grid.Row="0"
+                Grid.Column="0"
+                FontSize="40"
+                ToolTip="Recycle bin statistics (size on disk)"
+                Opacity=".5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"/>
+            <TextBlock 
+                x:Name="SysFiles_TextBlock"
+                Text="🔧"
+                Grid.Row="2"
+                Grid.Column="0"
+                FontSize="40"
+                ToolTip="System files statistics (size on disk)"
+                Opacity=".5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"/>
 
             <TextBlock x:Name="RecycleBinSize_TextBlock"
                        Text="{Binding Path=RecycleBinSize, ElementName=ExplorerHomeControl}"

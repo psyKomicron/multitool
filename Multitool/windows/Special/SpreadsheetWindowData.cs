@@ -2,7 +2,7 @@
 using MultiTool.ViewModels;
 using System.Collections.ObjectModel;
 
-namespace MultiTool.Windows.Special
+namespace MultiTool.Windows
 {
     public class SpreadsheetWindowData : DefaultWindowData
     {

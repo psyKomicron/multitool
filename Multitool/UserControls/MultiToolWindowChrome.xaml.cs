@@ -10,6 +10,9 @@ namespace MultiTool
     /// </summary>
     public partial class MultiToolWindowChrome : UserControl
     {
+        public static readonly DependencyProperty TitleProperty =
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(MultiToolWindowChrome));
+
         private uint closeListeners = 0;
         private uint minimizeListeners = 0;
         private uint maximizedListeners = 0;
@@ -22,7 +25,11 @@ namespace MultiTool
             DataContext = this;
         }
 
-        public string Title { get; set; }
+        public string Title
+        {
+            get => (string)GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
+        }
 
         #region events
 

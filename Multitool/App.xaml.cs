@@ -1,9 +1,10 @@
 ﻿using Multitool.PreferencesManagers;
+
 using MultiTool.Tools;
+
 using System;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Media;
 
 namespace MultiTool
 {
@@ -15,14 +16,12 @@ namespace MultiTool
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             SerializeApplication();
+            e.ApplicationExitCode = 0;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            Tool.GetRessource<SolidColorBrush>("DevBlue");
-            Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
-            Debug.AutoFlush = true;
-            Debug.Flush();
+            Console.WriteLine("Starting application...");
 
             WindowManager.InitializePreferenceManager("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.xml");
             WindowManager.PreferenceManager.DeserializePreferenceManager();

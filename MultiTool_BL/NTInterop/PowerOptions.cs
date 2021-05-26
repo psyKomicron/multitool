@@ -5,8 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Multitool.NTInterop
 {
-    public class PowerPlansInterop
+    public class PowerOptions
     {
+        #region dllimports
         [DllImport("powrprof.dll", SetLastError = true)]
         public static extern uint PowerEnumerate(
             IntPtr RootPowerKey,
@@ -44,20 +45,35 @@ namespace Multitool.NTInterop
             ref IntPtr ActivePolicyGuid
         );
 
+        [DllImport("powrprof.dll", SetLastError = true)]
+        public static extern uint PowerSetActiveScheme(
+            IntPtr UserRootPowerKey,
+            ref Guid SchemeGuid
+        );
+        #endregion
+
         /// <summary>
         /// Get this computer current power plan.
         /// </summary>
-        public string GetCurrentPowerPlan()
+        public PowerPlan GetCurrentPowerPlan()
         {
-            string name = ReadFriendlyName(GetCurrentPowerGuid());
+            IntPtr guid = IntPtr.Zero;
+            uint returnCode = PowerGetActiveScheme(IntPtr.Zero, ref guid);
+
+            if (returnCode != (uint)SystemCodes.ERROR_SUCCESS)
+            {
+                throw GetLastError("PowerGetActiveScheme call failed", returnCode);
+            }
+
+            string name = ReadFriendlyName(guid);
 
             if (name == string.Empty)
             {
-                return "Unable to get power plan name (return buffer size was 0)";
+                throw GetLastError("PowerGetActiveScheme call failed. Name buffer was empty.", returnCode);
             }
             else
             {
-                return name;
+                return new PowerPlan(new Guid(guid.ToString()), name);
             }
         }
 
@@ -65,48 +81,38 @@ namespace Multitool.NTInterop
         /// Get this computer available power plans.
         /// </summary>
         /// <returns><see cref="List{string}"/> of power plans names.</returns>
-        public List<string> GetPowerPlans()
+        public List<PowerPlan> GetPowerPlans()
         {
-            List<string> guidsNames = new List<string>(3);
+            List<PowerPlan> guidsNames = new List<PowerPlan>(3);
             List<Guid> guids = ListPowerPlans();
 
             for (int i = 0; i < guids.Count; i++)
             {
-                try
-                {
-                    Guid guid = guids[i];
-                    guidsNames.Add(ReadFriendlyName(ref guid));
-                }
-                catch (COMException e)
-                {
-                    guidsNames.Add(e.ToString());
-                }
+                Guid guid = guids[i];
+                guidsNames.Add(new PowerPlan(guid, ReadFriendlyName(ref guid)));
             }
 
             return guidsNames;
         }
 
-        private IntPtr GetCurrentPowerGuid()
+        public void SwitchPowerPlan(PowerPlan plan)
         {
-            IntPtr guid = IntPtr.Zero;
-            uint returnCode = PowerGetActiveScheme(IntPtr.Zero, ref guid);
+            Guid powerPlanGuid = plan.Guid;
 
-            if (returnCode == (uint)SystemCodes.ERROR_SUCCESS)
+            if (powerPlanGuid != Guid.Empty)
             {
-                return guid;
-            }
-            else
-            {
-                throw new COMException("PowerGetActiveScheme call failed", (int)returnCode);
+                uint retCode = PowerSetActiveScheme(IntPtr.Zero, ref powerPlanGuid);
+                if (retCode != (uint)SystemCodes.ERROR_SUCCESS)
+                {
+                    throw GetLastError("PowerSetActiveScheme call failed", retCode);
+                }
             }
         }
 
         private List<Guid> ListPowerPlans()
         {
             List<Guid> guids = new List<Guid>(3);
-
             IntPtr buffer;
-
             uint index = 0;
             uint returnCode = 0;
             uint bufferSize = 16;
@@ -114,19 +120,17 @@ namespace Multitool.NTInterop
             while (returnCode == 0)
             {
                 buffer = Marshal.AllocHGlobal((int)bufferSize);
-
                 try
                 {
                     returnCode = PowerEnumerate(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, (uint)AccessFlags.ACCESS_SCHEME,
                                                 index, buffer, ref bufferSize);
-
                     if (returnCode == 259)
                     {
                         break;
                     }
                     else if (returnCode != 0)
                     {
-                        throw new COMException("Error while listing power schemes.", (int)returnCode);
+                        throw GetLastError("Error while listing power schemes.", returnCode);
                     }
                     else
                     {
@@ -136,7 +140,6 @@ namespace Multitool.NTInterop
                             guids.Add(guid);
                         }
                     }
-
                     index++;
                 }
                 finally
@@ -172,7 +175,7 @@ namespace Multitool.NTInterop
                     }
                     else
                     {
-                        throw new COMException("Error getting power scheme friendly name.", (int)returnCode);
+                        throw GetLastError("Error getting power scheme friendly name.", returnCode);
                     }
                 }
                 finally
@@ -182,7 +185,7 @@ namespace Multitool.NTInterop
             }
             else
             {
-                throw new COMException("Error getting name buffer size.", (int)returnCode);
+                throw GetLastError("Error getting name buffer size", returnCode);
             }
         }
 
@@ -210,7 +213,7 @@ namespace Multitool.NTInterop
                     }
                     else
                     {
-                        throw new COMException("Error getting power scheme friendly name.", (int)returnCode);
+                        throw GetLastError("Error getting power scheme friendly name.", returnCode);
                     }
                 }
                 finally
@@ -220,8 +223,13 @@ namespace Multitool.NTInterop
             }
             else
             {
-                throw new COMException("Error getting name buffer size.", (int)returnCode);
+                throw GetLastError("Error getting name buffer size", returnCode);
             }
+        }
+
+        private COMException GetLastError(string message, uint funcRetCode)
+        {
+            return new COMException(message + ". (return code " + funcRetCode + ")", Marshal.GetLastWin32Error());
         }
     }
 }

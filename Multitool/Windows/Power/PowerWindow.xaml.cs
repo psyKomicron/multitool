@@ -28,7 +28,7 @@ namespace MultiTool
         private bool _buttonsEnabled = true;
         private Timer timer;
         private PowerController controller;
-        private PowerPlansInterop pwrPlanInterop = new PowerPlansInterop();
+        private Multitool.NTInterop.PowerOptions pwrPlanInterop = new Multitool.NTInterop.PowerOptions();
 
         private ElapsedEventHandler timerHandler;
 
@@ -81,11 +81,11 @@ namespace MultiTool
             CancelProgressBarAnimation();
         }
 
-        private void ExecuteController(List<PowerOptions> options)
+        private void ExecuteController(List<Multitool.ProcessOptions.Enums.PowerOptions> options)
         {
             controller = new PowerController()
             {
-                StartOptions = new StartOptions<PowerOptions>()
+                StartOptions = new StartOptions<Multitool.ProcessOptions.Enums.PowerOptions>()
                 {
                     Options = options,
                     Translater = new PowerEnumTranslater()
@@ -174,15 +174,15 @@ namespace MultiTool
         #endregion
 
         #region power management methods
-        private void Shutdown(object sender, ElapsedEventArgs e) => ExecuteController(new List<PowerOptions>() { PowerOptions.Shutdown, PowerOptions.NoDelay });
+        private void Shutdown(object sender, ElapsedEventArgs e) => ExecuteController(new List<Multitool.ProcessOptions.Enums.PowerOptions>() { Multitool.ProcessOptions.Enums.PowerOptions.Shutdown, Multitool.ProcessOptions.Enums.PowerOptions.NoDelay });
 
-        private void Restart(object sender, ElapsedEventArgs e) => ExecuteController(new List<PowerOptions>() { PowerOptions.Restart, PowerOptions.NoDelay });
+        private void Restart(object sender, ElapsedEventArgs e) => ExecuteController(new List<Multitool.ProcessOptions.Enums.PowerOptions>() { Multitool.ProcessOptions.Enums.PowerOptions.Restart, Multitool.ProcessOptions.Enums.PowerOptions.NoDelay });
 
-        private void Lock(object sender, ElapsedEventArgs e) => ExecuteController(new List<PowerOptions>() { PowerOptions.LogOff, PowerOptions.Force });
+        private void Lock(object sender, ElapsedEventArgs e) => ExecuteController(new List<Multitool.ProcessOptions.Enums.PowerOptions>() { Multitool.ProcessOptions.Enums.PowerOptions.LogOff, Multitool.ProcessOptions.Enums.PowerOptions.Force });
 
-        private void Sleep(object sender, ElapsedEventArgs e) => ExecuteCommand(new List<PowerOptions>() { PowerOptions.Hibernate, PowerOptions.NoDelay });
+        private void Sleep(object sender, ElapsedEventArgs e) => ExecuteCommand(new List<Multitool.ProcessOptions.Enums.PowerOptions>() { Multitool.ProcessOptions.Enums.PowerOptions.Hibernate, Multitool.ProcessOptions.Enums.PowerOptions.NoDelay });
 
-        private void ExecuteCommand(List<PowerOptions> options)
+        private void ExecuteCommand(List<Multitool.ProcessOptions.Enums.PowerOptions> options)
         {
             timer.Stop();
             timer.Close();
@@ -315,7 +315,7 @@ namespace MultiTool
 
         private void PowerPlanTabItem_GotFocus(object sender, RoutedEventArgs e)
         {
-            List<string> names = pwrPlanInterop.GetPowerPlans();
+            /*List<string> names = pwrPlanInterop.GetPowerPlans();
             string text = string.Empty;
 
             foreach (string guid in names)
@@ -325,7 +325,7 @@ namespace MultiTool
 
             AvailablePowerPlans.Text = text;
 
-            CurrentPowerPlan.Text = pwrPlanInterop.GetCurrentPowerPlan();
+            CurrentPowerPlan.Text = pwrPlanInterop.GetCurrentPowerPlan();*/
         }
     }
 }

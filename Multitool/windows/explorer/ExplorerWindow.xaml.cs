@@ -34,19 +34,20 @@ namespace MultiTool.Windows
         private static SolidColorBrush RED = new SolidColorBrush(Colors.Red);
         private static SolidColorBrush WHITE = new SolidColorBrush(Colors.White);
 
-        private Stopwatch eventStopwatch = new Stopwatch();
-        private Stopwatch taskStopwatch = new Stopwatch();
-        private CancellationTokenSource cancellationTokenSource;
-        private Stack<string> previousStackPath = new Stack<string>(10);
-        private Stack<string> nextPathStack = new Stack<string>(10);
-        private CursorPosition cursorPosition = new CursorPosition();
-        private UriCleaner cleaner = new UriCleaner();
         private string _currentPath;
-        private FileSystemManager fileSystemManager;
-        private IPathCompletor pathCompletor;
         private bool resizing;
         private bool mouseOverBorder;
+        private CancellationTokenSource homeCancellationToken = new CancellationTokenSource();
+        private CancellationTokenSource cancellationTokenSource;
+        private CursorPosition cursorPosition = new CursorPosition();
+        private FileSystemManager fileSystemManager;
+        private Stopwatch eventStopwatch = new Stopwatch();
+        private Stopwatch taskStopwatch = new Stopwatch();
+        private Stack<string> previousStackPath = new Stack<string>(10);
+        private Stack<string> nextPathStack = new Stack<string>(10);
+        private UriCleaner cleaner = new UriCleaner();
         private Point previousCursor;
+        private IPathCompletor pathCompletor;
 
         public ExplorerWindow()
         {
@@ -90,11 +91,12 @@ namespace MultiTool.Windows
 
             fileSystemManager.Progress += FileSystemManager_Progress;
             fileSystemManager.Exception += FileSystemManager_Exception;
+            fileSystemManager.Completed += FileSystemManager_Completed;
             fileSystemManager.Change += FileSystemManager_Change;
 
             if (!string.IsNullOrEmpty(CurrentPath))
             {
-                _ = DisplayFiles(CurrentPath);
+                DisplayFiles(CurrentPath);
             }
         }
 
@@ -143,7 +145,8 @@ namespace MultiTool.Windows
 
             for (int i = 0; i < driveInfo.Length; i++)
             {
-                ExplorerHome home = new ExplorerHome(driveInfo[i]);
+                CancellationTokenSource homeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(homeCancellationToken.Token);
+                ExplorerHome home = new ExplorerHome(driveInfo[i], homeCancellationTokenSource);
                 home.MouseDoubleClick += ExplorerHomeControl_MouseDoubleClick;
                 home.Height = home.MinHeight;
                 home.Width = home.MinWidth;
@@ -154,11 +157,12 @@ namespace MultiTool.Windows
             }
         }
 
-        private async Task DisplayFiles(string path)
+        private void DisplayFiles(string path)
         {
             if (cancellationTokenSource != null)
             {
                 cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
             }
             cancellationTokenSource = new CancellationTokenSource();
 
@@ -180,30 +184,13 @@ namespace MultiTool.Windows
             {
                 IList<FileSystemEntryViewModel> pathItems = CurrentFiles;
                 eventStopwatch.Start();
-                taskStopwatch.Start();
+                taskStopwatch.Restart();
 
-                await fileSystemManager.GetFileSystemEntries(cleanPath, cancellationTokenSource.Token, pathItems, AddDelegate);
-
-                taskStopwatch.Reset();
-                cancellationTokenSource.Dispose();
-                cancellationTokenSource = null;
-
-                if (taskStopwatch.Elapsed.TotalSeconds > 0)
-                {
-                    Progress_TextBox.Text = "Completed in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s";
-                }
-                else
-                {
-                    Progress_TextBox.Text = "Completed in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms" ;
-                }
-                SortList();
+                fileSystemManager.GetFileSystemEntries(cleanPath, cancellationTokenSource.Token, pathItems, AddDelegate);
             }
             catch (OperationCanceledException)
             {
                 Progress_TextBox.Text = "Operation cancelled";
-            }
-            finally
-            {
                 eventStopwatch.Reset();
                 CancelAction_Button.IsEnabled = false;
                 Files_ProgressBar.IsIndeterminate = false;
@@ -215,7 +202,7 @@ namespace MultiTool.Windows
             if (nextPathStack.Count > 0)
             {
                 previousStackPath.Push(CurrentPath);
-                 _ = DisplayFiles(nextPathStack.Pop());
+                DisplayFiles(nextPathStack.Pop());
             }
         }
 
@@ -224,12 +211,12 @@ namespace MultiTool.Windows
             if (previousStackPath.Count > 0)
             {
                 nextPathStack.Push(CurrentPath);
-                _ = DisplayFiles(previousStackPath.Pop());
+                DisplayFiles(previousStackPath.Pop());
             }
             else
             {
                 nextPathStack.Push(CurrentPath);
-                _ = DisplayFiles(Directory.GetParent(CurrentPath).FullName);
+                DisplayFiles(Directory.GetParent(CurrentPath).FullName);
             } 
         }
 
@@ -346,13 +333,19 @@ namespace MultiTool.Windows
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            try
+            {
+                homeCancellationToken.Cancel();
+                homeCancellationToken.Dispose();
+            } catch (ObjectDisposedException) { }
+
             if (cancellationTokenSource != null && fileSystemManager != null)
             {
                 fileSystemManager.Notify = false;
                 try
                 {
                     cancellationTokenSource.Cancel();
-                    //cancellationTokenSource.Dispose();
+                    cancellationTokenSource.Dispose();
                 }
                 catch (ObjectDisposedException) { }
             }
@@ -381,7 +374,7 @@ namespace MultiTool.Windows
                 string text = PathInput.Text;
                 if (!string.IsNullOrEmpty(text))
                 {
-                    _ = DisplayFiles(text);   
+                    DisplayFiles(text);   
                 }
             }
             else
@@ -402,7 +395,7 @@ namespace MultiTool.Windows
             object folderName = (sender as Button)?.Content;
             if (folderName is string name)
             {
-                _ = DisplayFiles(name);
+                DisplayFiles(name);
             }
         }
 
@@ -414,7 +407,7 @@ namespace MultiTool.Windows
             {
                 if (path.IsDirectory)
                 {
-                    _ = DisplayFiles(path.Path);
+                    DisplayFiles(path.Path);
                 }
                 else
                 {
@@ -431,7 +424,7 @@ namespace MultiTool.Windows
             if (item != null && item is string path)
             {
                 e.Handled = true;
-                _ = DisplayFiles(path);
+                DisplayFiles(path);
             }
         }
 
@@ -450,7 +443,7 @@ namespace MultiTool.Windows
         private void RefreshFileList_Click(object sender, RoutedEventArgs e)
         {
             fileSystemManager.Reset();
-            _ = DisplayFiles(CurrentPath);
+            DisplayFiles(CurrentPath);
         }
 
         private void Cancel_Button_Click(object sender, RoutedEventArgs e)
@@ -471,7 +464,7 @@ namespace MultiTool.Windows
         private void ExplorerHomeControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             DriveInfo info = ((ExplorerHome)sender).DriveInfo;
-            _ = DisplayFiles(info.Name);
+            DisplayFiles(info.Name);
             Dispatcher.BeginInvoke((Action)(() => Window_TabControl.SelectedIndex = 1));
         }
 
@@ -528,6 +521,29 @@ namespace MultiTool.Windows
                     break;
             }
             data.InUse = false;
+        }
+
+        private void FileSystemManager_Completed()
+        {
+            taskStopwatch.Stop();
+            cancellationTokenSource.Dispose();
+            cancellationTokenSource = null;
+            eventStopwatch.Reset();
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                CancelAction_Button.IsEnabled = false;
+                Files_ProgressBar.IsIndeterminate = false;
+                if (taskStopwatch.Elapsed.TotalSeconds > 0)
+                {
+                    Progress_TextBox.Text = "Completed in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s";
+                }
+                else
+                {
+                    Progress_TextBox.Text = "Completed in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms";
+                }
+                SortList();
+            });
         }
 
         #endregion
