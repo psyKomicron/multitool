@@ -1,11 +1,11 @@
 ﻿using Multitool.PreferencesManagers;
 using Multitool.PreferencesManagers.Xml;
-using MultiTool.Windows;
+using Multitool.Windows;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 
-namespace MultiTool.Tools
+namespace Multitool.Tools
 {
     public static class WindowManager
     {

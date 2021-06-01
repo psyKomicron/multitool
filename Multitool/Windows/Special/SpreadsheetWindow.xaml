@@ -1,10 +1,11 @@
 ﻿<Window x:Name="Spreadsheet"
-        x:Class="MultiTool.Windows.SpreadsheetWindow"
+        x:Class="Multitool.Windows.SpreadsheetWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mt="clr-namespace:MultiTool" xmlns:usercontrols="clr-namespace:MultiTool.UserControls"
+        xmlns:mt="clr-namespace:MultitoolWPF.UserControls" 
+        xmlns:usercontrols="clr-namespace:MultitoolWPF.UserControls"
         mc:Ignorable="d"
         Title="Spreadsheet"
         Height="700"
@@ -15,7 +16,7 @@
             <RowDefinition Height="1*" MinHeight="20px"/>
             <RowDefinition Height="20*"/>
         </Grid.RowDefinitions>
-        <mt:MultiToolWindowChrome x:Name="WindowChrome"
+        <mt:MultitoolWindowChrome x:Name="WindowChrome"
                                   Grid.Row="0"
                                   CloseClick="WindowChrome_CloseClick"
                                   MinimizeClick="WindowChrome_MinimizeClick"

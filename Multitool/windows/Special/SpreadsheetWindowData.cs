@@ -1,8 +1,8 @@
 ﻿using Multitool.Reflection.ObjectFlatteners;
-using MultiTool.ViewModels;
+using Multitool.ViewModels;
 using System.Collections.ObjectModel;
 
-namespace MultiTool.Windows
+namespace Multitool.Windows
 {
     public class SpreadsheetWindowData : DefaultWindowData
     {

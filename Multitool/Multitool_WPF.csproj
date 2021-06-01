@@ -112,11 +112,14 @@
     <Compile Include="UserControls\ExplorerHome.xaml.cs">
       <DependentUpon>ExplorerHome.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserControls\MultiToolWindowChrome.xaml.cs">
-      <DependentUpon>MultiToolWindowChrome.xaml</DependentUpon>
+    <Compile Include="UserControls\MultitoolWindowChrome.xaml.cs">
+      <DependentUpon>MultitoolWindowChrome.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\SpreadsheetItemUserControl.xaml.cs">
       <DependentUpon>SpreadsheetItemUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ControlPanels\ControlPanelsWindow.xaml.cs">
+      <DependentUpon>ControlPanelsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\Explorer\ExplorerWindowData.cs" />
     <Compile Include="ViewModels\FileSystemEntryViewModel.cs" />
@@ -131,7 +134,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserControls\MultiToolWindowChrome.xaml">
+    <Page Include="UserControls\MultitoolWindowChrome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -143,6 +146,10 @@
     <Compile Include="Tools\Tool.cs" />
     <Compile Include="Tools\WindowManager.cs" />
     <Page Include="UserControls\SpreadsheetItemUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\ControlPanels\ControlPanelsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

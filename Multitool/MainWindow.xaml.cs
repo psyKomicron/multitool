@@ -1,9 +1,9 @@
 ﻿using Multitool.Controllers;
 using Multitool.Monitoring;
 
-using MultiTool.Tools;
-using MultiTool.ViewModels;
-using MultiTool.Windows;
+using Multitool.Tools;
+using Multitool.ViewModels;
+using Multitool.Windows;
 
 using System;
 using System.Reflection;
@@ -12,7 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace MultiTool
+namespace Multitool
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -116,7 +116,7 @@ namespace MultiTool
             }
             Application.Current.Dispatcher.Invoke(() =>
             {
-                CpuUsage.Text = (cpuMonitor.GetCpuUsage() / 100).ToString("P");
+                CpuUsage.Text = cpuMonitor.GetCpuUsage().ToString("F2");
             });
         }
 

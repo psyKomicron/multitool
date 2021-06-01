@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Xml;
 
-namespace MultiTool.Tools
+namespace Multitool.Tools
 {
     internal static class Tool
     {

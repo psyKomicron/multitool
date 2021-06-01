@@ -1,4 +1,4 @@
-﻿namespace MultiTool.Windows
+﻿namespace Multitool.Windows
 {
     public interface ISerializableWindow
     {

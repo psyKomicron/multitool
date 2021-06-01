@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace MultiTool.UserControls
+namespace MultitoolWPF.UserControls
 {
     /// <summary>
     /// Interaction logic for SpreadsheetItemUserControl.xaml

@@ -3,9 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="clr-namespace:MultiTool"
-    x:Class="MultiTool.Windows.ExplorerWindow"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:usercontrols="clr-namespace:MultitoolWPF.UserControls"
+    x:Class="Multitool.Windows.ExplorerWindow"
     mc:Ignorable="d"
     Title="Explorer"
     MinHeight="650"
@@ -39,7 +38,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="20*"/>
             </Grid.RowDefinitions>
-            <local:MultiToolWindowChrome 
+            <usercontrols:MultitoolWindowChrome 
                 Grid.Row="0"
                 MouseDown="MultiToolWindowChrome_MouseDown"
                 CloseClick="MultiToolWindowChrome_CloseClick"

@@ -1,23 +1,22 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MultiTool
+namespace MultitoolWPF.UserControls
 {
     /// <summary>
     /// Interaction logic for WindowChrome.xaml
     /// </summary>
-    public partial class MultiToolWindowChrome : UserControl
+    public partial class MultitoolWindowChrome : UserControl
     {
         public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register(nameof(Title), typeof(string), typeof(MultiToolWindowChrome));
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(MultitoolWindowChrome));
 
         private uint closeListeners = 0;
         private uint minimizeListeners = 0;
         private uint maximizedListeners = 0;
 
-        public MultiToolWindowChrome()
+        public MultitoolWindowChrome()
         {
             InitializeComponent();
             Loaded += MultiToolWindowChrome_Loaded;

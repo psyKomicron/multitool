@@ -1,12 +1,12 @@
 ﻿using Multitool.PreferencesManagers;
 
-using MultiTool.Tools;
+using Multitool.Tools;
 
 using System;
 using System.Diagnostics;
 using System.Windows;
 
-namespace MultiTool
+namespace Multitool
 {
     /// <summary>
     /// Interaction logic for App.xaml

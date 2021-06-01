@@ -1,6 +1,6 @@
 ﻿using Multitool.Sorting;
-using MultiTool.Tools;
-using MultiTool.ViewModels;
+using Multitool.Tools;
+using Multitool.ViewModels;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MultiTool.Windows
+namespace Multitool.Windows
 {
     /// <summary>
     /// Interaction logic for Spreadsheet.xaml

@@ -1,4 +1,4 @@
-﻿namespace MultiTool.ViewModels
+﻿namespace Multitool.ViewModels
 {
     public class PowerWindowData : DefaultWindowData
     {
