@@ -1,43 +1,48 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Multitool.NTInterop;
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Multitool.NTInterop.Tests
 {
     [TestClass()]
     public class PowerPlansTests
     {
-        PowerOptions powerPlans = new();
+        PowerOptions powerOptions = new();
 
         [TestMethod()]
         public void GetCurrentPowerPlanTest()
         {
-            PowerPlan name = powerPlans.GetCurrentPowerPlan();
+            PowerPlan name = powerOptions.GetActivePowerPlan();
 
-            Assert.AreEqual("Ultimate Performance", name.Name);
+            // On desktop
+            //Assert.AreEqual("Ultimate Performance", name.Name);
+
+            // On laptop
+            Assert.AreEqual("Balanced", name.Name);
         }
 
         [TestMethod()]
         public void GetPowerPlansTest()
         {
-            List<PowerPlan> plans = powerPlans.GetPowerPlans();
-            List<string> names = new List<string>();
+            List<PowerPlan> plans = powerOptions.EnumeratePowerPlans();
+
+            foreach (var item in plans)
+            {
+                Console.WriteLine(item);
+            }
+
+            List<string> names = new();
             foreach (var item in plans)
             {
                 names.Add(item.Name);
             }
-            List<string> actualNames = new List<string>()
+            List<string> actualNames = new()
             {
                 "Balanced",
                 "Ultimate Performance",
-                "High performance",
-                "Power saver"
+                //"High performance",
+                //"Power saver"
             };
             CollectionAssert.AreEquivalent(actualNames, names);
         }
@@ -45,10 +50,17 @@ namespace Multitool.NTInterop.Tests
         [TestMethod()]
         public void SwitchPowerPlanTest()
         {
-            List<PowerPlan> plans = powerPlans.GetPowerPlans();
+            List<PowerPlan> plans = powerOptions.EnumeratePowerPlans();
+            PowerPlan current = powerOptions.GetActivePowerPlan();
 
-            powerPlans.SwitchPowerPlan(plans[0]);
-            //powerPlans.SwitchPowerPlan("Ultimate Performance");
+            //powerPlans.SwitchPowerPlan(plans[0]);
+            foreach (var plan in plans)
+            {
+                if (plan.Name != current.Name)
+                {
+                    powerOptions.SwitchPowerPlan(plan);
+                }
+            }
         }
     }
 }
