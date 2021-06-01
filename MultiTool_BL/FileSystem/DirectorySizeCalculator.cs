@@ -1,8 +1,10 @@
 ﻿using Multitool.FileSystem.Events;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Multitool.FileSystem
 {
@@ -22,97 +24,154 @@ namespace Multitool.FileSystem
 
         public event TaskProgressEventHandler Progress;
         public event TaskFailedEventHandler Exception;
-        public event TaskCompletedEventHandler Completed;
 
-        public long AsyncCalculateDirectorySize(string path, CancellationToken cancellationToken)
+        public async Task<long> AsyncCalculateDirectorySize(string path, CancellationToken cancellationToken)
         {
             long size = 0;
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
-                string[] subDirs = Directory.GetDirectories(path);
-                for (int i = 0; i < subDirs.Length; i++)
+                await Task.Run(() =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    InvokeProgressAsync(subDirs[i]);
-                    size += AsyncCalculateDirectorySize(subDirs[i], cancellationToken);
-                }
-            }
-            catch (UnauthorizedAccessException e)
-            {
-                InvokeExceptionAsync(e);
-            }
-            catch (DirectoryNotFoundException de)
-            {
-                InvokeExceptionAsync(de);
-            }
 
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                string[] files = Directory.GetFiles(path);
-
-                for (int i = 0; i < files.Length; i++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    InvokeProgressAsync(files[i]);
                     try
                     {
-                        size += new FileInfo(files[i]).Length;
+                        List<Task<long>> dirTasks = new List<Task<long>>();
+                        string[] subDirs = Directory.GetDirectories(path);
+                        for (int i = 0; i < subDirs.Length; i++)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            InvokeProgressAsync(subDirs[i]);
+                            Task<long> t = new Task<long>(() => CalculateDirectorySize(subDirs[i], cancellationToken), cancellationToken);
+                            dirTasks.Add(t);
+                            //t.Start();
+                        }
+
+                        try
+                        {
+                            Task.WaitAll(dirTasks.ToArray());
+
+
+                            for (int i = 0; i < dirTasks.Count; i++)
+                            {
+                                size += dirTasks[i].Result;
+                            }
+
+                        }
+                        catch (IndexOutOfRangeException e)
+                        {
+                            Console.WriteLine("multitoo_bl [AsyncCalculateDirectorySize - tasks] > " + e.GetType().Name + ", " + e.Message);
+                        }
+
                     }
-                    catch (FileNotFoundException e)
+                    catch (UnauthorizedAccessException e)
                     {
                         InvokeExceptionAsync(e);
                     }
-                }
-            }
-            catch (UnauthorizedAccessException e)
-            {
-                InvokeExceptionAsync(e);
-            }
-            catch (FileNotFoundException fe)
-            {
-                InvokeExceptionAsync(fe);
-            }
+                    catch (DirectoryNotFoundException de)
+                    {
+                        InvokeExceptionAsync(de);
+                    }
 
-            cancellationToken.ThrowIfCancellationRequested();
+                    try
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        string[] files = Directory.GetFiles(path);
 
+                        for (int i = 0; i < files.Length; i++)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            InvokeProgressAsync(files[i]);
+                            try
+                            {
+                                size += new FileInfo(files[i]).Length;
+                            }
+                            catch (FileNotFoundException e)
+                            {
+                                InvokeExceptionAsync(e);
+                            }
+                        }
+                    }
+                    catch (UnauthorizedAccessException e)
+                    {
+                        InvokeExceptionAsync(e);
+                    }
+                    catch (FileNotFoundException fe)
+                    {
+                        InvokeExceptionAsync(fe);
+                    }
+                }, cancellationToken);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("multitoo_bl [AsyncCalculateDirectorySize] > " + e.GetType().Name + ", " + e.Message);
+            }
             return size;
         }
 
-        public long SyncCalculateDirectorySize(string path)
+        public long CalculateDirectorySize(string path, CancellationToken cancellationToken)
         {
-            long size = 0;
-
             try
             {
-                string[] subDirPaths = Directory.GetDirectories(path);
-                for (int i = 0; i < subDirPaths.Length; i++)
-                {
-                    size += SyncCalculateDirectorySize(subDirPaths[i]);
-                }
-            }
-            catch (UnauthorizedAccessException) { }
-            catch (DirectoryNotFoundException) { }
+                long size = 0;
+                cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                string[] subDirPaths = Directory.GetFiles(path);
-
-                for (int i = 0; i < subDirPaths.Length; i++)
+                try
                 {
-                    try
+                    string[] subDirs = Directory.GetDirectories(path);
+                    for (int i = 0; i < subDirs.Length; i++)
                     {
-                        size += new FileInfo(subDirPaths[i]).Length;
+                        cancellationToken.ThrowIfCancellationRequested();
+                        InvokeProgressAsync(subDirs[i]);
+                        size += CalculateDirectorySize(subDirs[i], cancellationToken);
                     }
-                    catch (FileNotFoundException) { }
                 }
-            }
-            catch (UnauthorizedAccessException) { }
-            catch (FileNotFoundException) { }
+                catch (UnauthorizedAccessException e)
+                {
+                    InvokeExceptionAsync(e);
+                }
+                catch (DirectoryNotFoundException de)
+                {
+                    InvokeExceptionAsync(de);
+                }
 
-            return size;
+
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    string[] files = Directory.GetFiles(path);
+
+                    for (int i = 0; i < files.Length; i++)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        InvokeProgressAsync(files[i]);
+                        try
+                        {
+                            size += new FileInfo(files[i]).Length;
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                            InvokeExceptionAsync(e);
+                        }
+                    }
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    InvokeExceptionAsync(e);
+                }
+                catch (FileNotFoundException fe)
+                {
+                    InvokeExceptionAsync(fe);
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+
+                return size;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("multitoo_bl [CalculateDirectorySize] dirs > " + e.GetType().Name + ", " + e.Message);
+            }
         }
 
         private void InvokeExceptionAsync(Exception e)
