@@ -1,6 +1,4 @@
-﻿using Multitool.FileSystem.Events;
-
-namespace Multitool
+﻿namespace Multitool
 {
     public interface IProgressNotifier
     {
@@ -12,8 +10,6 @@ namespace Multitool
         /// Fired when the task fails. Carries the exception that caused the failure.
         /// </summary>
         event TaskFailedEventHandler Exception;
-
-        event TaskCompletedEventHandler Completed;
 
         /// <summary>
         /// Set it to true to allow to fire the <see cref="Progress"/> event.
