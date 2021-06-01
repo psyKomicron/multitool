@@ -1,4 +1,5 @@
 ﻿using Multitool.NTInterop.Codes;
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -55,7 +56,7 @@ namespace Multitool.NTInterop
         /// <summary>
         /// Get this computer current power plan.
         /// </summary>
-        public PowerPlan GetCurrentPowerPlan()
+        public PowerPlan GetActivePowerPlan()
         {
             IntPtr guid = IntPtr.Zero;
             uint returnCode = PowerGetActiveScheme(IntPtr.Zero, ref guid);
@@ -73,7 +74,8 @@ namespace Multitool.NTInterop
             }
             else
             {
-                return new PowerPlan(new Guid(guid.ToString()), name);
+
+                return new PowerPlan(Marshal.PtrToStructure<Guid>(guid), name, true);
             }
         }
 
@@ -81,15 +83,16 @@ namespace Multitool.NTInterop
         /// Get this computer available power plans.
         /// </summary>
         /// <returns><see cref="List{string}"/> of power plans names.</returns>
-        public List<PowerPlan> GetPowerPlans()
+        public List<PowerPlan> EnumeratePowerPlans()
         {
-            List<PowerPlan> guidsNames = new List<PowerPlan>(3);
+            List<PowerPlan> guidsNames = new List<PowerPlan>();
             List<Guid> guids = ListPowerPlans();
+            PowerPlan current = GetActivePowerPlan();
 
             for (int i = 0; i < guids.Count; i++)
             {
                 Guid guid = guids[i];
-                guidsNames.Add(new PowerPlan(guid, ReadFriendlyName(ref guid)));
+                guidsNames.Add(new PowerPlan(guid, ReadFriendlyName(ref guid), guid == current.Guid));
             }
 
             return guidsNames;
