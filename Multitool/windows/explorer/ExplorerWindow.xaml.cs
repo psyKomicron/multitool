@@ -1,11 +1,12 @@
 ﻿using Multitool.FileSystem;
 using Multitool.FileSystem.Completion;
+using Multitool.FileSystem.Events;
 using Multitool.NTInterop;
 using Multitool.Parsers;
 using Multitool.Sorting;
 
-using MultiTool.Tools;
-using MultiTool.ViewModels;
+using Multitool.Tools;
+using Multitool.ViewModels;
 
 using MultitoolWPF.UserControls;
 
@@ -24,7 +25,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml.XPath;
 
-namespace MultiTool.Windows
+namespace Multitool.Windows
 {
     /// <summary>
     /// Interaction logic for ExplorerWindow.xaml
@@ -37,8 +38,8 @@ namespace MultiTool.Windows
         private string _currentPath;
         private bool resizing;
         private bool mouseOverBorder;
-        private CancellationTokenSource homeCancellationToken = new CancellationTokenSource();
-        private CancellationTokenSource cancellationTokenSource;
+        private CancellationTokenSource homeCancellationToken;
+        private CancellationTokenSource fsCancellationTokenSource;
         private CursorPosition cursorPosition = new CursorPosition();
         private FileSystemManager fileSystemManager;
         private Stopwatch eventStopwatch = new Stopwatch();
@@ -80,15 +81,7 @@ namespace MultiTool.Windows
             Data = WindowManager.PreferenceManager.GetWindowManager<ExplorerWindowData>(Name);
             CurrentPath = Data.LastUsedPath;
 
-            if (Data.TTL != default)
-            {
-                fileSystemManager = FileSystemManager.Get(Data.TTL, true);
-            }
-            else
-            {
-                fileSystemManager = FileSystemManager.Get();
-            }
-
+            fileSystemManager = Data.TTL != default ? FileSystemManager.Get(Data.TTL, true) : FileSystemManager.Get();
             fileSystemManager.Progress += FileSystemManager_Progress;
             fileSystemManager.Exception += FileSystemManager_Exception;
             fileSystemManager.Completed += FileSystemManager_Completed;
@@ -122,6 +115,7 @@ namespace MultiTool.Windows
 
         private void LoadHome()
         {
+            homeCancellationToken = new CancellationTokenSource();
             DriveInfo[] driveInfo = DriveInfo.GetDrives();
 
             int rows, column;
@@ -146,6 +140,7 @@ namespace MultiTool.Windows
             for (int i = 0; i < driveInfo.Length; i++)
             {
                 CancellationTokenSource homeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(homeCancellationToken.Token);
+
                 ExplorerHome home = new ExplorerHome(driveInfo[i], homeCancellationTokenSource);
                 home.MouseDoubleClick += ExplorerHomeControl_MouseDoubleClick;
                 home.Height = home.MinHeight;
@@ -159,14 +154,13 @@ namespace MultiTool.Windows
 
         private void DisplayFiles(string path)
         {
-            if (cancellationTokenSource != null)
+            if (fsCancellationTokenSource != null)
             {
-                cancellationTokenSource.Cancel();
-                cancellationTokenSource.Dispose();
+                fsCancellationTokenSource.Cancel();
+                fsCancellationTokenSource.Dispose();
             }
-            cancellationTokenSource = new CancellationTokenSource();
+            fsCancellationTokenSource = new CancellationTokenSource();
 
-            //previousStackPath.Push(fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(CurrentPath)));
             string cleanPath = fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(path));
             CurrentPath = cleanPath;
             if (!Data.History.Contains(string.Format("{0, 10}", cleanPath)))
@@ -183,10 +177,10 @@ namespace MultiTool.Windows
             try
             {
                 IList<FileSystemEntryViewModel> pathItems = CurrentFiles;
-                eventStopwatch.Start();
+                eventStopwatch.Restart();
                 taskStopwatch.Restart();
 
-                fileSystemManager.GetFileSystemEntries(cleanPath, cancellationTokenSource.Token, pathItems, AddDelegate);
+                fileSystemManager.GetFileSystemEntries(cleanPath, fsCancellationTokenSource.Token, pathItems, AddDelegate);
             }
             catch (OperationCanceledException)
             {
@@ -339,13 +333,13 @@ namespace MultiTool.Windows
                 homeCancellationToken.Dispose();
             } catch (ObjectDisposedException) { }
 
-            if (cancellationTokenSource != null && fileSystemManager != null)
+            if (fsCancellationTokenSource != null && fileSystemManager != null)
             {
                 fileSystemManager.Notify = false;
                 try
                 {
-                    cancellationTokenSource.Cancel();
-                    cancellationTokenSource.Dispose();
+                    fsCancellationTokenSource.Cancel();
+                    fsCancellationTokenSource.Dispose();
                 }
                 catch (ObjectDisposedException) { }
             }
@@ -401,17 +395,25 @@ namespace MultiTool.Windows
 
         private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            object item = (e.Source as ListView)?.SelectedItem;
+            object item = ((ListView)e.Source).SelectedItem;
 
-            if (item != null && item is FileSystemEntryViewModel path)
+            if (item != null && item is FileSystemEntryViewModel fsEntry)
             {
-                if (path.IsDirectory)
+                if (fsEntry.IsDirectory)
                 {
-                    DisplayFiles(path.Path);
+                    DisplayFiles(fsEntry.Path);
                 }
                 else
                 {
-                    Process.Start(path.Path);
+                    try
+                    {
+                        Process.Start(fsEntry.Path);
+                    }
+                    catch (Win32Exception w32e)
+                    {
+                        Console.WriteLine(w32e.ToString());
+                        fsEntry.Color = new SolidColorBrush(Colors.Red);
+                    }
                 }
                 e.Handled = true;
             }
@@ -448,9 +450,9 @@ namespace MultiTool.Windows
 
         private void Cancel_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (cancellationTokenSource != null)
+            if (fsCancellationTokenSource != null)
             {
-                cancellationTokenSource.Cancel();
+                fsCancellationTokenSource.Cancel();
             }
             e.Handled = true;
         }
@@ -494,7 +496,7 @@ namespace MultiTool.Windows
 
         private void FileSystemManager_Exception(object sender, Exception exception) => DisplayMessage(exception.Message, true);
         
-        private void FileSystemManager_Change(object sender, Multitool.FileSystem.Events.ChangeEventArgs data)
+        private void FileSystemManager_Change(object sender, ChangeEventArgs data)
         {
             switch (data.ChangeTypes)
             {
@@ -523,26 +525,40 @@ namespace MultiTool.Windows
             data.InUse = false;
         }
 
-        private void FileSystemManager_Completed()
+        private void FileSystemManager_Completed(TaskStatus status)
         {
             taskStopwatch.Stop();
-            cancellationTokenSource.Dispose();
-            cancellationTokenSource = null;
+            fsCancellationTokenSource.Dispose();
+            fsCancellationTokenSource = null;
             eventStopwatch.Reset();
 
-            Application.Current.Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(() =>
             {
                 CancelAction_Button.IsEnabled = false;
                 Files_ProgressBar.IsIndeterminate = false;
+                SortList();
+
+                string message = string.Empty;
+                switch (status)
+                {
+                    case TaskStatus.RanToCompletion:
+                        message = "Task successfully completed";
+                        break;
+                    case TaskStatus.Canceled:
+                        message = "Task cancelled";
+                        break;
+                    case TaskStatus.Faulted:
+                        message = "Task failed";
+                        break;
+                }
                 if (taskStopwatch.Elapsed.TotalSeconds > 0)
                 {
-                    Progress_TextBox.Text = "Completed in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s";
+                    Progress_TextBox.Text = message + " (in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s)";
                 }
                 else
                 {
-                    Progress_TextBox.Text = "Completed in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms";
+                    Progress_TextBox.Text = message + "(in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms)";
                 }
-                SortList();
             });
         }
 

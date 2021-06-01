@@ -97,7 +97,7 @@ namespace MultitoolWPF.UserControls
             FileSystemManager manager = FileSystemManager.Get();
             long size = await Task.Run(() => 
             {
-                return calculator.AsyncCalculateDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", cancelToken);
+                return calculator.CalculateDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", cancelToken);
             }, cancelToken);
 
             Application.Current.Dispatcher.Invoke(() =>
