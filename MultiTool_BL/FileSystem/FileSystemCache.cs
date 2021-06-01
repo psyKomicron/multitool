@@ -67,6 +67,7 @@ namespace Multitool.FileSystem
         {
             CheckAndAddPath(path);
 
+            Partial = true;
             this.ttl = ttl;
             this.path = path;
             watchedItems = new List<FileSystemEntry>(10);
@@ -160,6 +161,12 @@ namespace Multitool.FileSystem
         {
             IsFrozen();
             return watchedItems.Remove(item);
+        }
+
+        public void RemoveAt(int i)
+        {
+            IsFrozen();
+            watchedItems.RemoveAt(i);
         }
 
         /// <summary>Changes the time to live (TTL) value for the cache. Changing the value will act as if the TTL was reached.</summary>
