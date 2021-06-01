@@ -9,6 +9,7 @@ namespace Multitool.FileSystem
     {
         private string _path;
         private string _name;
+        private bool _partial;
 
         /// <summary>Constructor.</summary>
         /// <param name="path"></param>
@@ -17,6 +18,7 @@ namespace Multitool.FileSystem
         {
             _path = info.FullName;
             _name = info.Name;
+            _partial = true;
             Info = info;
         }
 
@@ -57,6 +59,15 @@ namespace Multitool.FileSystem
             set
             {
                 _name = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool Partial
+        {
+            get => _partial;
+            set
+            {
+                _partial = value;
                 NotifyPropertyChanged();
             }
         }
@@ -252,11 +263,6 @@ namespace Multitool.FileSystem
             info.Attributes &= ~FileAttributes.ReadOnly;
         }
 
-        protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         private void DirectoryCopyTo(DirectoryInfo info, string newPath)
         {
             DirectoryInfo[] dirs = info.GetDirectories();
@@ -279,5 +285,11 @@ namespace Multitool.FileSystem
                 DirectoryCopyTo(subdir, tempPath);
             }
         }
+
+        protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
     }
 }

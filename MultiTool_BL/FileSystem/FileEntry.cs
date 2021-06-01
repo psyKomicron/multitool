@@ -8,6 +8,7 @@ namespace Multitool.FileSystem
         public FileEntry(FileInfo info) : base(info) 
         {
             FileInfo = info;
+            Partial = false;
         }
 
         public override long Size

@@ -9,7 +9,6 @@ namespace Multitool.FileSystem
         public DirectoryEntry(DirectoryInfo info) : base(info)
         {
             DirectoryInfo = info;
-            _size = -1;
         }
 
         public DirectoryEntry(DirectoryInfo info, long size) : base(info)
