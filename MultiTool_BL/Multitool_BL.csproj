@@ -69,7 +69,7 @@
     <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="FileSystem\DirectorySizeCalculator.cs" />
-    <Compile Include="FileSystem\Events\TaskCompletedEventHandler.cs" />
+    <Compile Include="TaskCompletedEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorTypes.cs" />
     <Compile Include="FileSystem\Factory\WatcherDelegates.cs" />
