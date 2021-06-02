@@ -1,8 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Multitool.FileSystem.Completion;
+
 using System.Collections.Generic;
 using System.IO;
 
-namespace Multitool.FileSystem.Completion.Tests
+namespace MultitoolTest.FileSystem.Completion.Tests
 {
     [TestClass()]
     public class PathCompletorTests
@@ -23,8 +26,8 @@ namespace Multitool.FileSystem.Completion.Tests
         {
             PathCompletor pathCompletor = new();
             List<string> completedPaths = new();
-            pathCompletor.Complete(@"E:\julie\Videos\Desktop\P\ev", completedPaths);
-            Assert.IsTrue(completedPaths.Count > 0);
+            pathCompletor.Complete(@"E:\julie\Videos\P\ev", completedPaths);
+            Assert.AreEqual(2, completedPaths.Count);
         }
     }
 }

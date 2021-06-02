@@ -1,9 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Multitool.Reflection.ObjectFlatteners;
-using MultiTool_Test;
+using Multitool.Reflection.PropertyLoaders;
+
+using MultiToolTest;
+
 using System.Xml;
 
-namespace Multitool.Reflection.PropertyLoaders.Tests
+namespace MultitoolTest.Reflection.PropertyLoaders.Tests
 {
     [TestClass]
     public class PropertyLoaderTests

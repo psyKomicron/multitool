@@ -1,8 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MultiTool_Test;
+
+using Multitool.Reflection.ObjectFlatteners;
+
+using MultiToolTest;
 using System.Xml;
 
-namespace Multitool.Reflection.ObjectFlatteners.Tests
+namespace MultitoolTest.Reflection.ObjectFlatteners.Tests
 {
     [TestClass()]
     public class CommonXmlObjectFlattenerTests

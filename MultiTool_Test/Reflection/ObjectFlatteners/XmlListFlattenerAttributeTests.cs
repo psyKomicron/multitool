@@ -1,11 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Multitool.JulieV2;
+using Multitool.Reflection.ObjectFlatteners;
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 
-namespace Multitool.Reflection.ObjectFlatteners.Tests
+namespace MultitoolTest.Reflection.ObjectFlatteners.Tests
 {
     [TestClass]
     public class XmlListFlattenerAttributeTests

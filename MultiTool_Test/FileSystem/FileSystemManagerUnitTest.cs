@@ -4,7 +4,7 @@ using System.Threading;
 using System.IO;
 using Multitool.FileSystem;
 
-namespace BusinessLayer.FileSystem.Tests
+namespace MultitoolTest.FileSystem.Tests
 {
     [TestClass()]
     public class FileSystemManagerUnitTest
@@ -35,7 +35,8 @@ namespace BusinessLayer.FileSystem.Tests
 
             string path = @"C:\Users\julie\Documents";
             string[] items = Directory.GetFileSystemEntries(path);
-            manager.GetFileSystemEntries(path, cancellationToken, entries, (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
+            manager.GetFileSystemEntries(path, cancellationToken, entries, 
+                (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); }).Wait();
 
             Assert.AreEqual(items.Length, entries.Count);
 

@@ -1,12 +1,14 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Multitool.FileSystem;
 using Multitool.Sorting;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-namespace BusinessLayer.Tests
+namespace MultitoolTest.Tests
 {
     [TestClass]
     public class QuickSortUnitTest

@@ -1,8 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Multitool.Optimisation;
+
 using System;
 
-namespace Multitool.Optimisation.Tests
+namespace MultitoolTest.Optimisation.Tests
 {
     [TestClass()]
     public class CircularBufferTests

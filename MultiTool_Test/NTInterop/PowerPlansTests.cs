@@ -1,9 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Multitool.NTInterop;
+
 using System;
 using System.Collections.Generic;
 
-namespace Multitool.NTInterop.Tests
+namespace MultitoolTest.NTInterop.Tests
 {
     [TestClass()]
     public class PowerPlansTests

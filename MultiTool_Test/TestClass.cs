@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 
-namespace MultiTool_Test
+namespace MultiToolTest
 {
     [TestClass]
     public class TestClass : IEquatable<TestClass>, IPoolableObject
