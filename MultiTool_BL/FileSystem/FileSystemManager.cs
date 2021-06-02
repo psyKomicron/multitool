@@ -76,7 +76,7 @@ namespace Multitool.FileSystem
         }
 
         /// <inheritdoc/>
-        public void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken,
+        public async Task GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken,
             IList<ItemType> list, AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry
         {
             #region not null
@@ -113,7 +113,8 @@ namespace Multitool.FileSystem
                     cache.Add(path, cacheItems);
 
                     GetFiles(path, cacheItems, list, addDelegate, cancellationToken);
-                    GetDirectories(path, cacheItems, list, addDelegate, cancellationToken);
+                    await GetDirectories(path, cacheItems, list, addDelegate, cancellationToken);
+                    Completed?.Invoke(TaskStatus.RanToCompletion);
                 }
             }
             else
@@ -287,8 +288,12 @@ namespace Multitool.FileSystem
             try
             {
                 string[] files = Directory.GetFiles(path);
-
-                for (int i = 0; i < files.Length; i++)
+                ParallelOptions parallelOptions = new ParallelOptions()
+                {
+                    CancellationToken = cancellationToken,
+                    MaxDegreeOfParallelism = files.Length
+                };
+                Parallel.For(0, files.Length - 1, parallelOptions, (int i) =>
                 {
                     CheckCancellation(cancellationToken, cacheItems);
 
@@ -297,7 +302,7 @@ namespace Multitool.FileSystem
                     FileSystemEntry item = new FileEntry(new FileInfo(files[i]));
                     cacheItems.Add(item);
                     addDelegate(list, item);
-                }
+                });
             }
             catch (UnauthorizedAccessException e) 
             {
@@ -305,7 +310,7 @@ namespace Multitool.FileSystem
             }
         }
 
-        private void GetDirectories<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
+        private async Task GetDirectories<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -324,17 +329,11 @@ namespace Multitool.FileSystem
                     cacheItems.Add(item);
                     addDelegate(list, item);
 
-                    tasks.Add(RunDirsParallel(item, currentPath, cacheItems, cancellationToken));
+                    tasks.Add(RunDirsParallel(cacheItems, item, currentPath, list, addDelegate, cancellationToken));
                 }
 
-                _ = Task.WhenAll(tasks).ContinueWith((Task t) =>
-                {
-                    if (t.Status == TaskStatus.RanToCompletion)
-                    {
-                        cacheItems.Partial = false;
-                    }
-                    Completed?.Invoke(t.Status);
-                });
+                await Task.WhenAll(tasks);
+                cacheItems.Partial = false;
             }
             catch (UnauthorizedAccessException e) 
             {
@@ -342,13 +341,15 @@ namespace Multitool.FileSystem
             }
         }
 
-        
         #endregion
 
-        private async Task RunDirsParallel(FileSystemEntry item, string currentPath, FileSystemCache cacheItems, CancellationToken cancellationToken)
+        private async Task RunDirsParallel<T>(
+            FileSystemCache cacheItems, FileSystemEntry item, string currentPath, IList<T> list,
+            AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             CheckCancellation(cancellationToken, cacheItems);
-            await calculator.AsyncCalculateDirectorySize(currentPath, cancellationToken);
+            addDelegate(list, item);
+            item.Size = await calculator.AsyncCalculateDirectorySize(currentPath, cancellationToken);
             item.Partial = false;
         }
 
