@@ -31,7 +31,7 @@ namespace Multitool.FileSystem
         /// <exception cref="System.ArgumentNullException">
         /// If either <paramref name="list"/> or <paramref name="cancellationToken"/> is <see cref="null"/>
         /// </exception>
-        void GetFileSystemEntries<ItemType>(
+        Task GetFileSystemEntries<ItemType>(
             string path, CancellationToken cancellationToken, IList<ItemType> list,
             AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry;
 
