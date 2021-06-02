@@ -1,13 +1,15 @@
-﻿using BusinessLayer.PreferencesManagers;
-using BusinessLayer.PreferencesManagers.Xml;
-using BusinessLayer.Reflection.ObjectFlatteners;
+﻿using Multitool.PreferencesManagers;
+using Multitool.PreferencesManagers.Xml;
+using Multitool.Reflection.ObjectFlatteners;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Media;
 using System.Xml;
 
-namespace MultiTool.Tools
+namespace Multitool.Tools
 {
     internal static class Tool
     {
@@ -26,7 +28,7 @@ namespace MultiTool.Tools
         {
             try
             {
-                XmlNode xml = new XmlObjectFlattener().Flatten(data);
+                XmlNode xml = new CommonXmlObjectFlattener().Flatten(data, typeof(T));
             }
             catch (StackOverflowException e)
             {
@@ -36,7 +38,7 @@ namespace MultiTool.Tools
 
             try
             {
-                return new BasicObjectFlattener().Flatten(data);
+                return new BasicObjectFlattener().Flatten(data, typeof(T));
             }
             catch (StackOverflowException e)
             {
@@ -45,5 +47,25 @@ namespace MultiTool.Tools
             return null;
         }
 
+        public static T GetRessource<T>(string name)
+        {
+            ResourceDictionary dic = Application.Current.Resources;
+            if (dic.Contains(name))
+            {
+                object o = dic[name];
+                if (o.GetType() == typeof(T))
+                {
+                    return (T)dic[name];
+                }
+                else
+                {
+                    throw new InvalidCastException();
+                }
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
     }
 }

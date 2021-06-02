@@ -1,10 +1,12 @@
-﻿using BusinessLayer.PreferencesManagers;
-using MultiTool.Tools;
+﻿using Multitool.PreferencesManagers;
+
+using Multitool.Tools;
+
 using System;
 using System.Diagnostics;
 using System.Windows;
 
-namespace MultiTool
+namespace Multitool
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -14,12 +16,15 @@ namespace MultiTool
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             SerializeApplication();
+            e.ApplicationExitCode = 0;
         }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            Console.WriteLine("Starting application...");
+
             WindowManager.InitializePreferenceManager("C:\\Users\\julie\\Documents\\MultiTool\\preferences\\userpreferences.xml");
-            WindowManager.GetPreferenceManager().DeserializePreferenceManager();
+            WindowManager.PreferenceManager.DeserializePreferenceManager();
         }
 
         private void SerializeApplication()
@@ -31,13 +36,13 @@ namespace MultiTool
             stopwatch.Start();
             /* timed instructions here */
 
-            IPreferenceManager tool = WindowManager.GetPreferenceManager();
+            IPreferenceManager tool = WindowManager.PreferenceManager;
             tool.SerializePreferenceManager();
 
             /* end timed instructions */
             stopwatch.Stop();
 
-            Console.WriteLine("\tPreference file creation/writing time : " + stopwatch.ElapsedMilliseconds + "ms");
+            Console.WriteLine("\tPreference file creation/writing time : " + (stopwatch.ElapsedTicks * (TimeSpan.TicksPerMillisecond / 10^6)) + " ns");
             Console.WriteLine(new string('-', 80));
         }
     }

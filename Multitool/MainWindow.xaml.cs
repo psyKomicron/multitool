@@ -1,23 +1,31 @@
-﻿using BusinessLayer.Controllers;
-using MultiTool.DTO;
-using MultiTool.Tools;
-using MultiTool.Windows;
+﻿using Multitool.Controllers;
+using Multitool.Monitoring;
+
+using Multitool.Tools;
+using Multitool.ViewModels;
+using Multitool.Windows;
+
 using System;
 using System.Reflection;
+using System.Timers;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
-namespace MultiTool
+namespace Multitool
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window, ISerializableWindow
     {
-        private readonly string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
+        private const string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
+        private CpuMonitor cpuMonitor = new CpuMonitor();
+        private Timer cpuTimer = new Timer(250);
 
         public string AppVersion { get; set; }
 
-        public MainWindowDTO Data { get; set; }
+        public MainWindowData Data { get; set; }
 
         public MainWindow()
         {
@@ -25,22 +33,26 @@ namespace MultiTool
             InitializeWindow();
         }
 
+        #region serialise/deserialise
         public void Serialize()
         {
-            WindowManager.GetPreferenceManager().AddWindowManager(Data, Name);
+            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
         }
 
         public void Deserialize()
         {
-            Data = WindowManager.GetPreferenceManager().GetWindowManager<MainWindowDTO>(Name);
+            Data = WindowManager.PreferenceManager.GetWindowManager<MainWindowData>(Name);
 
             if (Data == null)
             {
-                Data = new MainWindowDTO();
+                Data = new MainWindowData();
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 UpdateLayout();
             }
         }
+        #endregion
+
+        #region private
 
         private void InitializeWindow()
         {
@@ -48,27 +60,82 @@ namespace MultiTool
             DataContext = this;
 
             AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            cpuTimer.Elapsed += CpuTimer_Elapsed;
+            cpuTimer.Start();
         }
+
+        #endregion private
 
         #region events
 
-        private void MultiToolMainWindow_Closed(object sender, EventArgs e) => Serialize();
+        #region chrome
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                e.Handled = true;
+                DragMove();
+            }
+        }
 
-        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<DownloadWindow>();
+        private void WindowCloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            Close();
+        }
+
+        private void WindowMinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            WindowState = WindowState.Minimized;
+        }
+        #endregion
+
+        #region home menu
+        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
 
         private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
 
         private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => WindowManager.Open<PowerWindow>();
 
-        private void OpenSoon_Click(object sender, RoutedEventArgs e) 
+        private void OpenSoon_Click(object sender, RoutedEventArgs e)
         {
             new DefaultBrowserController()
             {
                 Uri = new Uri(gitHub)
             }.Execute();
         }
-
         #endregion
 
+        private void CpuTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (!cpuMonitor.Ready)
+            {
+                return;
+            }
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                CpuUsage.Text = cpuMonitor.GetCpuUsage().ToString("F2");
+            });
+        }
+
+        private void MultiToolMainWindow_Closed(object sender, EventArgs e)
+        {
+            cpuTimer.Stop();
+            cpuTimer.Dispose();
+            cpuMonitor.Dispose();
+            Serialize();
+        }
+
+        private void Window_TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Window_TabControl.SelectedIndex == 1)
+            {
+                // draw a dick
+            }
+        }
+
+        #endregion
     }
 }

@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{545DC8FD-0E0F-43EA-917D-B6BE03E43E48}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Multitool</RootNamespace>
+    <AssemblyName>Multitool_BL</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Tasks.v4.0" />
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\Multitool\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\Controller.cs" />
+    <Compile Include="Controllers\DefaultBrowserController.cs" />
+    <Compile Include="Controllers\PowerController.cs" />
+    <Compile Include="FileSystem\DirectorySizeCalculator.cs" />
+    <Compile Include="TaskCompletedEventHandler.cs" />
+    <Compile Include="FileSystem\Events\WatcherErrorEventHandler.cs" />
+    <Compile Include="FileSystem\Events\WatcherErrorTypes.cs" />
+    <Compile Include="FileSystem\Factory\WatcherDelegates.cs" />
+    <Compile Include="FileSystem\Factory\WatcherFactory.cs" />
+    <Compile Include="Monitoring\CpuMonitor.cs" />
+    <Compile Include="NTInterop\CursorPosition.cs" />
+    <Compile Include="NTInterop\PowerPlan.cs" />
+    <Compile Include="Optimisation\CircularBag.cs" />
+    <Compile Include="Optimisation\FreeObjectEventHandler.cs" />
+    <Compile Include="Optimisation\IPoolableObject.cs" />
+    <Compile Include="Optimisation\ObjectPool.cs" />
+    <Compile Include="TaskFailedEventHandler.cs" />
+    <Compile Include="FileSystem\CacheFrozenException.cs" />
+    <Compile Include="FileSystem\AddDelegate.cs" />
+    <Compile Include="FileSystem\Completion\IPathCompletor.cs" />
+    <Compile Include="FileSystem\Completion\PathCompletor.cs" />
+    <Compile Include="FileSystem\DirectoryEntry.cs" />
+    <Compile Include="FileSystem\Events\ChangeEventArgs.cs" />
+    <Compile Include="FileSystem\Events\TTLReachedEventHandler.cs" />
+    <Compile Include="FileSystem\FileEntry.cs" />
+    <Compile Include="FileSystem\FileSystemCache.cs" />
+    <Compile Include="FileSystem\Events\CacheChangedEventHandler.cs" />
+    <Compile Include="FileSystem\FileSystemCacheException.cs" />
+    <Compile Include="FileSystem\FileSystemManager.cs" />
+    <Compile Include="FileSystem\IFileSystemManager.cs" />
+    <Compile Include="FileSystem\IFileSystemEntry.cs" />
+    <Compile Include="FileSystem\FileSystemEntry.cs" />
+    <Compile Include="FileSystem\Events\TTLReachedEventArgs.cs" />
+    <Compile Include="IProgressNotifier.cs" />
+    <Compile Include="JulieV2\BotCommand.cs" />
+    <Compile Include="JulieV2\ILogParser.cs" />
+    <Compile Include="JulieV2\LogParser.cs" />
+    <Compile Include="JulieV2\User.cs" />
+    <Compile Include="JulieV2\UserFactory.cs" />
+    <Compile Include="Network\Downloader.cs" />
+    <Compile Include="Network\DownloadEventArgs.cs" />
+    <Compile Include="NTInterop\AccessFlags.cs" />
+    <Compile Include="NTInterop\PowerOptions.cs" />
+    <Compile Include="NTInterop\Codes\SystemCodes.cs" />
+    <Compile Include="Optimisation\PoolObjectStateException.cs" />
+    <Compile Include="Parsers\Errors\JsonFormatException.cs" />
+    <Compile Include="Parsers\JsonParser.cs" />
+    <Compile Include="Parsers\UriCleaner.cs" />
+    <Compile Include="PreferencesManagers\IPreferenceManager.cs" />
+    <Compile Include="PreferencesManagers\Json\JsonPreferenceManager.cs" />
+    <Compile Include="PreferencesManagers\PreferenceManagerType.cs" />
+    <Compile Include="PreferencesManagers\WindowPreferenceManager.cs" />
+    <Compile Include="PreferencesManagers\Xml\XmlPreferenceManager.cs" />
+    <Compile Include="ProcessOptions\Enums\DefaultOptions.cs" />
+    <Compile Include="ProcessOptions\Enums\PowerOptions.cs" />
+    <Compile Include="ProcessOptions\EnumTranslaters\IEnumTranslater.cs" />
+    <Compile Include="ProcessOptions\EnumTranslaters\PowerEnumTranslater.cs" />
+    <Compile Include="ProcessOptions\StartOptions.cs" />
+    <Compile Include="TaskProgressEventHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\PrimitiveXmlFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\ListFlattenerAttribute.cs" />
+    <Compile Include="Reflection\ReflectionHelper.cs" />
+    <Compile Include="Sorting\ObservableCollectionQuickSort.cs" />
+    <Compile Include="Sorting\QuickSort.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\BasicObjectFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\IObjectFlattener.cs" />
+    <Compile Include="Reflection\ObjectFlatteners\CommonXmlObjectFlattener.cs" />
+    <Compile Include="Reflection\PropertyLoaders\PropertyLoader.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
