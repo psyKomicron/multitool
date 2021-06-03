@@ -1,16 +1,16 @@
 ﻿using Multitool.PreferencesManagers;
 using Multitool.PreferencesManagers.Xml;
-using Multitool.Windows;
-using System;
-using System.Collections.Generic;
+
+using MultitoolWPF.Windows;
+
 using System.Windows;
 
-namespace Multitool.Tools
+namespace MultitoolWPF.Tools
 {
     public static class WindowManager
     {
         private static IPreferenceManager preferenceManager;
-        
+
         public static void InitializePreferenceManager(string path)
         {
             if (preferenceManager == null)

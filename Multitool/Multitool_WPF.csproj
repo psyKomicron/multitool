@@ -109,6 +109,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DefaultWindowData.cs" />
+    <Compile Include="ExceptionTextFormatter.cs" />
     <Compile Include="UserControls\ExplorerHome.xaml.cs">
       <DependentUpon>ExplorerHome.xaml</DependentUpon>
     </Compile>
@@ -120,6 +121,9 @@
     </Compile>
     <Compile Include="Windows\ControlPanels\ControlPanelsWindow.xaml.cs">
       <DependentUpon>ControlPanelsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\Explorer\ExceptionWindow.xaml.cs">
+      <DependentUpon>ExceptionWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\Explorer\ExplorerWindowData.cs" />
     <Compile Include="ViewModels\FileSystemEntryViewModel.cs" />
@@ -150,6 +154,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\ControlPanels\ControlPanelsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\Explorer\ExceptionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

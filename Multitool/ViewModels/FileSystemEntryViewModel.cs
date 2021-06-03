@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
 
-namespace Multitool.ViewModels
+namespace MultitoolWPF.ViewModels
 {
     public class FileSystemEntryViewModel : IFileSystemEntry
     {

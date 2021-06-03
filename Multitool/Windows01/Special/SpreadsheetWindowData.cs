@@ -1,8 +1,10 @@
 ﻿using Multitool.Reflection.ObjectFlatteners;
-using Multitool.ViewModels;
+
+using MultitoolWPF.ViewModels;
+
 using System.Collections.ObjectModel;
 
-namespace Multitool.Windows
+namespace MultitoolWPF.Windows
 {
     public class SpreadsheetWindowData : DefaultWindowData
     {

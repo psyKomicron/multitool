@@ -1,15 +1,13 @@
-﻿using Multitool.PreferencesManagers;
-using Multitool.PreferencesManagers.Xml;
-using Multitool.Reflection.ObjectFlatteners;
+﻿using Multitool.Reflection.ObjectFlatteners;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Media;
 using System.Xml;
 
-namespace Multitool.Tools
+namespace MultitoolWPF.Tools
 {
     internal static class Tool
     {

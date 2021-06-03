@@ -1,4 +1,4 @@
-﻿namespace Multitool.ViewModels
+﻿namespace MultitoolWPF.ViewModels
 {
     public abstract class DefaultWindowData
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Multitool.ViewModels
+namespace MultitoolWPF.ViewModels
 {
     public class SpreadsheetVM : IComparable<SpreadsheetVM>
     {

@@ -1,10 +1,9 @@
 ﻿using Multitool.Controllers;
 using Multitool.ProcessOptions;
 using Multitool.ProcessOptions.EnumTranslaters;
+using MultitoolWPF.ViewModels;
 
-using Multitool.Tools;
-using Multitool.ViewModels;
-using Multitool.Windows;
+using MultitoolWPF.Tools;
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 
-namespace Multitool
+namespace MultitoolWPF.Windows
 {
     /// <summary>
     /// Interaction logic for PowerWindow.xaml

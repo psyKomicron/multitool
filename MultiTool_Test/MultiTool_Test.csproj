@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Multitool\Multitool_WPF.csproj" />
     <ProjectReference Include="..\MultiTool_BL\Multitool_BL.csproj" />
   </ItemGroup>
 

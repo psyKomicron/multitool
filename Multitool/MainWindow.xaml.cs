@@ -1,9 +1,9 @@
 ﻿using Multitool.Controllers;
 using Multitool.Monitoring;
 
-using Multitool.Tools;
-using Multitool.ViewModels;
-using Multitool.Windows;
+using MultitoolWPF.Tools;
+using MultitoolWPF.ViewModels;
+using MultitoolWPF.Windows;
 
 using System;
 using System.Reflection;
@@ -12,7 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace Multitool
+namespace MultitoolWPF
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

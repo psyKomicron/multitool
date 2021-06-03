@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,12 +43,33 @@ namespace Multitool.FileSystem
 
                     Task<long[]> awaitable = Task.WhenAll(dirTasks);
                     dirTasks.Clear();
-                    awaitable.Wait();
-                    for (int i = 0; i < awaitable.Result.Length; i++)
+                    try
                     {
-                        size += awaitable.Result[i];
-                    }
+                        awaitable.Wait(cancellationToken);
 
+                        for (int i = 0; i < awaitable.Result.Length; i++)
+                        {
+                            size += awaitable.Result[i];
+                        }
+                    }
+                    catch (OperationCanceledException opCanceled)
+                    {
+                        opCanceled.Data.Add(GetType(), "Operation cancelled while waiting for children threads (calculating " + path +")");
+                        throw;
+                    }
+                    catch (AggregateException aggregate)
+                    {
+                        for (int i = 0; i < aggregate.InnerExceptions.Count; i++)
+                        {
+                            if (aggregate.InnerExceptions[i].GetType() == typeof(OperationCanceledException))
+                            {
+                                aggregate.InnerExceptions[i].Data.Add(GetType(), "Operation cancelled while waiting for children threads (calculating " + path + ")");
+                                throw aggregate.InnerExceptions[i];
+                            }
+                        }
+
+                        throw;
+                    }
                 }
                 catch (UnauthorizedAccessException e)
                 {

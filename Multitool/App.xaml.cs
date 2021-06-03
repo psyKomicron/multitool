@@ -1,6 +1,6 @@
 ﻿using Multitool.PreferencesManagers;
 
-using Multitool.Tools;
+using MultitoolWPF.Tools;
 
 using System;
 using System.Diagnostics;

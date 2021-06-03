@@ -144,13 +144,16 @@ namespace Multitool.FileSystem
         {
             IsFrozen();
 
-            if (!timer.Enabled)
+            lock (_lock)
             {
-                timer.Start();
-            }
-            if (!watchedItems.Contains(item))
-            {
-                watchedItems.Add(item);
+                if (!timer.Enabled)
+                {
+                    timer.Start();
+                }
+                if (!watchedItems.Contains(item))
+                {
+                    watchedItems.Add(item);
+                }
             }
         }
 
@@ -160,13 +163,19 @@ namespace Multitool.FileSystem
         public bool Remove(FileSystemEntry item)
         {
             IsFrozen();
-            return watchedItems.Remove(item);
+            lock (_lock)
+            {
+                return watchedItems.Remove(item);
+            }
         }
 
         public void RemoveAt(int i)
         {
             IsFrozen();
-            watchedItems.RemoveAt(i);
+            lock (_lock)
+            {
+                watchedItems.RemoveAt(i);
+            }
         }
 
         /// <summary>Changes the time to live (TTL) value for the cache. Changing the value will act as if the TTL was reached.</summary>
@@ -182,10 +191,10 @@ namespace Multitool.FileSystem
         public void Delete()
         {
             frozen = true;
-            watchedItems.Clear();
 
             lock (_lock)
             {
+                watchedItems.Clear();
                 watchedPaths.Remove(Path);
             }
 

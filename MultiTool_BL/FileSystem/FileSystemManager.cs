@@ -18,6 +18,8 @@ namespace Multitool.FileSystem
         private static FileSystemManager instance;
 
         private double ttl;
+        private bool _notify;
+        private object _eventlock = new object();
         private ObjectPool<ChangeEventArgs> objectPool = new ObjectPool<ChangeEventArgs>();
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
         private DirectorySizeCalculator calculator = new DirectorySizeCalculator();
@@ -34,7 +36,15 @@ namespace Multitool.FileSystem
             Notify = notifyProgress;
         }
 
-        public bool Notify { get; set; }
+        public bool Notify
+        {
+            get => _notify;
+            set
+            {
+                calculator.Notify = value;
+                _notify = value;
+            }
+        }
 
         public double CacheTimeout
         {
@@ -50,10 +60,29 @@ namespace Multitool.FileSystem
         }
 
         public event TaskProgressEventHandler Progress;
-        public event TaskFailedEventHandler Exception;
+        public event TaskFailedEventHandler Exception
+        {
+            add
+            {
+                lock (_eventlock)
+                {
+                    SelfException += value;
+                    calculator.Exception += value;
+                }
+            }
+            remove
+            {
+                lock (_eventlock)
+                {
+                    calculator.Exception -= value;
+                    SelfException -= value;
+                }
+            }
+        }
         public event TaskCompletedEventHandler Completed;
-
         public event ItemChangedEventHandler Change;
+
+        private event TaskFailedEventHandler SelfException;
 
         public static FileSystemManager Get(double cacheTimeout = DEFAULT_CACHE_TIMEOUT, bool notifyProgress = DEFAULT_NOTIFY_STATUS)
         {
@@ -76,7 +105,7 @@ namespace Multitool.FileSystem
         }
 
         /// <inheritdoc/>
-        public async Task GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken,
+        public void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken,
             IList<ItemType> list, AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry
         {
             #region not null
@@ -113,8 +142,8 @@ namespace Multitool.FileSystem
                     cache.Add(path, cacheItems);
 
                     GetFiles(path, cacheItems, list, addDelegate, cancellationToken);
-                    await GetDirectories(path, cacheItems, list, addDelegate, cancellationToken);
-                    Completed?.Invoke(TaskStatus.RanToCompletion);
+                    _ = GetDirectories(path, cacheItems, list, addDelegate, cancellationToken)
+                        .ContinueWith((Task previous) => Completed?.Invoke(previous.Status));
                 }
             }
             else
@@ -288,12 +317,8 @@ namespace Multitool.FileSystem
             try
             {
                 string[] files = Directory.GetFiles(path);
-                ParallelOptions parallelOptions = new ParallelOptions()
-                {
-                    CancellationToken = cancellationToken,
-                    MaxDegreeOfParallelism = files.Length
-                };
-                Parallel.For(0, files.Length - 1, parallelOptions, (int i) =>
+
+                for (int i = 0; i < files.Length; i++)
                 {
                     CheckCancellation(cancellationToken, cacheItems);
 
@@ -302,7 +327,7 @@ namespace Multitool.FileSystem
                     FileSystemEntry item = new FileEntry(new FileInfo(files[i]));
                     cacheItems.Add(item);
                     addDelegate(list, item);
-                });
+                }
             }
             catch (UnauthorizedAccessException e) 
             {
@@ -325,10 +350,8 @@ namespace Multitool.FileSystem
                     InvokeProgress(dirPaths[i]);
 
                     string currentPath = dirPaths[i];
-                    FileSystemEntry item = new DirectoryEntry(new DirectoryInfo(dirPaths[i]));
+                    FileSystemEntry item = new DirectoryEntry(new DirectoryInfo(currentPath));
                     cacheItems.Add(item);
-                    addDelegate(list, item);
-
                     tasks.Add(RunDirsParallel(cacheItems, item, currentPath, list, addDelegate, cancellationToken));
                 }
 
@@ -349,8 +372,16 @@ namespace Multitool.FileSystem
         {
             CheckCancellation(cancellationToken, cacheItems);
             addDelegate(list, item);
-            item.Size = await calculator.AsyncCalculateDirectorySize(currentPath, cancellationToken);
-            item.Partial = false;
+            try
+            {
+                item.Size = await calculator.AsyncCalculateDirectorySize(currentPath, cancellationToken);
+                item.Partial = false;
+            }
+            catch (AggregateException e)
+            {
+                e.Data.Add(GetType(), "Uncommon aggregate exception (from calculating dir size). Path :" + currentPath);
+                InvokeException(e);
+            }
         }
 
         private FileSystemCache GetFileSystemCache(string key)
@@ -502,7 +533,7 @@ namespace Multitool.FileSystem
         {
             if (Notify)
             {
-                Exception?.Invoke(this, e);
+                SelfException?.Invoke(this, e);
             }
         }
 

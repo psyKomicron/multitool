@@ -4,10 +4,9 @@ using Multitool.FileSystem.Events;
 using Multitool.NTInterop;
 using Multitool.Parsers;
 using Multitool.Sorting;
+using MultitoolWPF.ViewModels;
 
-using Multitool.Tools;
-using Multitool.ViewModels;
-
+using MultitoolWPF.Tools;
 using MultitoolWPF.UserControls;
 
 using System;
@@ -23,9 +22,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Xml.XPath;
+using MultitoolWPF.Windows.Explorer;
 
-namespace Multitool.Windows
+namespace MultitoolWPF.Windows
 {
     /// <summary>
     /// Interaction logic for ExplorerWindow.xaml
@@ -49,11 +48,13 @@ namespace Multitool.Windows
         private UriCleaner cleaner = new UriCleaner();
         private Point previousCursor;
         private IPathCompletor pathCompletor;
+        private ExceptionWindow exceptionWindow = new ExceptionWindow();
 
         public ExplorerWindow()
         {
             InitializeComponent();
             InitializeWindow();
+            exceptionWindow.Show();
         }
 
         #region properties
@@ -180,7 +181,15 @@ namespace Multitool.Windows
                 eventStopwatch.Restart();
                 taskStopwatch.Restart();
 
-                fileSystemManager.GetFileSystemEntries(cleanPath, fsCancellationTokenSource.Token, pathItems, AddDelegate);
+                try
+                {
+                    fileSystemManager.GetFileSystemEntries(cleanPath, fsCancellationTokenSource.Token, pathItems, AddDelegate);
+                }
+                catch (ArgumentException argExcep)
+                {
+                    Console.WriteLine(argExcep);
+                    Progress_TextBox.Text = argExcep.Message;
+                }
             }
             catch (OperationCanceledException)
             {
@@ -327,6 +336,7 @@ namespace Multitool.Windows
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            exceptionWindow.Close();
             try
             {
                 homeCancellationToken.Cancel();
@@ -346,7 +356,15 @@ namespace Multitool.Windows
             eventStopwatch.Stop();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e) => LoadHome();
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadHome();
+            for (int i = 0; i < 100; i++)
+            {
+                exceptionWindow.Queue(new Exception("Exception n." + i));
+            }
+            exceptionWindow.Start();
+        }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -494,7 +512,11 @@ namespace Multitool.Windows
 
         private void FileSystemManager_Progress(object sender, string message) => DisplayMessage(message, false, sender == null);
 
-        private void FileSystemManager_Exception(object sender, Exception exception) => DisplayMessage(exception.Message, true);
+        private void FileSystemManager_Exception(object sender, Exception exception)
+        {
+            DisplayMessage(exception.Message, true);
+            exceptionWindow.Queue(exception);
+        }
         
         private void FileSystemManager_Change(object sender, ChangeEventArgs data)
         {

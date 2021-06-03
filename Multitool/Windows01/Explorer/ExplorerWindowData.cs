@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Multitool.Reflection.ObjectFlatteners;
 
-namespace Multitool.ViewModels
+namespace MultitoolWPF.ViewModels
 {
     public class ExplorerWindowData : DefaultWindowData
     {
