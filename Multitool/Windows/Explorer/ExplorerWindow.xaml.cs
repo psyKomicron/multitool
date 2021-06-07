@@ -22,7 +22,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using MultitoolWPF.Windows.Explorer;
 
 namespace MultitoolWPF.Windows
 {
@@ -79,7 +78,7 @@ namespace MultitoolWPF.Windows
         #region serialize
         public void Deserialize()
         {
-            Data = WindowManager.PreferenceManager.GetWindowManager<ExplorerWindowData>(Name);
+            Data = WindowManager.PreferenceManager.GetWindowData<ExplorerWindowData>(Name);
             CurrentPath = Data.LastUsedPath;
 
             fileSystemManager = Data.TTL != default ? FileSystemManager.Get(Data.TTL, true) : FileSystemManager.Get();
@@ -97,7 +96,7 @@ namespace MultitoolWPF.Windows
         public void Serialize()
         {
             Data.LastUsedPath = CurrentPath;
-            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
+            WindowManager.PreferenceManager.AddWindowData(Data, Name);
         }
         #endregion
 
@@ -612,6 +611,7 @@ namespace MultitoolWPF.Windows
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
+                e.Handled = true;
                 DragMove();
             }
         }

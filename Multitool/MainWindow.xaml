@@ -7,11 +7,11 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="Multitool"
-        Name="MultiToolMainWindow"
+        Name="MultitoolMainWindow"
         Closed="MultiToolMainWindow_Closed"
         MinHeight="395" 
         MinWidth="555" 
-        Style="{StaticResource DarkWindow}" Height="489" Width="744">
+        Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
             <Setter Property="BorderThickness" Value="0"/>
@@ -47,7 +47,8 @@
             x:Name="Window_TabControl"
             Grid.Row="1"
             Style="{StaticResource DarkTabControlTemplate}"
-            SelectionChanged="Window_TabControl_SelectionChanged">
+            SelectionChanged="Window_TabControl_SelectionChanged"
+            SelectedIndex="{Binding Data.LastSelectedIndex, ElementName=MultitoolMainWindow, Mode=TwoWay}">
             <TabControl.Resources>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="Template">
@@ -320,6 +321,7 @@
                             Grid.Column="0"
                             Height="50"
                             Width="Auto"
+                            Click="ControlPanelsButton_Click"
                             Template="{StaticResource StandardButtonCT}"/>
 
                     <Grid.Triggers>

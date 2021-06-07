@@ -36,12 +36,12 @@ namespace MultitoolWPF
         #region serialise/deserialise
         public void Serialize()
         {
-            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
+            WindowManager.PreferenceManager.AddWindowData(Data, Name);
         }
 
         public void Deserialize()
         {
-            Data = WindowManager.PreferenceManager.GetWindowManager<MainWindowData>(Name);
+            Data = WindowManager.PreferenceManager.GetWindowData<MainWindowData>(Name);
 
             if (Data == null)
             {
@@ -94,10 +94,9 @@ namespace MultitoolWPF
 
         #region home menu
         private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
-
         private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
-
         private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => WindowManager.Open<PowerWindow>();
+        private void ControlPanelsButton_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ControlPanelsWindow>();
 
         private void OpenSoon_Click(object sender, RoutedEventArgs e)
         {
@@ -135,7 +134,6 @@ namespace MultitoolWPF
                 // draw a dick
             }
         }
-
         #endregion
     }
 }

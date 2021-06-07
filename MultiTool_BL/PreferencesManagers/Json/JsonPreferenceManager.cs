@@ -56,7 +56,7 @@ namespace Multitool.PreferencesManagers.Json
             }
         }
 
-        public void AddWindowManager<DataType>(DataType data, string name) where DataType : class
+        public void AddWindowData<DataType>(DataType data, string name) where DataType : class
         {
             WindowPreferenceManager manager = new WindowPreferenceManager()
             {
@@ -86,7 +86,7 @@ namespace Multitool.PreferencesManagers.Json
             }
         }
 
-        public DataType GetWindowManager<DataType>(string name) where DataType : class, new()
+        public DataType GetWindowData<DataType>(string name) where DataType : class, new()
         {
             foreach (WindowPreferenceManager manager in childs)
             {

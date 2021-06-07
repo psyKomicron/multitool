@@ -1,6 +1,6 @@
 ﻿namespace MultitoolWPF.ViewModels
 {
-    public abstract class DefaultWindowData
+    public class DefaultWindowData
     {
         public double Height { get; set; }
         public double Width { get; set; }

@@ -167,7 +167,6 @@ namespace MultitoolWPF.UserControls
         #endregion
 
         #region events handlers
-
         private void ParentWindow_Deactivated(object sender, System.EventArgs e)
         {
             Opacity = 0.5;
@@ -177,7 +176,6 @@ namespace MultitoolWPF.UserControls
         {
             Opacity = 1;
         }
-
         #endregion
     }
 }

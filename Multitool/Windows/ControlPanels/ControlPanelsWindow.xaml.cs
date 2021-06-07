@@ -1,15 +1,30 @@
-﻿using System.Windows;
+﻿using MultitoolWPF.Tools;
+using MultitoolWPF.ViewModels;
+
+using System.Windows;
 
 namespace MultitoolWPF.Windows
 {
     /// <summary>
     /// Interaction logic for ControlPanelsWindow.xaml
     /// </summary>
-    public partial class ControlPanelsWindow : Window
+    public partial class ControlPanelsWindow : Window, ISerializableWindow
     {
         public ControlPanelsWindow()
         {
             InitializeComponent();
+        }
+
+        public DefaultWindowData Data { get; set; }
+
+        public void Deserialize()
+        {
+            Data = WindowManager.PreferenceManager.GetWindowData<DefaultWindowData>(Name);
+        }
+
+        public void Serialize()
+        {
+            WindowManager.PreferenceManager.AddWindowData(Data, Name);
         }
 
         private void MultitoolWindowChrome_CloseClick(object sender, RoutedEventArgs e) => Close();
@@ -20,10 +35,9 @@ namespace MultitoolWPF.Windows
         {
             if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
             {
+                e.Handled = true;
                 DragMove();
             }
-
-            
         }
     }
 }

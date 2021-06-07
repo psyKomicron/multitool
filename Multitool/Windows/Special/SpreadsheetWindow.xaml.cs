@@ -29,12 +29,12 @@ namespace MultitoolWPF.Windows
         #region ISerializableWindow
         public void Deserialize()
         {
-            Data = WindowManager.PreferenceManager.GetWindowManager<SpreadsheetWindowData>(Name);
+            Data = WindowManager.PreferenceManager.GetWindowData<SpreadsheetWindowData>(Name);
         }
 
         public void Serialize()
         {
-            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
+            WindowManager.PreferenceManager.AddWindowData(Data, Name);
         }
         #endregion
 

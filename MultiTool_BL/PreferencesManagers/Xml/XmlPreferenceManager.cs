@@ -55,7 +55,7 @@ namespace Multitool.PreferencesManagers.Xml
             }
         }
 
-        public void AddWindowManager<DataType>(DataType data, string name) where DataType : class
+        public void AddWindowData<DataType>(DataType data, string name) where DataType : class
         {
             XmlNode dataAsXml = new CommonXmlObjectFlattener().Flatten(data, typeof(DataType));
             XmlNode storedData = xmlDocument.SelectSingleNode(".//" + name);
@@ -74,7 +74,7 @@ namespace Multitool.PreferencesManagers.Xml
             root.AppendChild(dataRoot);
         }
 
-        public DataType GetWindowManager<DataType>(string name) where DataType : class, new()
+        public DataType GetWindowData<DataType>(string name) where DataType : class, new()
         {
             if (xmlDocument != null)
             {

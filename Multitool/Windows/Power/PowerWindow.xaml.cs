@@ -52,12 +52,12 @@ namespace MultitoolWPF.Windows
 
         public void Serialize()
         {
-            WindowManager.PreferenceManager.AddWindowManager(Data, Name);
+            WindowManager.PreferenceManager.AddWindowData(Data, Name);
         }
 
         public void Deserialize()
         {
-            Data = WindowManager.PreferenceManager.GetWindowManager<PowerWindowData>(Name);
+            Data = WindowManager.PreferenceManager.GetWindowData<PowerWindowData>(Name);
             if (Data == null)
             {
                 Data = new PowerWindowData();

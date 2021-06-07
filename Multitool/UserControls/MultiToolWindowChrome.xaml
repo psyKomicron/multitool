@@ -7,8 +7,9 @@
              Background="{StaticResource DevBlue}"
              BorderThickness="0.4"
              mc:Ignorable="d" 
+             MinHeight="30"
              Height="30"
-             MaxHeight="30"
+             MaxHeight="40"
              d:DesignHeight="30" d:DesignWidth="800">
     <UserControl.Resources>
         <Style TargetType="{x:Type Button}">

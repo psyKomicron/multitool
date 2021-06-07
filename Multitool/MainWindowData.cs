@@ -7,5 +7,7 @@
             Height = 550;
             Width = 800;
         }
+
+        public int LastSelectedIndex { get; set; }
     }
 }
