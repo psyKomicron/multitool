@@ -48,13 +48,13 @@ namespace MultitoolWPF.Windows
         private UriCleaner cleaner = new UriCleaner();
         private Point previousCursor;
         private IPathCompletor pathCompletor;
-        private ExceptionWindow exceptionWindow = new ExceptionWindow();
+        //private ExceptionWindow exceptionWindow = new ExceptionWindow();
 
         public ExplorerWindow()
         {
             InitializeComponent();
             InitializeWindow();
-            exceptionWindow.Show();
+            //exceptionWindow.Show();
         }
 
         #region properties
@@ -336,7 +336,7 @@ namespace MultitoolWPF.Windows
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            exceptionWindow.Close();
+            //exceptionWindow.Close();
             try
             {
                 homeCancellationToken.Cancel();
@@ -359,11 +359,6 @@ namespace MultitoolWPF.Windows
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             LoadHome();
-            for (int i = 0; i < 100; i++)
-            {
-                exceptionWindow.Queue(new Exception("Exception n." + i));
-            }
-            exceptionWindow.Start();
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -515,7 +510,7 @@ namespace MultitoolWPF.Windows
         private void FileSystemManager_Exception(object sender, Exception exception)
         {
             DisplayMessage(exception.Message, true);
-            exceptionWindow.Queue(exception);
+            //exceptionWindow.Queue(exception);
         }
         
         private void FileSystemManager_Change(object sender, ChangeEventArgs data)
