@@ -3,7 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:usercontrols="clr-namespace:MultitoolWPF.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:usercontrols="clr-namespace:MultitoolWPF.UserControls"
     x:Class="MultitoolWPF.Windows.ExplorerWindow"
     mc:Ignorable="d"
     Title="Explorer"
@@ -76,10 +77,8 @@
                 <TabItem Header="Home">
                     <ScrollViewer>
                         <Grid x:Name="Disks_Grid"
-                          HorizontalAlignment="Center">
-                        </Grid>
+                          HorizontalAlignment="Center"/>
                     </ScrollViewer>
-
                 </TabItem>
 
                 <TabItem Header="Explorer">
@@ -254,6 +253,84 @@
                         </ListView>
                     </Grid>
                 </TabItem>
+
+                <TabItem Header="Editor">
+                    <Grid x:Name="Editor_Grid">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="5*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="30"/>
+                        </Grid.RowDefinitions>
+
+                        <ListView x:Name="EditorListView"
+                              Grid.Row="0"
+                              Grid.Column="0"
+                              ItemsSource="{Binding CurrentFiles}"
+                              MouseDoubleClick="EditorListView_MouseDoubleClick" 
+                              Style="{StaticResource DarkListViewStyle}">
+                            <ListView.Resources>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </Style>
+                            </ListView.Resources>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock FontSize="14"
+                                               Text="{Binding Name}"
+                                               Foreground="{Binding Color}"
+                                               Margin="0,0,20,5"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Delete" Click="PathItemDelete_Click"/>
+                                            </ContextMenu>
+                                        </TextBlock.ContextMenu>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <StatusBar x:Name="EditorStatusBar"
+                                   Background="{StaticResource LightBlack}"
+                                   Foreground="White"
+                                   Grid.Row="1"
+                                   Grid.ColumnSpan="2">
+                            <StatusBar.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60*"/>
+                                            <ColumnDefinition Width="20*"/>
+                                            <ColumnDefinition Width="10*"/>
+                                            <ColumnDefinition Width="10*"/>
+                                        </Grid.ColumnDefinitions>
+                                    </Grid>
+                                </ItemsPanelTemplate>
+                            </StatusBar.ItemsPanel>
+                            <StatusBarItem Grid.Column="0">
+                                <TextBlock x:Name="StatusBar0_TextBlock"
+                                       Text="string.Empty"/>
+                            </StatusBarItem>
+                            <StatusBarItem Grid.Column="1">
+                                <TextBlock x:Name="StatusBar1_TextBlock"
+                                       Text="string.Empty"/>
+                            </StatusBarItem>
+                            <StatusBarItem Grid.Column="2">
+                                <TextBlock x:Name="StatusBar2_TextBlock"
+                                       Text="string.Empty"/>
+                            </StatusBarItem>
+                            <StatusBarItem Grid.Column="3">
+                                <TextBlock x:Name="StatusBar3_TextBlock"
+                                       Text="string.Empty"/>
+                            </StatusBarItem>
+                        </StatusBar>
+                    </Grid>
+                </TabItem>
+                
             </TabControl>
         </Grid>
 

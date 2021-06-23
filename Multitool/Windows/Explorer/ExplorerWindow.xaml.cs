@@ -22,6 +22,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.Win32;
+using System.Globalization;
 
 namespace MultitoolWPF.Windows
 {
@@ -104,6 +106,16 @@ namespace MultitoolWPF.Windows
 
         private void InitializeWindow()
         {
+            // visual objects
+            FormattedText ft = new FormattedText(string.Empty, 
+                CultureInfo.CurrentCulture, 
+                FlowDirection.LeftToRight, 
+                new Typeface("Consolas"), 
+                16, 
+                Brushes.Transparent, 
+                VisualTreeHelper.GetDpi(this).PixelsPerDip);
+            
+
             DataContext = this;
             CurrentFiles = new ObservableCollection<FileSystemEntryViewModel>();
             pathCompletor = new PathCompletor();
@@ -440,6 +452,27 @@ namespace MultitoolWPF.Windows
                 e.Handled = true;
                 DisplayFiles(path);
             }
+        }
+
+        private void EditorListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            object item = (e.Source as ListView)?.SelectedItem;
+
+            if (item != null && item is FileSystemEntryViewModel fsEntry)
+            {
+                if (!fsEntry.IsDirectory)
+                {
+                    if (Registry.ClassesRoot.OpenSubKey(Path.GetExtension(fsEntry.Path)) != null)
+                    {
+                        ListView_MouseDoubleClick(sender, e);
+                    }
+                    else
+                    {
+                        Dispatcher.BeginInvoke((Action)(() => Window_TabControl.SelectedIndex = 2));
+                    }
+                }
+            }
+            e.Handled = true;
         }
 
         private void Previous_Click(object sender, RoutedEventArgs e)
