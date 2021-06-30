@@ -28,6 +28,9 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="30"/>
+    </WindowChrome.WindowChrome>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -37,7 +40,7 @@
         <!--Window custom chrome-->
         <usercontrols:MultitoolWindowChrome
             x:Name="Chrome"
-            MouseDown="Grid_MouseDown"
+            Background="{StaticResource DevBlue}"
             CloseClick="WindowCloseButton_Click"
             MinimizeClick="WindowMinimizeButton_Click"
             Title="{Binding Title, ElementName=MultiToolMainWindow}"
@@ -99,7 +102,7 @@
                             Click="OpenDownload_Click" 
                             Grid.Row="0" 
                             Grid.Column="0" 
-                            Template="{StaticResource IconButtonControlTemplate}">  
+                            Template="{StaticResource IconButtonControlTemplate}">
                             <Image 
                                 Source="Images/download_ico.png" 
                                 RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -308,25 +311,41 @@
                     x:Name="Others_Grid"
                     Height="Auto"
                     Width="Auto">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="10*"/>
+                    </Grid.RowDefinitions>
 
-                    <Button x:Name="ControlPanelsButton"
+                    <StackPanel Orientation="Horizontal"
+                                Grid.Row="0">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="Height" Value="30"/>
+                                <Setter Property="Background" Value="{StaticResource DevOrange}"/>
+                                <Setter Property="Template" Value="{StaticResource StandardButtonCT}"/>
+                                <Setter Property="Margin" Value="5,0,5,0"/>
+                            </Style>
+                        </StackPanel.Resources>
+                        <Button x:Name="PowerCapabilitiesPanel_Button"
                             Foreground="White"
-                            Content="Control panels"
-                            ToolTip="Open the control panel window (not the Windows one)"
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Height="50"
-                            Width="Auto"
-                            Click="ControlPanelsButton_Click"
-                            Template="{StaticResource StandardButtonCT}"/>
+                            Content="Power capabilities"
+                            ToolTip="List of options related to the computer's power parameters"
+                            Width="150"
+                            Click="PowerCapabilitiesPanelButton_Click"/>
+                        <Button x:Name="PowerPanel_Button"
+                            Foreground="White"
+                            Content="Power control panel"
+                            ToolTip="List of options related to the computer's power parameters"
+                            Width="160"
+                            Click="PowerPanelButton_Click"/>
+                    </StackPanel>
 
-                    <Grid.Triggers>
-                        
-                    </Grid.Triggers>
+                    <TabControl x:Name="Controls_Panel"
+                                Grid.Row="1"
+                                Background="{StaticResource DarkBlack}"/>
+                    <!-- <DockPanel x:Name="Controls_StackPanel"
+                                Grid.Row="1"
+                                Background="{StaticResource DarkBlack}"/> -->
                 </Grid>
             </TabItem>
         </TabControl>

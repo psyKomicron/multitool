@@ -11,6 +11,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace MultitoolWPF
 {
@@ -70,15 +71,6 @@ namespace MultitoolWPF
         #region events
 
         #region chrome
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                e.Handled = true;
-                DragMove();
-            }
-        }
-
         private void WindowCloseButton_Click(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
@@ -96,7 +88,6 @@ namespace MultitoolWPF
         private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
         private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
         private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => WindowManager.Open<PowerWindow>();
-        private void ControlPanelsButton_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ControlPanelsWindow>();
 
         private void OpenSoon_Click(object sender, RoutedEventArgs e)
         {
@@ -105,6 +96,27 @@ namespace MultitoolWPF
                 Uri = new Uri(gitHub)
             }.Execute();
         }
+
+        private void PowerCapabilitiesPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            Controls_Panel.Items.Add(new TabItem()
+            {
+                Header = "Power capabilities",
+                Foreground = new SolidColorBrush(Colors.White),
+                Content = new PowerPanelControl()
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    Margin = new Thickness(5)
+                }
+            });
+        }
+
+        private void PowerPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         #endregion
 
         private void CpuTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -131,7 +143,7 @@ namespace MultitoolWPF
         {
             if (Window_TabControl.SelectedIndex == 1)
             {
-                // draw a dick
+                // draw a dick 8=========0 (>avg)
             }
         }
         #endregion
