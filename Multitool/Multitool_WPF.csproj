@@ -119,8 +119,8 @@
     <Compile Include="UserControls\SpreadsheetItemUserControl.xaml.cs">
       <DependentUpon>SpreadsheetItemUserControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Windows\ControlPanels\ControlPanelsWindow.xaml.cs">
-      <DependentUpon>ControlPanelsWindow.xaml</DependentUpon>
+    <Compile Include="Windows\ControlPanels\PowerPanelControl.xaml.cs">
+      <DependentUpon>PowerPanelControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\Explorer\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
@@ -153,7 +153,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Windows\ControlPanels\ControlPanelsWindow.xaml">
+    <Page Include="Windows\ControlPanels\PowerPanelControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
