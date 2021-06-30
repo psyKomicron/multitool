@@ -288,15 +288,6 @@ namespace MultitoolWPF.Windows
 
         }
 
-        private void MultiToolWindowChrome_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                e.Handled = true;
-                DragMove();
-            }
-        }
-
         private void MultiToolWindowChrome_CloseClick(object sender, RoutedEventArgs e)
         {
             e.Handled = true;

@@ -258,16 +258,19 @@
         </ControlTemplate>
 
     </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="30"/>
+    </WindowChrome.WindowChrome>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="15*"/>
         </Grid.RowDefinitions>
-        <usercontrols:MultitoolWindowChrome 
-            MouseDown="MultiToolWindowChrome_MouseDown"
+        <usercontrols:MultitoolWindowChrome
             CloseClick="MultiToolWindowChrome_CloseClick"
             MinimizeClick="MultiToolWindowChrome_MinimizeClick"
-            Title="Power window"/>
+            Title="Power window"
+            Background="{StaticResource DevBlue}"/>
 
         <TabControl 
             Grid.Row="1"
@@ -594,7 +597,7 @@
                         Width="{Binding Path=Data.Width}"
                         Value="0"
                         BorderBrush="{Binding Path=Background, ElementName=PowerManagementWindow}"
-                        Background="Transparent" 
+                        Background="Black" 
                         VerticalAlignment="Center" 
                         Grid.Row="2" 
                         Margin="0,50,0,42"/>
