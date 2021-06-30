@@ -9,12 +9,12 @@ namespace MultitoolWPF.UserControls
     /// </summary>
     public partial class MultitoolWindowChrome : UserControl
     {
-        public static readonly DependencyProperty TitleProperty =
-            DependencyProperty.Register(nameof(Title), typeof(string), typeof(MultitoolWindowChrome));
+        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(MultitoolWindowChrome));
 
         private uint closeListeners = 0;
         private uint minimizeListeners = 0;
         private uint maximizedListeners = 0;
+        private Window parentWindow;
 
         public MultitoolWindowChrome()
         {
@@ -125,42 +125,56 @@ namespace MultitoolWPF.UserControls
 
         private void MultiToolWindowChrome_Loaded(object sender, RoutedEventArgs e)
         {
+            if (parentWindow == null)
+            {
+                parentWindow = GetParentWindow();
+            }
             SetBorderColor();
         }
 
-        private void SetBorderColor()
+        private Window GetParentWindow()
         {
             DependencyObject dependencyObject = Parent;
-
             if (dependencyObject != null && dependencyObject is FrameworkElement parent)
             {
                 while (parent != null && parent.Parent != null)
                 {
                     parent = parent.Parent as FrameworkElement;
                 }
+                return parent as Window;
+            }
+            return null;
+        }
 
-                if (parent is Window parentWindow && parentWindow.BorderBrush != null)
+        private void SetBorderColor()
+        {
+            if (parentWindow != null)
+            {
+                if (Background == null)
                 {
-                    Brush parentBrush = parentWindow.BorderBrush;
-                    ControlBorder.BorderBrush = parentBrush;
-
-                    parentWindow.Activated += ParentWindow_Activated;
-                    parentWindow.Deactivated += ParentWindow_Deactivated;
-                }
-                else
-                {
-                    ResourceDictionary resources = Application.Current.Resources;
-
-                    object color = resources["DarkBlack"];
-                    if (color is SolidColorBrush brush)
+                    if (parentWindow.BorderBrush != null)
                     {
-                        ControlBorder.Background = brush;
+                        Brush parentBrush = parentWindow.BorderBrush;
+                        ControlBorder.BorderBrush = parentBrush;
                     }
                     else
                     {
-                        ControlBorder.Background = new SolidColorBrush(Colors.White);
+                        ResourceDictionary resources = Application.Current.Resources;
+
+                        object color = resources["DarkBlack"];
+                        if (color is SolidColorBrush brush)
+                        {
+                            ControlBorder.Background = brush;
+                        }
+                        else
+                        {
+                            ControlBorder.Background = new SolidColorBrush(Colors.White);
+                        }
                     }
                 }
+
+                parentWindow.Activated += ParentWindow_Activated;
+                parentWindow.Deactivated += ParentWindow_Deactivated;
             }
         }
 
