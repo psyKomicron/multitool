@@ -29,7 +29,7 @@
         </Style>
     </Window.Resources>
     <Border x:Name="WindowBorder"
-            BorderBrush="{DynamicResource DevBlue}"
+            BorderBrush="{DynamicResource DarkDevBlue}"
             Background="Transparent"
             BorderThickness="1"
             MouseDown="WindowBorder_MouseDown"
@@ -41,6 +41,7 @@
             </Grid.RowDefinitions>
             <usercontrols:MultitoolWindowChrome 
                 Grid.Row="0"
+                Background="{StaticResource DevBlue}"
                 MouseDown="MultiToolWindowChrome_MouseDown"
                 CloseClick="MultiToolWindowChrome_CloseClick"
                 MinimizeClick="MultiToolWindowChrome_MinimizeClick"
