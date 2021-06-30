@@ -25,15 +25,15 @@ namespace Multitool.Monitoring
 
         public void Dispose()
         {
-            if (performanceCounter != null)
-            {
-                performanceCounter.Dispose();
-            }
-            
             if (timer != null)
             {
                 timer.Stop();
                 timer.Dispose();
+            }
+
+            if (performanceCounter != null)
+            {
+                performanceCounter.Dispose();
             }
         }
 
