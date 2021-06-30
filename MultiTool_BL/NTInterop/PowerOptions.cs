@@ -63,14 +63,14 @@ namespace Multitool.NTInterop
 
             if (returnCode != (uint)SystemCodes.ERROR_SUCCESS)
             {
-                throw GetLastError("PowerGetActiveScheme call failed", returnCode);
+                throw ExceptionThrower.GetLastError("PowerGetActiveScheme call failed", returnCode);
             }
 
             string name = ReadFriendlyName(guid);
 
             if (name == string.Empty)
             {
-                throw GetLastError("PowerGetActiveScheme call failed. Name buffer was empty.", returnCode);
+                throw ExceptionThrower.GetLastError("PowerGetActiveScheme call failed. Name buffer was empty.", returnCode);
             }
             else
             {
@@ -107,7 +107,7 @@ namespace Multitool.NTInterop
                 uint retCode = PowerSetActiveScheme(IntPtr.Zero, ref powerPlanGuid);
                 if (retCode != (uint)SystemCodes.ERROR_SUCCESS)
                 {
-                    throw GetLastError("PowerSetActiveScheme call failed", retCode);
+                    throw ExceptionThrower.GetLastError("PowerSetActiveScheme call failed", retCode);
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace Multitool.NTInterop
                     }
                     else if (returnCode != 0)
                     {
-                        throw GetLastError("Error while listing power schemes.", returnCode);
+                        throw ExceptionThrower.GetLastError("Error while listing power schemes.", returnCode);
                     }
                     else
                     {
@@ -178,7 +178,7 @@ namespace Multitool.NTInterop
                     }
                     else
                     {
-                        throw GetLastError("Error getting power scheme friendly name.", returnCode);
+                        throw ExceptionThrower.GetLastError("Error getting power scheme friendly name.", returnCode);
                     }
                 }
                 finally
@@ -188,7 +188,7 @@ namespace Multitool.NTInterop
             }
             else
             {
-                throw GetLastError("Error getting name buffer size", returnCode);
+                throw ExceptionThrower.GetLastError("Error getting name buffer size", returnCode);
             }
         }
 
@@ -216,7 +216,7 @@ namespace Multitool.NTInterop
                     }
                     else
                     {
-                        throw GetLastError("Error getting power scheme friendly name.", returnCode);
+                        throw ExceptionThrower.GetLastError("Error getting power scheme friendly name.", returnCode);
                     }
                 }
                 finally
@@ -226,13 +226,8 @@ namespace Multitool.NTInterop
             }
             else
             {
-                throw GetLastError("Error getting name buffer size", returnCode);
+                throw ExceptionThrower.GetLastError("Error getting name buffer size", returnCode);
             }
-        }
-
-        private COMException GetLastError(string message, uint funcRetCode)
-        {
-            return new COMException(message + ". (return code " + funcRetCode + ")", Marshal.GetLastWin32Error());
         }
     }
 }

@@ -69,6 +69,13 @@
     <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="FileSystem\DirectorySizeCalculator.cs" />
+    <Compile Include="NTInterop\BatteryReportingScale.cs" />
+    <Compile Include="NTInterop\BATTERY_REPORTING_SCALE.cs" />
+    <Compile Include="NTInterop\ExceptionThrower.cs" />
+    <Compile Include="NTInterop\PowerCapabilities.cs" />
+    <Compile Include="NTInterop\SystemPowerState.cs" />
+    <Compile Include="NTInterop\SYSTEM_POWER_CAPABILITIES.cs" />
+    <Compile Include="NTInterop\SYSTEM_POWER_STATE.cs" />
     <Compile Include="TaskCompletedEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorTypes.cs" />
