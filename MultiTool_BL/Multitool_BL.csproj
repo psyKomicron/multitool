@@ -56,6 +56,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,27 +70,38 @@
     <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="FileSystem\DirectorySizeCalculator.cs" />
-    <Compile Include="NTInterop\BatteryReportingScale.cs" />
-    <Compile Include="NTInterop\BATTERY_REPORTING_SCALE.cs" />
-    <Compile Include="NTInterop\ExceptionThrower.cs" />
-    <Compile Include="NTInterop\PowerCapabilities.cs" />
-    <Compile Include="NTInterop\SystemPowerState.cs" />
-    <Compile Include="NTInterop\SYSTEM_POWER_CAPABILITIES.cs" />
-    <Compile Include="NTInterop\SYSTEM_POWER_STATE.cs" />
+    <Compile Include="NTInterop\Power\BatteryReportingScale.cs" />
+    <Compile Include="NTInterop\Miscellaneous\BATTERY_REPORTING_SCALE.cs" />
+    <Compile Include="NTInterop\InteropHelper.cs" />
+    <Compile Include="NTInterop\Miscellaneous\DummyWindow.cs" />
+    <Compile Include="NTInterop\Power\PowerBroadcastEvent.cs" />
+    <Compile Include="NTInterop\Power\PowerCapabilities.cs" />
+    <Compile Include="NTInterop\Power\PowerNotifications.cs" />
+    <Compile Include="NTInterop\Power\PowerOptions.cs" />
+    <Compile Include="NTInterop\Power\PowerPlanChangedEventHandler.cs" />
+    <Compile Include="NTInterop\Power\PowerSettings.cs" />
+    <Compile Include="NTInterop\Power\SystemPowerState.cs" />
+    <Compile Include="NTInterop\Miscellaneous\SYSTEM_POWER_CAPABILITIES.cs" />
+    <Compile Include="NTInterop\Miscellaneous\SYSTEM_POWER_STATE.cs" />
+    <Compile Include="JulieV2\CommandStatus.cs" />
+    <Compile Include="NTInterop\WndProcService.cs" />
+    <Compile Include="PerformanceMonitors\AsyncPerformanceMonitor.cs" />
+    <Compile Include="PerformanceMonitors\IPerformanceMonitor.cs" />
+    <Compile Include="PerformanceMonitors\MonitorCategory.cs" />
+    <Compile Include="PerformanceMonitors\PerformanceMonitor.cs" />
+    <Compile Include="PerformanceMonitors\PerformanceCounterFactory.cs" />
     <Compile Include="TaskCompletedEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorTypes.cs" />
     <Compile Include="FileSystem\Factory\WatcherDelegates.cs" />
     <Compile Include="FileSystem\Factory\WatcherFactory.cs" />
-    <Compile Include="Monitoring\CpuMonitor.cs" />
     <Compile Include="NTInterop\CursorPosition.cs" />
-    <Compile Include="NTInterop\PowerPlan.cs" />
+    <Compile Include="NTInterop\Power\PowerPlan.cs" />
     <Compile Include="Optimisation\CircularBag.cs" />
     <Compile Include="Optimisation\FreeObjectEventHandler.cs" />
     <Compile Include="Optimisation\IPoolableObject.cs" />
     <Compile Include="Optimisation\ObjectPool.cs" />
     <Compile Include="TaskFailedEventHandler.cs" />
-    <Compile Include="FileSystem\CacheFrozenException.cs" />
     <Compile Include="FileSystem\AddDelegate.cs" />
     <Compile Include="FileSystem\Completion\IPathCompletor.cs" />
     <Compile Include="FileSystem\Completion\PathCompletor.cs" />
@@ -99,7 +111,6 @@
     <Compile Include="FileSystem\FileEntry.cs" />
     <Compile Include="FileSystem\FileSystemCache.cs" />
     <Compile Include="FileSystem\Events\CacheChangedEventHandler.cs" />
-    <Compile Include="FileSystem\FileSystemCacheException.cs" />
     <Compile Include="FileSystem\FileSystemManager.cs" />
     <Compile Include="FileSystem\IFileSystemManager.cs" />
     <Compile Include="FileSystem\IFileSystemEntry.cs" />
@@ -113,8 +124,7 @@
     <Compile Include="JulieV2\UserFactory.cs" />
     <Compile Include="Network\Downloader.cs" />
     <Compile Include="Network\DownloadEventArgs.cs" />
-    <Compile Include="NTInterop\AccessFlags.cs" />
-    <Compile Include="NTInterop\PowerOptions.cs" />
+    <Compile Include="NTInterop\Power\AccessFlags.cs" />
     <Compile Include="NTInterop\Codes\SystemCodes.cs" />
     <Compile Include="Optimisation\PoolObjectStateException.cs" />
     <Compile Include="Parsers\Errors\JsonFormatException.cs" />
@@ -141,6 +151,8 @@
     <Compile Include="Reflection\ObjectFlatteners\IObjectFlattener.cs" />
     <Compile Include="Reflection\ObjectFlatteners\CommonXmlObjectFlattener.cs" />
     <Compile Include="Reflection\PropertyLoaders\PropertyLoader.cs" />
+    <Compile Include="Visuals\ColorerParameters.cs" />
+    <Compile Include="Visuals\SyntaxColorer.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

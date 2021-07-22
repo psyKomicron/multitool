@@ -1,5 +1,7 @@
 ﻿using Multitool.FileSystem;
 
+using MultitoolWPF.Tools;
+
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -16,9 +18,9 @@ namespace MultitoolWPF.UserControls
     /// </summary>
     public partial class ExplorerHome : UserControl, INotifyPropertyChanged
     {
+        static string[] sysFiles = new string[] { "pagefile.sys", "hiberfil.sys", "swapfile.sys" };
         private const double heightAnimationDelta = 7;
         private const double widthAnimationDelta = 5;
-        private string[] sysFiles = new string[] { "pagefile.sys", "hiberfil.sys", "swapfile.sys" };
         private string _recycleBinSize = string.Empty;
         private double _recycleBinPercentage;
         private double _sysFilesPercentage;
@@ -37,16 +39,16 @@ namespace MultitoolWPF.UserControls
         #region properties
         public DriveInfo DriveInfo { get; set; }
         public string DriveName => DriveInfo.Name + "(" + DriveInfo?.VolumeLabel + ")";
-        public string DriveCapacity => FormatSize(DriveInfo?.TotalSize ?? 0);
-        public string DriveFreeSpace => FormatSize(DriveInfo?.TotalFreeSpace ?? 0);
-        public string SysFilesSize => FormatSize(_sysFilesSize);
+        public string DriveCapacity => Tool.FormatSize(DriveInfo?.TotalSize ?? 0);
+        public string DriveFreeSpace => Tool.FormatSize(DriveInfo?.TotalFreeSpace ?? 0);
+        public string SysFilesSize => Tool.FormatSize(_sysFilesSize);
         public double DriveFreeSpacePercentage
         {
             get
             {
                 if (DriveInfo != null)
                 {
-                    return (DriveInfo.TotalFreeSpace / (double)DriveInfo.TotalSize) * 100;
+                    return DriveInfo.TotalFreeSpace / ((double)DriveInfo.TotalSize * 100);
                 }
                 else
                 {
@@ -88,13 +90,14 @@ namespace MultitoolWPF.UserControls
         #region methods
         private async Task LoadComponents(CancellationTokenSource cancelTokenSource)
         {
-            if (DriveInfo == null) 
+            if (DriveInfo == null)
+            {
                 return;
+            }
 
             CancellationToken cancelToken = cancelTokenSource.Token;
             cancelToken.ThrowIfCancellationRequested();
 
-            FileSystemManager manager = FileSystemManager.Get();
             long size = await Task.Run(() => 
             {
                 return calculator.CalculateDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", cancelToken);
@@ -102,7 +105,7 @@ namespace MultitoolWPF.UserControls
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                RecycleBinSize = FormatSize(size);
+                RecycleBinSize = Tool.FormatSize(size);
                 RecycleBinPercentage = size / (double)DriveInfo.TotalSize * 100;
             });
             RecycleBin_TextBlock.Opacity = 1;
@@ -188,27 +191,6 @@ namespace MultitoolWPF.UserControls
                 stopwatch.Start();
             }
         }
-
-        private string FormatSize(long size)
-        {
-            if (size >= (long)Sizes.TERA)
-            {
-                return Math.Round(size / (double)Sizes.TERA, 3) + " Tb";
-            }
-            if (size >= (long)Sizes.GIGA)
-            {
-                return Math.Round(size / (double)Sizes.GIGA, 3) + " Gb";
-            }
-            if (size >= (long)Sizes.MEGA)
-            {
-                return Math.Round(size / (double)Sizes.MEGA, 3) + " Mb";
-            }
-            if (size >= (long)Sizes.KILO)
-            {
-                return Math.Round(size / (double)Sizes.KILO, 3) + " Kb";
-            }
-            return size + " b";
-        }
         #endregion
 
         #region events
@@ -233,13 +215,5 @@ namespace MultitoolWPF.UserControls
 
         }
         #endregion
-    }
-
-    enum Sizes : long
-    {
-        TERA = 1000000000000,
-        GIGA = 1000000000,
-        MEGA = 1000000,
-        KILO = 1000
     }
 }

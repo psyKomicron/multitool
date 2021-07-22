@@ -72,7 +72,7 @@ namespace MultitoolWPF.Windows
         {
             await Task.Run(() =>
             {
-                SpreadsheetVM[] spreadsheetVMs = ObservableCollectionQuickSort.Sort(Data.Items);
+                SpreadsheetViewModel[] spreadsheetVMs = ObservableCollectionQuickSort.Sort(Data.Items);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     Data.Items.Clear();
@@ -146,7 +146,7 @@ namespace MultitoolWPF.Windows
 
                 if (validationCode == ValidationCodes.Validated)
                 {
-                    Data.Items.Add(new SpreadsheetVM()
+                    Data.Items.Add(new SpreadsheetViewModel()
                     {
                         Name = name,
                         Date = date ?? DateTime.Now,

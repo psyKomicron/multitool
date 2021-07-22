@@ -10,6 +10,7 @@ using System.Text;
 
 namespace Multitool.PreferencesManagers.Json
 {
+    [Obsolete]
     public class JsonPreferenceManager : IPreferenceManager
     {
         private List<WindowPreferenceManager> childs = new List<WindowPreferenceManager>(5);
@@ -56,6 +57,7 @@ namespace Multitool.PreferencesManagers.Json
             }
         }
 
+        [Obsolete]
         public void AddWindowData<DataType>(DataType data, string name) where DataType : class
         {
             WindowPreferenceManager manager = new WindowPreferenceManager()

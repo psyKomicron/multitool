@@ -6,18 +6,19 @@ namespace Multitool.FileSystem
 {
     public interface IFileSystemEntry : IComparable, INotifyPropertyChanged, IEquatable<IFileSystemEntry>, IComparable<IFileSystemEntry>
     {
-        FileSystemInfo Info { get; }
-        string Path { get; }
-        long Size { get; }
-        string Name { get; }
         FileAttributes Attributes { get; }
-        bool IsHidden { get; }
-        bool IsSystem { get; }
-        bool IsReadOnly { get; }
-        bool IsEncrypted { get; }
+        FileSystemInfo Info { get; }
         bool IsCompressed { get; }
         bool IsDevice { get; }
         bool IsDirectory { get; }
+        bool IsEncrypted { get; }
+        bool IsHidden { get; }
+        bool IsReadOnly { get; }
+        bool IsSystem { get; }
+        string Name { get; }
+        bool Partial { get; }
+        string Path { get; }
+        long Size { get; }
 
         /// <summary>
         /// Deletes the file

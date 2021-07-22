@@ -110,7 +110,7 @@ namespace Multitool.NTInterop
             }
             else
             {
-                throw ExceptionThrower.GetLastError(nameof(GetPwrCapabilities) + " failed", 0);
+                throw InteropHelper.GetLastError(nameof(GetPwrCapabilities) + " failed", 0);
             }
         }
     }

@@ -42,7 +42,7 @@ namespace MultitoolWPF.Windows
             set
             {
                 _buttonsEnabled = value;
-                Tool.FireEvent(PropertyChanged, this);
+                Tool.FirePropertyChangedEvent(PropertyChanged, this);
             }
         }
 

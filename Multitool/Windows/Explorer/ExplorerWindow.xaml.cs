@@ -1,7 +1,6 @@
 ﻿using Multitool.FileSystem;
 using Multitool.FileSystem.Completion;
 using Multitool.FileSystem.Events;
-using Multitool.NTInterop;
 using Multitool.Parsers;
 using Multitool.Sorting;
 using MultitoolWPF.ViewModels;
@@ -23,7 +22,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
-using System.Globalization;
 
 namespace MultitoolWPF.Windows
 {
@@ -36,26 +34,22 @@ namespace MultitoolWPF.Windows
         private static SolidColorBrush WHITE = new SolidColorBrush(Colors.White);
 
         private string _currentPath;
-        private bool resizing;
-        private bool mouseOverBorder;
+        // tri-state: [ignored, home, explorer, editor]
+        private byte loaded;
         private CancellationTokenSource homeCancellationToken;
         private CancellationTokenSource fsCancellationTokenSource;
-        private CursorPosition cursorPosition = new CursorPosition();
         private FileSystemManager fileSystemManager;
+        private IPathCompletor pathCompletor;
         private Stopwatch eventStopwatch = new Stopwatch();
         private Stopwatch taskStopwatch = new Stopwatch();
         private Stack<string> previousStackPath = new Stack<string>(10);
         private Stack<string> nextPathStack = new Stack<string>(10);
         private UriCleaner cleaner = new UriCleaner();
-        private Point previousCursor;
-        private IPathCompletor pathCompletor;
-        //private ExceptionWindow exceptionWindow = new ExceptionWindow();
 
         public ExplorerWindow()
         {
             InitializeComponent();
             InitializeWindow();
-            //exceptionWindow.Show();
         }
 
         #region properties
@@ -83,16 +77,11 @@ namespace MultitoolWPF.Windows
             Data = WindowManager.PreferenceManager.GetWindowData<ExplorerWindowData>(Name);
             CurrentPath = Data.LastUsedPath;
 
-            fileSystemManager = Data.TTL != default ? FileSystemManager.Get(Data.TTL, true) : FileSystemManager.Get();
+            fileSystemManager = Data.TTL != default ? new FileSystemManager(Data.TTL, true) : new FileSystemManager();
             fileSystemManager.Progress += FileSystemManager_Progress;
             fileSystemManager.Exception += FileSystemManager_Exception;
             fileSystemManager.Completed += FileSystemManager_Completed;
             fileSystemManager.Change += FileSystemManager_Change;
-
-            if (!string.IsNullOrEmpty(CurrentPath))
-            {
-                DisplayFiles(CurrentPath);
-            }
         }
 
         public void Serialize()
@@ -106,26 +95,13 @@ namespace MultitoolWPF.Windows
 
         private void InitializeWindow()
         {
-            // visual objects
-            FormattedText ft = new FormattedText(string.Empty, 
-                CultureInfo.CurrentCulture, 
-                FlowDirection.LeftToRight, 
-                new Typeface("Consolas"), 
-                16, 
-                Brushes.Transparent, 
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
-            
-
             DataContext = this;
             CurrentFiles = new ObservableCollection<FileSystemEntryViewModel>();
             pathCompletor = new PathCompletor();
             PathAutoCompletion = new ObservableCollection<string>();
-
-            MouseMove += OnMouseMove;
-            MouseUp += OnMouseUp;
         }
 
-        private void LoadHome()
+        private void DisplayHome()
         {
             homeCancellationToken = new CancellationTokenSource();
             DriveInfo[] driveInfo = DriveInfo.GetDrives();
@@ -162,10 +138,14 @@ namespace MultitoolWPF.Windows
                 Grid.SetColumn(home, i % 2 == 0 ? 0 : 1);
                 Disks_Grid.Children.Add(home);
             }
+
+            loaded |= 0b100;
         }
 
         private void DisplayFiles(string path)
         {
+            loaded |= 0b10;
+
             if (fsCancellationTokenSource != null)
             {
                 fsCancellationTokenSource.Cancel();
@@ -173,41 +153,59 @@ namespace MultitoolWPF.Windows
             }
             fsCancellationTokenSource = new CancellationTokenSource();
 
-            string cleanPath = fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(path));
-            CurrentPath = cleanPath;
-            if (!Data.History.Contains(string.Format("{0, 10}", cleanPath)))
-            {
-                Data.History.Add(string.Format("{0, 10}", cleanPath));
-            }
-            PathInput.Text = cleanPath;
-
-            PathAutoCompletion.Clear();
-            CurrentFiles.Clear();
-            Progress_TextBox.Text = string.Empty;
-            fileSystemManager.Notify = Files_ProgressBar.IsIndeterminate = CancelAction_Button.IsEnabled = true;
-            
             try
             {
+                string realPath = fileSystemManager.GetRealPath(cleaner.RemoveChariotReturns(path));
+                CurrentPath = realPath;
+                if (realPath.Length < 10 && !Data.History.Contains(realPath))
+                {
+                    Data.History.Add(realPath);
+                }
+                else if (realPath.Length >= 10 && !Data.History.Contains(string.Format("{0, 10}", realPath)))
+                {
+                    Data.History.Add(string.Format("{0, 10}", realPath));
+                }
+
+                PathAutoCompletion.Clear();
+                CurrentFiles.Clear();
+                Progress_TextBox.Text = string.Empty;
+                fileSystemManager.Notify = Files_ProgressBar.IsIndeterminate = CancelAction_Button.IsEnabled = true;
+
                 IList<FileSystemEntryViewModel> pathItems = CurrentFiles;
                 eventStopwatch.Restart();
                 taskStopwatch.Restart();
 
                 try
                 {
-                    fileSystemManager.GetFileSystemEntries(cleanPath, fsCancellationTokenSource.Token, pathItems, AddDelegate);
+                    fileSystemManager.GetFileSystemEntries(realPath, fsCancellationTokenSource.Token, CurrentFiles, AddDelegate);
                 }
                 catch (ArgumentException argExcep)
                 {
-                    Console.WriteLine(argExcep);
+                    eventStopwatch.Reset();
+                    CancelAction_Button.IsEnabled = false;
+                    Files_ProgressBar.IsIndeterminate = false;
+
+                    Console.Error.WriteLine(argExcep);
                     Progress_TextBox.Text = argExcep.Message;
                 }
             }
-            catch (OperationCanceledException)
+            catch (DirectoryNotFoundException)
             {
-                Progress_TextBox.Text = "Operation cancelled";
                 eventStopwatch.Reset();
                 CancelAction_Button.IsEnabled = false;
                 Files_ProgressBar.IsIndeterminate = false;
+
+                CurrentPath = path;
+                path = path.ToLowerInvariant();
+                for (int i = 0; i < Data.History.Count; i++)
+                {
+                    if (Data.History[i].Equals(path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Data.History.RemoveAt(i);
+                        break;
+                    }
+                }
+                Progress_TextBox.Text = "Directory not found (" + path + ").";
             }
         }
 
@@ -231,7 +229,7 @@ namespace MultitoolWPF.Windows
             {
                 nextPathStack.Push(CurrentPath);
                 DisplayFiles(Directory.GetParent(CurrentPath).FullName);
-            } 
+            }
         }
 
         private void SortList()
@@ -253,10 +251,7 @@ namespace MultitoolWPF.Windows
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                items.Add(new FileSystemEntryViewModel(item)
-                {
-                    Color = item.IsDirectory ? Tool.GetRessource<SolidColorBrush>("DevBlue") : new SolidColorBrush(Colors.White)
-                });
+                items.Add(new FileSystemEntryViewModel(item));
             });
         }
 
@@ -293,57 +288,32 @@ namespace MultitoolWPF.Windows
 
         #region window
 
-        #region resize
-        private void Explorer_IsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void TextBlock_MouseEnter(object sender, MouseEventArgs e)
         {
-            if (e.NewValue.Equals(true) && e.OldValue.Equals(false))
+            TextBlock textBlock = (TextBlock)sender;
+            if (!string.IsNullOrWhiteSpace(textBlock.Text))
             {
-                Cursor = Cursors.SizeNWSE;
-                mouseOverBorder = true;
-            }
-            else if (!resizing)
-            {
-                Cursor = Cursors.Arrow;
-                mouseOverBorder = false;
-            }
-        }
+                string toolTip;
+                if (!string.IsNullOrEmpty(Properties.Resources.ResourceManager.GetString(textBlock.Text)))
+                {
+                    toolTip = Properties.Resources.ResourceManager.GetString(textBlock.Text);
+                }
+                else
+                {
+                    string ext = Path.GetExtension(textBlock.Text);
 
-        private void WindowBorder_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (mouseOverBorder)
-            {
-                resizing = true;
-
-                previousCursor = cursorPosition.GetCursorPosition();
-                CaptureMouse();
-            }
-        }
-
-        private void OnMouseUp(object sender, MouseEventArgs e)
-        {
-            resizing = false;
-            Cursor = Cursors.Arrow;
-            ReleaseMouseCapture();
-        }
-
-        private void OnMouseMove(object sender, MouseEventArgs e)
-        {
-            if (resizing)
-            {
-                cursorPosition.GetCursorPosition(out int x, out int y);
-                double width, height;
-                width = previousCursor.X - x;
-                height = previousCursor.Y - y;
-                if (Width + width >= MinWidth)
-                    Width += width;
-                if (Height + height >= MinHeight)
-                    Height += height;
-
-                previousCursor.X = x;
-                previousCursor.Y = y;
+                    toolTip = (!string.IsNullOrEmpty(ext) && !string.IsNullOrEmpty(Properties.Resources.ResourceManager.GetString(ext)))
+                        ? Properties.Resources.ResourceManager.GetString(ext)
+                        : "Unknown";
+                }
+                
+                if (textBlock.ToolTip == null)
+                {
+                    textBlock.ToolTip = new ToolTip();
+                }
+                textBlock.ToolTip = toolTip;
             }
         }
-        #endregion
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
@@ -352,7 +322,8 @@ namespace MultitoolWPF.Windows
             {
                 homeCancellationToken.Cancel();
                 homeCancellationToken.Dispose();
-            } catch (ObjectDisposedException) { }
+            }
+            catch (ObjectDisposedException) { }
 
             if (fsCancellationTokenSource != null && fileSystemManager != null)
             {
@@ -365,11 +336,8 @@ namespace MultitoolWPF.Windows
                 catch (ObjectDisposedException) { }
             }
             eventStopwatch.Stop();
-        }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            LoadHome();
+            WindowState = WindowState.Normal;
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -392,7 +360,7 @@ namespace MultitoolWPF.Windows
                 string text = PathInput.Text;
                 if (!string.IsNullOrEmpty(text))
                 {
-                    DisplayFiles(text);   
+                    DisplayFiles(text);
                 }
             }
             else
@@ -417,7 +385,7 @@ namespace MultitoolWPF.Windows
             }
         }
 
-        private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void MainListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             object item = ((ListView)e.Source).SelectedItem;
 
@@ -431,19 +399,19 @@ namespace MultitoolWPF.Windows
                 {
                     try
                     {
-                        Process.Start(fsEntry.Path);
+                        _ = Process.Start(fsEntry.Path);
                     }
                     catch (Win32Exception w32e)
                     {
                         Console.WriteLine(w32e.ToString());
-                        fsEntry.Color = new SolidColorBrush(Colors.Red);
+                        // fsEntry.Color = new SolidColorBrush(Colors.Red);
                     }
                 }
                 e.Handled = true;
             }
         }
 
-        private void History_ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void HistoryListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             object item = (e.Source as ListView)?.SelectedItem;
 
@@ -464,11 +432,11 @@ namespace MultitoolWPF.Windows
                 {
                     if (Registry.ClassesRoot.OpenSubKey(Path.GetExtension(fsEntry.Path)) != null)
                     {
-                        ListView_MouseDoubleClick(sender, e);
+                        MainListView_MouseDoubleClick(sender, e);
                     }
                     else
                     {
-                        Dispatcher.BeginInvoke((Action)(() => Window_TabControl.SelectedIndex = 2));
+                        _ = Dispatcher.BeginInvoke((Action)(() => Window_TabControl.SelectedIndex = 2));
                     }
                 }
             }
@@ -493,7 +461,7 @@ namespace MultitoolWPF.Windows
             DisplayFiles(CurrentPath);
         }
 
-        private void Cancel_Button_Click(object sender, RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             if (fsCancellationTokenSource != null)
             {
@@ -512,7 +480,7 @@ namespace MultitoolWPF.Windows
         {
             DriveInfo info = ((ExplorerHome)sender).DriveInfo;
             DisplayFiles(info.Name);
-            Dispatcher.BeginInvoke((Action)(() => Window_TabControl.SelectedIndex = 1));
+            _ = Dispatcher.BeginInvoke((Action)(() => Window_TabControl.SelectedIndex = 1));
         }
 
         private void PathItemDelete_Click(object sender, RoutedEventArgs e)
@@ -533,18 +501,62 @@ namespace MultitoolWPF.Windows
                 }
             }
         }
+
+        private void WindowTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (loaded != 0b111)
+            {
+                switch (Window_TabControl.SelectedIndex)
+                {
+                    case 0:
+                        if ((loaded & 0b100) == 0)
+                        {
+                            DisplayHome();
+                        }
+                        break;
+                    case 1:
+                        if ((loaded & 0b10) == 0)
+                        {
+                            DisplayFiles(CurrentPath);
+                        }
+                        break;
+                    case 2:
+                        if ((loaded & 0b1) == 0)
+                        {
+                            TextEditor editor = new TextEditor()
+                            {
+                                Height = 100,
+                                Width = 100,
+                                HorizontalAlignment = HorizontalAlignment.Left,
+                                VerticalAlignment = VerticalAlignment.Top
+                            };
+                            editor.DrawingPosition = editor.TranslatePoint(new Point(0, 0), EditorGrid);
+
+                            Grid.SetColumn(editor, 1);
+                            Grid.SetRow(editor, 0);
+                            _ = EditorGrid.Children.Add(editor);
+                            loaded |= 0b1;
+                        }
+                        break;
+                }
+            }
+        }
+
         #endregion
 
-        #region file system manager
+        #region manager
 
-        private void FileSystemManager_Progress(object sender, string message) => DisplayMessage(message, false, sender == null);
+        private void FileSystemManager_Progress(object sender, string message)
+        {
+            DisplayMessage(message, false, sender == null);
+        }
 
         private void FileSystemManager_Exception(object sender, Exception exception)
         {
             DisplayMessage(exception.Message, true);
             //exceptionWindow.Queue(exception);
         }
-        
+
         private void FileSystemManager_Change(object sender, ChangeEventArgs data)
         {
             switch (data.ChangeTypes)
@@ -563,18 +575,19 @@ namespace MultitoolWPF.Windows
                     }
                     break;
                 case WatcherChangeTypes.Changed:
+                    Console.WriteLine(data.Entry.Path + " changed");
                     break;
                 case WatcherChangeTypes.Renamed:
+                    Console.WriteLine(data.Entry.Path + " renamed");
                     break;
                 case WatcherChangeTypes.All:
-                    break;
-                default:
+                    Console.WriteLine(data.Entry.Path + " : all changes");
                     break;
             }
             data.InUse = false;
         }
 
-        private void FileSystemManager_Completed(TaskStatus status)
+        private void FileSystemManager_Completed(TaskStatus status, Task task)
         {
             taskStopwatch.Stop();
             fsCancellationTokenSource.Dispose();
@@ -597,17 +610,14 @@ namespace MultitoolWPF.Windows
                         message = "Task cancelled";
                         break;
                     case TaskStatus.Faulted:
-                        message = "Task failed";
+                        message = "Task failed\n";
+                        Console.Error.WriteLine(task.Exception.ToString());
                         break;
                 }
-                if (taskStopwatch.Elapsed.TotalSeconds > 0)
-                {
-                    Progress_TextBox.Text = message + " (in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s)";
-                }
-                else
-                {
-                    Progress_TextBox.Text = message + "(in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms)";
-                }
+
+                Progress_TextBox.Text = taskStopwatch.Elapsed.TotalSeconds > 0
+                    ? message + " (in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s)"
+                    : message + " (in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms)";
             });
         }
 
@@ -638,15 +648,6 @@ namespace MultitoolWPF.Windows
                 WindowState = WindowState.Normal;
             }
             e.Handled = true;
-        }
-
-        private void MultiToolWindowChrome_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                e.Handled = true;
-                DragMove();
-            }
         }
 
         #endregion

@@ -54,9 +54,7 @@
     <DocumentationFile>
     </DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <ApplicationIcon>Images\multitool.ico</ApplicationIcon>
   </PropertyGroup>
@@ -83,6 +81,9 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework.Aero2" />
@@ -116,11 +117,20 @@
     <Compile Include="UserControls\MultitoolWindowChrome.xaml.cs">
       <DependentUpon>MultitoolWindowChrome.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\PowerPlanView.xaml.cs">
+      <DependentUpon>PowerPlanView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\SpreadsheetItemUserControl.xaml.cs">
       <DependentUpon>SpreadsheetItemUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\ControlPanels\PowerPanelControl.xaml.cs">
       <DependentUpon>PowerPanelControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\TextEditor.xaml.cs">
+      <DependentUpon>TextEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ControlPanels\PowerPlansPanel.xaml.cs">
+      <DependentUpon>PowerPlansPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\Explorer\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
@@ -129,11 +139,51 @@
     <Compile Include="ViewModels\FileSystemEntryViewModel.cs" />
     <Compile Include="Windows\ISerializableWindow.cs" />
     <Compile Include="Windows\Power\PowerWindowData.cs" />
-    <Compile Include="ViewModels\SpreadsheetVM.cs" />
+    <Compile Include="ViewModels\SpreadsheetViewModel.cs" />
     <Compile Include="Windows\Special\SpreadsheetWindow.xaml.cs">
       <DependentUpon>SpreadsheetWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\Special\SpreadsheetWindowData.cs" />
+    <Page Include="Themes\ColorsDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\DarkListViewItemTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\DarkListViewTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\DarkMenuItemTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\DarkMenuTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\DarkTabControlTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\DarkTextBoxTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\DarkWindowTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\IconButtonTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\StandardButtonTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\ExplorerHome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -149,11 +199,23 @@
     <Compile Include="MainWindowData.cs" />
     <Compile Include="Tools\Tool.cs" />
     <Compile Include="Tools\WindowManager.cs" />
+    <Page Include="UserControls\PowerPlanView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\SpreadsheetItemUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\ControlPanels\PowerPanelControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\TextEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\ControlPanels\PowerPlansPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -251,9 +313,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Fonts\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\MultiTool_BL\Multitool_BL.csproj">
       <Project>{545DC8FD-0E0F-43EA-917D-B6BE03E43E48}</Project>

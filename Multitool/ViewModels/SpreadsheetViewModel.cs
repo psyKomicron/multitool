@@ -2,13 +2,13 @@
 
 namespace MultitoolWPF.ViewModels
 {
-    public class SpreadsheetVM : IComparable<SpreadsheetVM>
+    public class SpreadsheetViewModel : IComparable<SpreadsheetViewModel>
     {
         public string Name { get; set; }
         public DateTime Date { get; set; }
         public int Ranking { get; set; }
 
-        public int CompareTo(SpreadsheetVM other)
+        public int CompareTo(SpreadsheetViewModel other)
         {
             if (Ranking > other.Ranking)
             {

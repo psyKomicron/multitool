@@ -39,6 +39,44 @@ namespace Multitool.FileSystem
             }
         }
 
+        public override void CopyTo(string newPath)
+        {
+            if (Directory.Exists(newPath))
+            {
+                if (IsSystem)
+                {
+                    throw new IOException("Cannot move system file");
+                }
+                else
+                {
+                    DirectoryCopyTo(DirectoryInfo, newPath);
+                }
+            }
+        }
+
+        private void DirectoryCopyTo(DirectoryInfo info, string newPath)
+        {
+            DirectoryInfo[] dirs = info.GetDirectories();
+
+            // If the destination directory doesn't exist, create it.       
+            DirectoryInfo newDir = Directory.CreateDirectory(newPath);
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = info.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = System.IO.Path.Combine(newDir.FullName, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+
+            // copy them and their contents to new location.
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string tempPath = System.IO.Path.Combine(newDir.FullName, subdir.Name);
+                DirectoryCopyTo(subdir, tempPath);
+            }
+        }
+
         private void DeleteDir(string dirPath)
         {
             string[] dirs = Directory.GetDirectories(dirPath);

@@ -2,5 +2,5 @@
 
 namespace Multitool
 {
-    public delegate void TaskCompletedEventHandler(TaskStatus status);
+    public delegate void TaskCompletedEventHandler(TaskStatus status, Task completedTask = null);
 }

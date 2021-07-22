@@ -24,8 +24,8 @@ namespace Multitool.FileSystem
 
         public abstract long Size { get; set; }
         
+        /// <inheritdoc/>
         public FileSystemInfo Info { get; private set; }
-
         /// <inheritdoc/>
         public FileAttributes Attributes => Info.Attributes;
         /// <inheritdoc/>
@@ -62,6 +62,7 @@ namespace Multitool.FileSystem
                 NotifyPropertyChanged();
             }
         }
+        /// <inheritdoc/>
         public bool Partial
         {
             get => _partial;
@@ -72,10 +73,19 @@ namespace Multitool.FileSystem
             }
         }
 
+        /// <summary>
+        /// Used to avoid cast operations. File instances will have this property valued, directories not.
+        /// </summary>
         internal FileInfo FileInfo { get; set; }
+        /// <summary>
+        /// Used to avoid cast operations. Directory instances will have this property valued, files not.
+        /// </summary>
         internal DirectoryInfo DirectoryInfo { get; set; }
 
+        /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public abstract void CopyTo(string newPath);
 
         /// <summary>
         /// Refreshes the internal <see cref="FileSystemInfo"/>.
@@ -132,30 +142,6 @@ namespace Multitool.FileSystem
                 else if (FileInfo != null)
                 {
                     FileInfo.MoveTo(newPath);
-                }
-            }
-            else
-            {
-                throw new DirectoryNotFoundException("Directory (" + newPath + ") does not exist. File cannot be moved");
-            }
-        }
-
-        /// <inheritdoc/>
-        public void CopyTo(string newPath)
-        {
-            if (File.Exists(newPath))
-            {
-                if (IsSystem)
-                {
-                    throw new IOException("Cannot move system file");
-                }
-                else if (DirectoryInfo != null)
-                {
-                    DirectoryCopyTo(DirectoryInfo, newPath);
-                }
-                else if (FileInfo != null)
-                {
-                    FileInfo.CopyTo(newPath);
                 }
             }
             else
@@ -263,33 +249,9 @@ namespace Multitool.FileSystem
             info.Attributes &= ~FileAttributes.ReadOnly;
         }
 
-        private void DirectoryCopyTo(DirectoryInfo info, string newPath)
-        {
-            DirectoryInfo[] dirs = info.GetDirectories();
-
-            // If the destination directory doesn't exist, create it.       
-            DirectoryInfo newDir = Directory.CreateDirectory(newPath);
-
-            // Get the files in the directory and copy them to the new location.
-            FileInfo[] files = info.GetFiles();
-            foreach (FileInfo file in files)
-            {
-                string tempPath = System.IO.Path.Combine(newDir.FullName, file.Name); 
-                file.CopyTo(tempPath, false);
-            }
-
-            // copy them and their contents to new location.
-            foreach (DirectoryInfo subdir in dirs)
-            {
-                string tempPath = System.IO.Path.Combine(newDir.FullName, subdir.Name);
-                DirectoryCopyTo(subdir, tempPath);
-            }
-        }
-
         protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
     }
 }

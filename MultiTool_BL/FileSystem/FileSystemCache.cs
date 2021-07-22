@@ -24,42 +24,6 @@ namespace Multitool.FileSystem
         private double ttl;
         private bool frozen;
 
-        /// <summary>Contructor.</summary>
-        /// <param name="path">File path to monitor</param>
-        /// <param name="ttl">Cache time-to-live</param>
-        /// <param name="items">Items to watch</param>
-        public FileSystemCache(string path, double ttl, List<FileSystemEntry> items)
-        {
-            CheckAndAddPath(path);
-
-            this.ttl = ttl;
-            this.path = path;
-            watchedItems = items;
-            try
-            {
-                watcher = WatcherFactory.CreateWatcher(path, new WatcherDelegates()
-                {
-                    ChangedHandler = OnFileChange,
-                    CreatedHandler = OnFileCreated,
-                    DeletedHandler = OnFileDeleted,
-                    RenamedHandler = OnFileRenamed
-                });
-                watcher.EnableRaisingEvents = true;
-                CreateTimer();
-                timer.Start();
-                creationTime = DateTime.UtcNow;
-            }
-            catch (Exception e)
-            {
-                lock (_lock)
-                {
-                    watchedPaths.Remove(path);
-                }
-                timer.Stop();
-                throw e;
-            }
-        }
-
         /// <summary>Constuctor.</summary>
         /// <param name="path">File path to monitor</param>
         /// <param name="ttl">Cache time-to-live</param>
@@ -87,7 +51,7 @@ namespace Multitool.FileSystem
             {
                 lock (_lock)
                 {
-                    watchedPaths.Remove(path);
+                    _ = watchedPaths.Remove(path);
                 }
                 throw e;
             }
@@ -99,16 +63,12 @@ namespace Multitool.FileSystem
 
         /// <summary>Gets the internal item count.</summary>
         public int Count => watchedItems.Count;
-        
         /// <summary>Tells if the cache allow operations on it or not (true if no operation are allowed).</summary>
         public bool Frozen => frozen;
-        
         /// <summary>True when the cache is not complete.</summary>
         public bool Partial { get; set; }
-        
         /// <summary>Gets the creation time of the cache.</summary>
         public DateTime CreationTime => creationTime;
-
         public string Path => path;
 
         /// <summary>Fired when the watched items underwent a change, and should be updated.
@@ -117,13 +77,7 @@ namespace Multitool.FileSystem
         public event TTLReachedEventHandler TTLReached;
         public event WatcherErrorEventHandler WatcherError;
 
-        public FileSystemEntry this[int index]
-        {
-            get
-            {
-                return watchedItems[index];
-            }
-        }
+        public FileSystemEntry this[int index] => watchedItems[index];
 
         /// <inheritdoc/>
         public void Dispose()
@@ -195,7 +149,7 @@ namespace Multitool.FileSystem
             lock (_lock)
             {
                 watchedItems.Clear();
-                watchedPaths.Remove(Path);
+                _ = watchedPaths.Remove(Path);
             }
 
             timer.Stop();
@@ -207,11 +161,11 @@ namespace Multitool.FileSystem
         {
             if (!Directory.Exists(path))
             {
-                throw new FileSystemCacheException(path + " does not exist. Please provide a valid path.", new DirectoryNotFoundException());
+                throw new ArgumentException(path + " does not exist. Please provide a valid path.", new DirectoryNotFoundException());
             }
             if (File.Exists(path))
             {
-                throw new FileSystemCacheException(path + " is a file, please provide a directory to watch.", new FileNotFoundException());
+                throw new ArgumentException(path + " is a file, please provide a directory to watch.", new FileNotFoundException());
             }
 
             lock (_lock)
@@ -220,7 +174,7 @@ namespace Multitool.FileSystem
                 {
                     if (string.Equals(watchedPath, path, StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new FileSystemCacheException(path + " is already being monitored.");
+                        throw new ArgumentException(path + " is already being monitored.");
                     }
                 }
                 watchedPaths.Add(path);
@@ -237,7 +191,7 @@ namespace Multitool.FileSystem
         {
             if (frozen)
             {
-                throw new CacheFrozenException();
+                throw new InvalidOperationException("Cache is frozen.");
             }
         }
 
@@ -260,46 +214,52 @@ namespace Multitool.FileSystem
         #region watcher events
         private void OnFileChange(object sender, FileSystemEventArgs e)
         {
-            if (frozen) return;
-            ResetTimer();
-            FileSystemEntry item = watchedItems.Find(v => v.Path == e.FullPath);
-            ItemChanged?.Invoke(this, string.Empty, item, false, e.ChangeType);
-            timer.Start();
+            if (!frozen)
+            {
+                ResetTimer();
+                FileSystemEntry item = watchedItems.Find(v => v.Path == e.FullPath);
+                ItemChanged?.Invoke(this, string.Empty, item, false, e.ChangeType);
+                timer.Start();
+            }
         }
 
         private void OnFileCreated(object sender, FileSystemEventArgs e)
         {
-            if (frozen) return;
-            ResetTimer();
-            ItemChanged?.Invoke(this, e.FullPath, null, false, WatcherChangeTypes.Created);
+            if (!frozen)
+            {
+                ResetTimer();
+                ItemChanged?.Invoke(this, e.FullPath, null, false, WatcherChangeTypes.Created);
+            }
         }
 
         private void OnFileDeleted(object sender, FileSystemEventArgs e)
         {
-            if (frozen) return;
+            if (!frozen)
+            {
+                ResetTimer();
 
-            ResetTimer();
-
-            FileSystemEntry deletedItem = watchedItems.Find(v => v.Path.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase));
-            watchedItems.Remove(deletedItem);
-            ItemChanged?.Invoke(this, e.FullPath, deletedItem, false, WatcherChangeTypes.Deleted);
+                FileSystemEntry deletedItem = watchedItems.Find(v => v.Path.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase));
+                _ = watchedItems.Remove(deletedItem);
+                ItemChanged?.Invoke(this, e.FullPath, deletedItem, false, WatcherChangeTypes.Deleted);
+            }
         }
 
         private void OnFileRenamed(object sender, RenamedEventArgs e)
         {
-            if (frozen) return;
-
-            ResetTimer();
-
-            FileSystemEntry item = watchedItems.Find(v => v.Path.Equals(e.OldFullPath, StringComparison.OrdinalIgnoreCase));
-            if (item != null)
+            if (!frozen)
             {
-                item.Name = e.FullPath;
-                item.Path = e.FullPath;
-            }
+                ResetTimer();
 
-            ItemChanged?.Invoke(this, e.FullPath, item, false, WatcherChangeTypes.Renamed);
-            timer.Start();
+                FileSystemEntry item = watchedItems.Find(v => v.Path.Equals(e.OldFullPath, StringComparison.OrdinalIgnoreCase));
+                if (item != null)
+                {
+                    item.Name = e.Name;
+                    item.Path = e.FullPath;
+                }
+
+                ItemChanged?.Invoke(this, e.FullPath, item, false, WatcherChangeTypes.Renamed);
+                timer.Start();
+            }
         }
 
         private void OnWatcherError(object sender, ErrorEventArgs e)

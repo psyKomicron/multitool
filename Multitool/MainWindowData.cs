@@ -9,5 +9,6 @@
         }
 
         public int LastSelectedIndex { get; set; }
+        public string StartWindow { get; set; }
     }
 }

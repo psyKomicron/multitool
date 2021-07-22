@@ -3,7 +3,6 @@
 using MultitoolWPF.Tools;
 using MultitoolWPF.ViewModels;
 
-using System.Windows;
 using System.Windows.Controls;
 
 namespace MultitoolWPF.Windows
@@ -11,23 +10,23 @@ namespace MultitoolWPF.Windows
     /// <summary>
     /// Interaction logic for ControlPanelsWindow.xaml
     /// </summary>
-    public partial class PowerPanelControl : UserControl, ISerializableWindow
+    public partial class PowerCapabilitiesPanelControl : UserControl, ISerializableWindow
     {
-        public PowerPanelControl()
+        public PowerCapabilitiesPanelControl()
         {
             InitializeComponent();
 
             PowerCapabilities capabilities = new PowerCapabilities();
 
             // Buttons
-            PowerCapabilities_ListView.Items.Add("Power button present : " + capabilities.PowerButtonPresent);
-            PowerCapabilities_ListView.Items.Add("Sleep button present : " + capabilities.SleepButtonPresent);
-            PowerCapabilities_ListView.Items.Add("Lid present : " + capabilities.LidPresent);
+            _ = PowerCapabilities_ListView.Items.Add("Power button present : " + (capabilities.PowerButtonPresent ? "Yes" : "No"));
+            _ = PowerCapabilities_ListView.Items.Add("Sleep button present : " + (capabilities.SleepButtonPresent ? "Yes" : "No"));
+            _ = PowerCapabilities_ListView.Items.Add("Lid present : " + (capabilities.LidPresent ? "Yes" : "No"));
 
             // CPU
-            Processor_ListView.Items.Add("Processor throttle : " + capabilities.ProcessorThrottle);
-            Processor_ListView.Items.Add("Processor minimum throttle : " + capabilities.ProcessorMinThrottle);
-            Processor_ListView.Items.Add("Processor maximum throttle : " + capabilities.ProcessorMaxThrottle);
+            _ = Processor_ListView.Items.Add("Processor throttle : " + capabilities.ProcessorThrottle);
+            _ = Processor_ListView.Items.Add("Processor minimum throttle : " + capabilities.ProcessorMinThrottle);
+            _ = Processor_ListView.Items.Add("Processor maximum throttle : " + capabilities.ProcessorMaxThrottle);
             // States
             string[] states = capabilities.CpuPowerStates();
             for (int i = 0; i < states.Length; i++)
@@ -36,28 +35,28 @@ namespace MultitoolWPF.Windows
             }
 
             // Power
-            Batteries_ListView.Items.Add("Batteries present : " + (capabilities.SystemBatteriesPresent ? "Yes" : "No"));
-            Batteries_ListView.Items.Add("Batteries short term : " + (capabilities.BatteriesAreShortTerm ? "Yes" : "No"));
-            Batteries_ListView.Items.Add("Battery 1 : " + capabilities.BatterieScale1);
-            Batteries_ListView.Items.Add("Battery 2 : " + capabilities.BatterieScale2);
-            Batteries_ListView.Items.Add("Battery 3 : " + capabilities.BatterieScale3);
+            _ = Batteries_ListView.Items.Add("Batteries present : " + (capabilities.SystemBatteriesPresent ? "Yes" : "No"));
+            _ = Batteries_ListView.Items.Add("Batteries short term : " + (capabilities.BatteriesAreShortTerm ? "Yes" : "No"));
+            _ = Batteries_ListView.Items.Add("Battery 1 : " + capabilities.BatterieScale1);
+            _ = Batteries_ListView.Items.Add("Battery 2 : " + capabilities.BatterieScale2);
+            _ = Batteries_ListView.Items.Add("Battery 3 : " + capabilities.BatterieScale3);
 
             // Wake states
-            Wake_ListView.Items.Add("AC line connected wake : " + capabilities.AcOnLineWake.Name);
-            Wake_ListView.Items.Add("Soft lid wake : " + capabilities.SoftLidWake.Name);
-            Wake_ListView.Items.Add("RTC wake : " + capabilities.RtcWake.Name);
-            Wake_ListView.Items.Add("Minimum wake : " + capabilities.MinDeviceWakeState.Name);
-            Wake_ListView.Items.Add("Low latency wake : " + capabilities.DefaultLowLatencyWake.Name);
+            _ = Wake_ListView.Items.Add("AC line connected wake : " + capabilities.AcOnLineWake.Name);
+            _ = Wake_ListView.Items.Add("Soft lid wake : " + capabilities.SoftLidWake.Name);
+            _ = Wake_ListView.Items.Add("RTC wake : " + capabilities.RtcWake.Name);
+            _ = Wake_ListView.Items.Add("Minimum wake : " + capabilities.MinDeviceWakeState.Name);
+            _ = Wake_ListView.Items.Add("Low latency wake : " + capabilities.DefaultLowLatencyWake.Name);
 
 
             // Others
-            Others_ListView.Items.Add("Hibernation file present : " + (capabilities.HibernationFilePresent ? "Yes" : "No"));
-            Others_ListView.Items.Add("Full wake available : " + (capabilities.FullWake ? "Yes" : "No"));
-            Others_ListView.Items.Add("Video dim available : " + (capabilities.VideoDimPresent ? "Yes" : "No"));
-            Others_ListView.Items.Add("APM (Advanced power management) available : " + (capabilities.ApmPresent ? "Yes" : "No"));
-            Others_ListView.Items.Add("UPS (Uninterruptible Power Supply) present : " + (capabilities.UpsPresent ? "Yes" : "No"));
-            Others_ListView.Items.Add("Thermal control available : " + (capabilities.ThermalControl ? "Yes" : "No"));
-            Others_ListView.Items.Add("Disk spin down enabled : " + (capabilities.DiskSpinDown ? "Yes" : "No"));
+            _ = Others_ListView.Items.Add("Hibernation file present : " + (capabilities.HibernationFilePresent ? "Yes" : "No"));
+            _ = Others_ListView.Items.Add("Full wake available : " + (capabilities.FullWake ? "Yes" : "No"));
+            _ = Others_ListView.Items.Add("Video dim available : " + (capabilities.VideoDimPresent ? "Yes" : "No"));
+            _ = Others_ListView.Items.Add("APM (Advanced power management) available : " + (capabilities.ApmPresent ? "Yes" : "No"));
+            _ = Others_ListView.Items.Add("UPS (Uninterruptible Power Supply) present : " + (capabilities.UpsPresent ? "Yes" : "No"));
+            _ = Others_ListView.Items.Add("Thermal control available : " + (capabilities.ThermalControl ? "Yes" : "No"));
+            _ = Others_ListView.Items.Add("Disk spin down enabled : " + (capabilities.DiskSpinDown ? "Yes" : "No"));
         }
 
         public DefaultWindowData Data { get; set; }

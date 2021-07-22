@@ -1,16 +1,22 @@
 ﻿using Multitool.Controllers;
-using Multitool.Monitoring;
+using Multitool.NTInterop;
+using Multitool.PerformanceMonitors;
 
 using MultitoolWPF.Tools;
+using MultitoolWPF.UserControls;
 using MultitoolWPF.ViewModels;
 using MultitoolWPF.Windows;
+using MultitoolWPF.Windows.ControlPanels;
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace MultitoolWPF
@@ -21,7 +27,8 @@ namespace MultitoolWPF
     public partial class MainWindow : Window, ISerializableWindow
     {
         private const string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
-        private CpuMonitor cpuMonitor = new CpuMonitor();
+        private IPerformanceMonitor cpuMonitor;
+        private IPerformanceMonitor ramMonitor;
         private Timer cpuTimer = new Timer(250);
 
         public string AppVersion { get; set; }
@@ -30,6 +37,7 @@ namespace MultitoolWPF
 
         public MainWindow()
         {
+            WindowManager.MainWindow = this;
             InitializeComponent();
             InitializeWindow();
         }
@@ -37,6 +45,7 @@ namespace MultitoolWPF
         #region serialise/deserialise
         public void Serialize()
         {
+            Data.LastSelectedIndex = Window_TabControl.SelectedIndex;
             WindowManager.PreferenceManager.AddWindowData(Data, Name);
         }
 
@@ -50,20 +59,47 @@ namespace MultitoolWPF
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 UpdateLayout();
             }
+            if (!string.IsNullOrWhiteSpace(Data.StartWindow))
+            {
+                Type[] types = Assembly.GetExecutingAssembly().GetTypes();
+                for (int i = 0; i < types.Length; i++)
+                {
+                    if (types[i].FullName == Data.StartWindow)
+                    {
+                        if (!WindowManager.Open(types[i]))
+                        {
+                            Console.WriteLine("Failed to open the start-up window (type : " + types[i].Name + ")");
+                        }
+                    }
+                }
+            }
         }
         #endregion
 
         #region private
 
-        private void InitializeWindow()
+        private async void InitializeWindow()
         {
             Deserialize();
             DataContext = this;
 
             AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-            cpuTimer.Elapsed += CpuTimer_Elapsed;
+            AsyncPerformanceMonitor localCpuMonitor = new AsyncPerformanceMonitor(MonitorCategory.ProcessorUsageTotal);
+            AsyncPerformanceMonitor localRamMonitor = new AsyncPerformanceMonitor(MonitorCategory.MemoryGlobal);
+
+            await Task.WhenAll(localCpuMonitor.InstanciationTask, localRamMonitor.InstanciationTask);
+
+            cpuMonitor = localCpuMonitor;
+            ramMonitor = localRamMonitor;
+            cpuTimer.Elapsed += (object sender, ElapsedEventArgs e) => Application.Current.Dispatcher.Invoke(UpdatePerfsStats);
             cpuTimer.Start();
+        }
+
+        private void AddAndSwitch(FrameworkElement element)
+        {
+            Controls_Panel.Items.Add(element);
+            Controls_Panel.SelectedIndex = Controls_Panel.Items.Count - 1;
         }
 
         #endregion private
@@ -85,9 +121,23 @@ namespace MultitoolWPF
         #endregion
 
         #region home menu
-        private void OpenDownload_Click(object sender, RoutedEventArgs e) => WindowManager.Open<SpreadsheetWindow>();
-        private void OpenExplorer_Click(object sender, RoutedEventArgs e) => WindowManager.Open<ExplorerWindow>();
-        private void OpenPowerSettings_Click(object sender, RoutedEventArgs e) => WindowManager.Open<PowerWindow>();
+        private void OpenDownload_Click(object sender, RoutedEventArgs e)
+        {
+            _ = WindowManager.Open<SpreadsheetWindow>();
+            Data.StartWindow = typeof(SpreadsheetWindow).FullName;
+        }
+
+        private void OpenExplorer_Click(object sender, RoutedEventArgs e)
+        {
+            _ = WindowManager.Open<ExplorerWindow>();
+            Data.StartWindow = typeof(ExplorerWindow).FullName;
+        }
+
+        private void OpenPowerSettings_Click(object sender, RoutedEventArgs e)
+        {
+            _ = WindowManager.Open<PowerWindow>();
+            Data.StartWindow = typeof(PowerWindow).FullName;
+        }
 
         private void OpenSoon_Click(object sender, RoutedEventArgs e)
         {
@@ -97,13 +147,37 @@ namespace MultitoolWPF
             }.Execute();
         }
 
+        private void PreferencesButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Multitool\preferences\userpreferences.xml");
+        }
+        #endregion
+
+        #region window
+        private void UpdatePerfsStats()
+        {
+            CpuUsage.Text = cpuMonitor.GetStats().ToString("F2");
+            float ram = ramMonitor.GetStats() / 1_048_576; // Mb
+            RamUsage_TextBlock.Text = ram.ToString("F2");
+        }
+
+        private void MultiToolMainWindow_Closed(object sender, EventArgs e)
+        {
+            cpuTimer.Stop();
+            cpuTimer.Dispose();
+            cpuMonitor.Dispose();
+            Serialize();
+        }
+        #endregion
+
+        #region tools menu
         private void PowerCapabilitiesPanelButton_Click(object sender, RoutedEventArgs e)
         {
-            Controls_Panel.Items.Add(new TabItem()
+            AddAndSwitch(new TabItem()
             {
                 Header = "Power capabilities",
                 Foreground = new SolidColorBrush(Colors.White),
-                Content = new PowerPanelControl()
+                Content = new PowerCapabilitiesPanelControl()
                 {
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
@@ -114,38 +188,57 @@ namespace MultitoolWPF
 
         private void PowerPanelButton_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        #endregion
-
-        private void CpuTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            if (!cpuMonitor.Ready)
+            AddAndSwitch(new TabItem()
             {
-                return;
-            }
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                CpuUsage.Text = cpuMonitor.GetCpuUsage().ToString("F2");
+                Header = "Power panel",
+                Foreground = new SolidColorBrush(Colors.White),
+                Content = new PowerPlansPanel()
             });
         }
 
-        private void MultiToolMainWindow_Closed(object sender, EventArgs e)
+        private void CopySpotlightWallpapers_Click(object sender, RoutedEventArgs e)
         {
-            cpuTimer.Stop();
-            cpuTimer.Dispose();
-            cpuMonitor.Dispose();
-            Serialize();
-        }
-
-        private void Window_TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (Window_TabControl.SelectedIndex == 1)
+            TextBlock textBlock = new TextBlock()
             {
-                // draw a dick 8=========0 (>avg)
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 10
+            };
+            AddAndSwitch(new TabItem()
+            {
+                Header = "Copying Spotlight files",
+                Foreground = new SolidColorBrush(Colors.White),
+                Content = textBlock
+            });
+
+            string localappdata = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+            if (string.IsNullOrEmpty(localappdata))
+            {
+                throw new Exception("LOCALAPPDATA env variable is empty");
             }
+            string spotlight = localappdata + Tool.GetStringResource("SpotlightWallpapers");
+            string myPicturesPath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "\\Spotlight";
+
+            if (!Directory.Exists(myPicturesPath))
+            {
+                _ = Directory.CreateDirectory(myPicturesPath);
+            }
+
+            string[] files = Directory.GetFiles(spotlight);
+            FileInfo fileInfo;
+            for (int i = 0; i < files.Length; i++)
+            {
+                fileInfo = new FileInfo(files[i]);
+                fileInfo = fileInfo.Extension != ".png"
+                    ? fileInfo.CopyTo(myPicturesPath + "\\" + fileInfo.Name + ".png", true)
+                    : fileInfo.CopyTo(myPicturesPath + "\\" + fileInfo.Name, true);
+                Console.WriteLine("Successfully moved and renamed -> " + fileInfo.Name);
+                textBlock.Inlines.Add("Successfully moved and renamed -> " + fileInfo.Name + "\n");
+            }
+            //WindowManager.Open<ExplorerWindow>(myPicturesPath);
         }
+        #endregion
+
         #endregion
     }
 }

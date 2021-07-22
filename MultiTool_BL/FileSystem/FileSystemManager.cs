@@ -13,9 +13,7 @@ namespace Multitool.FileSystem
     public class FileSystemManager : IFileSystemManager
     {
         public const double DEFAULT_CACHE_TIMEOUT = 300000;
-        public const bool   DEFAULT_NOTIFY_STATUS = false;
-
-        private static FileSystemManager instance;
+        public const bool DEFAULT_NOTIFY_STATUS = false;
 
         private double ttl;
         private bool _notify;
@@ -24,13 +22,13 @@ namespace Multitool.FileSystem
         private Dictionary<string, FileSystemCache> cache = new Dictionary<string, FileSystemCache>();
         private DirectorySizeCalculator calculator = new DirectorySizeCalculator();
 
-        protected FileSystemManager()
+        public FileSystemManager()
         {
             ttl = DEFAULT_CACHE_TIMEOUT;
             Notify = DEFAULT_NOTIFY_STATUS;
         }
 
-        protected FileSystemManager(double ttl, bool notifyProgress)
+        public FileSystemManager(double ttl, bool notifyProgress)
         {
             this.ttl = ttl;
             Notify = notifyProgress;
@@ -59,7 +57,8 @@ namespace Multitool.FileSystem
             }
         }
 
-        public event TaskProgressEventHandler Progress;
+        public event ItemChangedEventHandler Change;
+        public event TaskCompletedEventHandler Completed;
         public event TaskFailedEventHandler Exception
         {
             add
@@ -79,84 +78,63 @@ namespace Multitool.FileSystem
                 }
             }
         }
-        public event TaskCompletedEventHandler Completed;
-        public event ItemChangedEventHandler Change;
+        public event TaskProgressEventHandler Progress;
 
         private event TaskFailedEventHandler SelfException;
 
-        public static FileSystemManager Get(double cacheTimeout = DEFAULT_CACHE_TIMEOUT, bool notifyProgress = DEFAULT_NOTIFY_STATUS)
-        {
-            if (instance == null)
-            {
-                instance = new FileSystemManager(cacheTimeout, notifyProgress);
-            }
-            else
-            {
-                if (cacheTimeout != instance.CacheTimeout)
-                {
-                    instance.CacheTimeout = cacheTimeout;
-                }
-                if (notifyProgress != instance.Notify)
-                {
-                    instance.Notify = notifyProgress;
-                }
-            }
-            return instance;
-        }
-
         /// <inheritdoc/>
-        public void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken,
-            IList<ItemType> list, AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry
+        public void GetFileSystemEntries<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list, AddDelegate<ItemType> addDelegate) where ItemType : IFileSystemEntry
         {
             #region not null
             if (list == null)
-                throw new ArgumentNullException(nameof(list));
+            {
+                throw new ArgumentNullException(nameof(list), "List cannot be null.");
+            }
             if (cancellationToken == null)
-                throw new ArgumentNullException(nameof(cancellationToken));
+            {
+                throw new ArgumentNullException(nameof(cancellationToken), "CancellationToken cannot be null.");
+            }
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("A path needs to be provided (path was either null, empty, or with spaces only).", nameof(path));
+            }
             #endregion
 
-            if (!string.IsNullOrEmpty(path))
+            if (ContainsKey(path))
             {
-                if (ContainsKey(path))
+                FileSystemCache fileCache = GetFileSystemCache(path);
+
+                if (fileCache.Frozen)
                 {
-                    FileSystemCache cachedItems = GetFileSystemCache(path);
-                    for (int i = 0; i < cachedItems.Count; i++)
+                    cache.Remove(fileCache.Path);
+                    fileCache.Delete();
+                    fileCache.Dispose();
+                    GetAll(path, cancellationToken, list, addDelegate, new FileSystemCache(path, CacheTimeout));
+                }
+                else
+                {
+                    for (int i = 0; i < fileCache.Count; i++)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        addDelegate(list, cachedItems[i]);
+                        addDelegate(list, fileCache[i]);
                     }
-
-                    if (cachedItems.Partial)
+                    if (fileCache.Partial)
                     {
-                        GetPartial(path, cachedItems, list, addDelegate, cancellationToken);
+                        GetPartial(path, fileCache, list, addDelegate, cancellationToken);
                     }
-
-                    Completed?.Invoke(TaskStatus.RanToCompletion);
-                }
-                else if (Directory.Exists(path))
-                {
-                    FileSystemCache cacheItems = new FileSystemCache(path, CacheTimeout);
-                    cacheItems.ItemChanged += OnCacheItemChanged;
-                    cacheItems.TTLReached += OnCacheTTLReached;
-                    cacheItems.WatcherError += OnWatcherError;
-                    cache.Add(path, cacheItems);
-
-                    GetFiles(path, cacheItems, list, addDelegate, cancellationToken);
-                    _ = GetDirectories(path, cacheItems, list, addDelegate, cancellationToken)
-                        .ContinueWith((Task previous) => Completed?.Invoke(previous.Status));
+                    InvokeCompletion(TaskStatus.RanToCompletion);
                 }
             }
-            else
+            else if (Directory.Exists(path))
             {
-                Completed?.Invoke(TaskStatus.Faulted);
-                throw new ArgumentException("Given path is empty", nameof(path));
+                GetAll(path, cancellationToken, list, addDelegate, new FileSystemCache(path, CacheTimeout));
             }
         }
 
         /// <inheritdoc/>
         public string GetRealPath(string path)
         {
-            string realPath = string.Empty;
+            string realPath;
             if (Directory.Exists(path))
             {
                 DirectoryInfo directoryInfo = new DirectoryInfo(path);
@@ -215,7 +193,10 @@ namespace Multitool.FileSystem
                     return path;
                 }
             }
-
+            else
+            {
+                throw new DirectoryNotFoundException("Directory not found, path : " + path);
+            }
             return realPath;
         }
 
@@ -233,6 +214,17 @@ namespace Multitool.FileSystem
         #region private
 
         #region file get
+        private void GetAll<ItemType>(string path, CancellationToken cancellationToken, IList<ItemType> list, AddDelegate<ItemType> addDelegate, FileSystemCache fileCache) where ItemType : IFileSystemEntry
+        {
+            fileCache.ItemChanged += OnCacheItemChanged;
+            fileCache.TTLReached += OnCacheTTLReached;
+            fileCache.WatcherError += OnWatcherError;
+            cache.Add(path, fileCache);
+
+            GetFiles(path, fileCache, list, addDelegate, cancellationToken);
+            _ = GetDirectories(path, fileCache, list, addDelegate, cancellationToken)
+                .ContinueWith((Task previous) => InvokeCompletion(previous));
+        }
 
         private void GetPartial<T>(string path, FileSystemCache cacheItems, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
@@ -244,7 +236,7 @@ namespace Multitool.FileSystem
                 // get partial items
                 for (int i = 0; i < cacheItems.Count; i++)
                 {
-                    FileSystemEntry cacheItem = cacheItems[i];
+                    IFileSystemEntry cacheItem = cacheItems[i];
                     if (cacheItem.Partial)
                     {
                         toDo.Add(cacheItem.Path);
@@ -329,7 +321,7 @@ namespace Multitool.FileSystem
                     addDelegate(list, item);
                 }
             }
-            catch (UnauthorizedAccessException e) 
+            catch (UnauthorizedAccessException e)
             {
                 InvokeException(e);
             }
@@ -364,11 +356,7 @@ namespace Multitool.FileSystem
             }
         }
 
-        #endregion
-
-        private async Task RunDirsParallel<T>(
-            FileSystemCache cacheItems, FileSystemEntry item, string currentPath, IList<T> list,
-            AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
+        private async Task RunDirsParallel<T>(FileSystemCache cacheItems, FileSystemEntry item, string currentPath, IList<T> list, AddDelegate<T> addDelegate, CancellationToken cancellationToken) where T : IFileSystemEntry
         {
             CheckCancellation(cancellationToken, cacheItems);
             addDelegate(list, item);
@@ -383,6 +371,7 @@ namespace Multitool.FileSystem
                 InvokeException(e);
             }
         }
+        #endregion
 
         private FileSystemCache GetFileSystemCache(string key)
         {
@@ -405,7 +394,7 @@ namespace Multitool.FileSystem
 
         private bool ContainsKey(string key)
         {
-            foreach (var pair in cache)
+            foreach (KeyValuePair<string, FileSystemCache> pair in cache)
             {
                 if (pair.Key.Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
@@ -486,7 +475,7 @@ namespace Multitool.FileSystem
 
             for (int i = 0; i < fsCache.Count; i++)
             {
-                FileSystemEntry item = fsCache[i];
+                FileSystemEntry item = fsCache[i] as FileSystemEntry;
                 item.RefreshInfos();
 
                 if (item.IsDirectory)
@@ -498,10 +487,11 @@ namespace Multitool.FileSystem
 
         private void OnCacheItemChanged(object sender, string path, FileSystemEntry entry, bool ttl, WatcherChangeTypes changes)
         {
-            if (changes == WatcherChangeTypes.Created) // if entry is null => item created
+            if (changes == WatcherChangeTypes.Created)
             {
-                if (Directory.Exists(path))
+                if (Directory.Exists(path)) // Check if the added item is a directory
                 {
+                    Console.WriteLine("Cache changed -> directory created, computing directory size");
                     long size = calculator.CalculateDirectorySize(path, CancellationToken.None);
                     entry = new DirectoryEntry(new DirectoryInfo(path), size);
                 }
@@ -509,8 +499,8 @@ namespace Multitool.FileSystem
                 {
                     entry = new FileEntry(new FileInfo(path));
                 }
+                ((FileSystemCache)sender).Add(entry);
             }
-            ((FileSystemCache)sender).Add(entry);
             Change?.Invoke(this, objectPool.GetObject(entry, changes));
         }
 
@@ -542,6 +532,22 @@ namespace Multitool.FileSystem
             if (Notify)
             {
                 Progress?.Invoke(this, message);
+            }
+        }
+
+        private void InvokeCompletion(Task task)
+        {
+            if (Notify)
+            {
+                Completed?.Invoke(task.Status, task);
+            }
+        }
+
+        private void InvokeCompletion(TaskStatus status)
+        {
+            if (Notify)
+            {
+                Completed?.Invoke(status);
             }
         }
         #endregion

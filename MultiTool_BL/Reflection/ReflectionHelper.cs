@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-internal static class ReflectionHelper
+public static class ReflectionHelper
 {
     /// <summary>
     /// Determines if <paramref name="actualType"/> implements <paramref name="targetType"/>

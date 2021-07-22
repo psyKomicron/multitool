@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Multitool.JulieV2.Commands;
+
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Multitool.JulieV2
 {
     public interface ILogParser
     {
         string LocateLogFile();
-        IList<BotCommand> ParseLogs(string directory);
+        StringBuilder ParseLogs(string directory);
     }
 }

@@ -10,21 +10,6 @@ namespace MultitoolTest.FileSystem.Tests
     public class FileSystemManagerUnitTest
     {
         [TestMethod()]
-        public void GetTest()
-        {
-            FileSystemManager manager1 = FileSystemManager.Get();
-            FileSystemManager manager2 = FileSystemManager.Get();
-
-            Assert.AreSame(manager1, manager2);
-
-            manager2 = FileSystemManager.Get(100, true);
-
-            Assert.AreSame(manager1, manager2, "Singleton not respected");
-            Assert.IsTrue(manager1.Notify == true, "Notify property not updated");
-            Assert.IsTrue(manager1.CacheTimeout == 100, "CacheTimeout property not updated");
-        }
-
-        [TestMethod()]
         public void GetFileSystemEntriesTest()
         {
             #region instanciations

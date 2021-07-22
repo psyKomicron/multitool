@@ -1,12 +1,15 @@
 ﻿<Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" xmlns:usercontrols="clr-namespace:MultitoolWPF.UserControls"
+    xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" 
+    xmlns:usercontrols="clr-namespace:MultitoolWPF.UserControls"
     x:Class="MultitoolWPF.Windows.PowerWindow"
     Title="Power management" 
     Name="PowerManagementWindow"
     MinHeight="405"
     MinWidth="520"
+    Height="404"
+    Width="619"
     Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type TextBox}">

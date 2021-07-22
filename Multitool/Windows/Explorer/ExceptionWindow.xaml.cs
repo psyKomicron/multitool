@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MultitoolWPF.Windows.Explorer
 {
@@ -20,7 +13,6 @@ namespace MultitoolWPF.Windows.Explorer
     /// </summary>
     public partial class ExceptionWindow : Window
     {
-        private bool started;
         private Task consumerTask;
         private CancellationTokenSource cancelSource = new CancellationTokenSource();
         private Queue<Exception> exceptions = new Queue<Exception>(20);
@@ -39,14 +31,12 @@ namespace MultitoolWPF.Windows.Explorer
             {
                 if (consumerTask.Status != TaskStatus.Running)
                 {
-                    started = true;
                     consumerTask = new Task(() => Consume(cancelSource.Token), cancelSource.Token, TaskCreationOptions.LongRunning);
                     consumerTask.Start();
                 }
             }
             else
             {
-                started = true;
                 consumerTask = new Task(() => Consume(cancelSource.Token), cancelSource.Token, TaskCreationOptions.LongRunning);
                 consumerTask.Start();
             }
@@ -57,7 +47,6 @@ namespace MultitoolWPF.Windows.Explorer
             if (consumerTask.Status == TaskStatus.Running)
             {
                 cancelSource.Cancel();
-                
             }
         }
 
