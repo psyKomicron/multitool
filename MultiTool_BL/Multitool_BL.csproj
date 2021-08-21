@@ -38,6 +38,9 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <Optimize>false</Optimize>
+    <DocumentationFile>bin\x64\Debug\Multitool_BL.xml</DocumentationFile>
+    <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -70,6 +73,7 @@
     <Compile Include="Controllers\DefaultBrowserController.cs" />
     <Compile Include="Controllers\PowerController.cs" />
     <Compile Include="FileSystem\DirectorySizeCalculator.cs" />
+    <Compile Include="FileSystem\MoveCodes.cs" />
     <Compile Include="NTInterop\Power\BatteryReportingScale.cs" />
     <Compile Include="NTInterop\Miscellaneous\BATTERY_REPORTING_SCALE.cs" />
     <Compile Include="NTInterop\InteropHelper.cs" />
@@ -89,12 +93,12 @@
     <Compile Include="PerformanceMonitors\IPerformanceMonitor.cs" />
     <Compile Include="PerformanceMonitors\MonitorCategory.cs" />
     <Compile Include="PerformanceMonitors\PerformanceMonitor.cs" />
-    <Compile Include="PerformanceMonitors\PerformanceCounterFactory.cs" />
+    <Compile Include="PerformanceMonitors\PerformanceMonitorFactory.cs" />
     <Compile Include="TaskCompletedEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorEventHandler.cs" />
     <Compile Include="FileSystem\Events\WatcherErrorTypes.cs" />
-    <Compile Include="FileSystem\Factory\WatcherDelegates.cs" />
-    <Compile Include="FileSystem\Factory\WatcherFactory.cs" />
+    <Compile Include="FileSystem\WatcherDelegates.cs" />
+    <Compile Include="FileSystem\WatcherFactory.cs" />
     <Compile Include="NTInterop\CursorPosition.cs" />
     <Compile Include="NTInterop\Power\PowerPlan.cs" />
     <Compile Include="Optimisation\CircularBag.cs" />
@@ -106,7 +110,7 @@
     <Compile Include="FileSystem\Completion\IPathCompletor.cs" />
     <Compile Include="FileSystem\Completion\PathCompletor.cs" />
     <Compile Include="FileSystem\DirectoryEntry.cs" />
-    <Compile Include="FileSystem\Events\ChangeEventArgs.cs" />
+    <Compile Include="FileSystem\Events\FileChangeEventArgs.cs" />
     <Compile Include="FileSystem\Events\TTLReachedEventHandler.cs" />
     <Compile Include="FileSystem\FileEntry.cs" />
     <Compile Include="FileSystem\FileSystemCache.cs" />
@@ -126,7 +130,6 @@
     <Compile Include="Network\DownloadEventArgs.cs" />
     <Compile Include="NTInterop\Power\AccessFlags.cs" />
     <Compile Include="NTInterop\Codes\SystemCodes.cs" />
-    <Compile Include="Optimisation\PoolObjectStateException.cs" />
     <Compile Include="Parsers\Errors\JsonFormatException.cs" />
     <Compile Include="Parsers\JsonParser.cs" />
     <Compile Include="Parsers\UriCleaner.cs" />
@@ -151,8 +154,6 @@
     <Compile Include="Reflection\ObjectFlatteners\IObjectFlattener.cs" />
     <Compile Include="Reflection\ObjectFlatteners\CommonXmlObjectFlattener.cs" />
     <Compile Include="Reflection\PropertyLoaders\PropertyLoader.cs" />
-    <Compile Include="Visuals\ColorerParameters.cs" />
-    <Compile Include="Visuals\SyntaxColorer.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -43,9 +43,9 @@ namespace Multitool.NTInterop.Power
             return "{Guid: " + Guid + ", Name " + Name + "}";
         }
 
-        private void PowerOptions_ActiveChanged(PowerPlan newPowerPlan)
+        private void PowerOptions_ActiveChanged(Guid newPowerPlan)
         {
-            Active = newPowerPlan == this;
+            Active = newPowerPlan == Guid;
         }
     }
 }

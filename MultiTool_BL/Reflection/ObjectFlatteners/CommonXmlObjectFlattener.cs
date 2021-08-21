@@ -27,7 +27,7 @@ namespace Multitool.Reflection.ObjectFlatteners
             }
         }
 
-        private XmlNode RecursiveFlatten<T>(T o, XmlDocument xml , string rootName, int depth = 0)
+        private XmlNode RecursiveFlatten<T>(T o, XmlDocument xml, string rootName, int depth = 0)
         {
             #region checks
             // check to prevent stack overflow

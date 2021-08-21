@@ -1,0 +1,137 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style x:Key="ScrollBarThumb"
+       TargetType="{x:Type Thumb}">
+        <Setter Property="SnapsToDevicePixels"
+                Value="True" />
+        <Setter Property="OverridesDefaultStyle"
+                Value="true" />
+        <Setter Property="IsTabStop"
+                Value="false" />
+        <Setter Property="Focusable"
+                Value="false" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border CornerRadius="2"
+                            Background="{TemplateBinding Background}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="VerticalScrollBar"
+                 TargetType="{x:Type ScrollBar}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition MaxHeight="5" />
+                <RowDefinition Height="0.00001*" />
+                <RowDefinition MaxHeight="5" />
+            </Grid.RowDefinitions>
+            <Border Grid.RowSpan="3"
+                    CornerRadius="5">
+                <Border.Background>
+
+                    <SolidColorBrush Color="{StaticResource BorderDarkColor}"
+                                     Opacity="0.7"/>
+
+                </Border.Background>
+            </Border>
+            <Track x:Name="PART_Track"
+                   Grid.Row="1"
+                   IsDirectionReversed="true">
+                <Track.Thumb>
+                    <Thumb Style="{StaticResource ScrollBarThumb}"
+                           Margin="1,0,1,0">
+                        <Thumb.Background>
+
+                            <SolidColorBrush Color="{StaticResource BorderMediumColor}"/>
+
+                           <!--<LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="1,0">
+                                <LinearGradientBrush.GradientStops>
+                                    <GradientStopCollection>
+                                        <GradientStop Color="{DynamicResource ControlLightColor}"
+                                                      Offset="0.0" />
+                                        <GradientStop Color="{DynamicResource ControlMediumColor}"
+                                                      Offset="1.0" />
+                                    </GradientStopCollection>
+                                </LinearGradientBrush.GradientStops>
+                            </LinearGradientBrush>-->
+
+                        </Thumb.Background>
+                    </Thumb>
+                </Track.Thumb>
+            </Track>
+        </Grid>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="HorizontalScrollBar"
+                 TargetType="{x:Type ScrollBar}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MaxWidth="1" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition MaxWidth="1" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.ColumnSpan="3"
+                    CornerRadius="2"
+                    Background="{TemplateBinding Background}" />
+            <Track x:Name="PART_Track"
+                   Grid.Column="1"
+                   IsDirectionReversed="False">
+                <Track.Thumb>
+                    <Thumb Style="{StaticResource ScrollBarThumb}"
+                           Background="Black"
+                           Margin="0,1,0,1">
+                        <!--<Thumb.Background>
+
+                            <LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="0,1">
+                                <LinearGradientBrush.GradientStops>
+                                    <GradientStopCollection>
+                                        <GradientStop Color="{DynamicResource ControlLightColor}"
+                                                      Offset="0.0" />
+                                        <GradientStop Color="{DynamicResource ControlMediumColor}"
+                                                      Offset="1.0" />
+                                    </GradientStopCollection>
+                                </LinearGradientBrush.GradientStops>
+                            </LinearGradientBrush>
+
+                        </Thumb.Background>-->
+                    </Thumb>
+                </Track.Thumb>
+            </Track>
+        </Grid>
+    </ControlTemplate>
+
+    <Style x:Key="CustomScrollBar"
+       TargetType="{x:Type ScrollBar}">
+        <Setter Property="SnapsToDevicePixels"
+          Value="True" />
+        <Setter Property="OverridesDefaultStyle"
+          Value="true" />
+        <Style.Triggers>
+            <Trigger Property="Orientation"
+                     Value="Horizontal">
+                <Setter Property="Width"
+                        Value="Auto" />
+                <Setter Property="Height"
+                        Value="12" />
+                <Setter Property="Template"
+                        Value="{StaticResource HorizontalScrollBar}" />
+            </Trigger>
+            <Trigger Property="Orientation"
+                     Value="Vertical">
+                <Setter Property="Width"
+                        Value="12" />
+                <Setter Property="Height"
+                        Value="Auto" />
+                <Setter Property="Template"
+                        Value="{StaticResource VerticalScrollBar}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

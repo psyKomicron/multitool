@@ -8,7 +8,7 @@
         WindowStartupLocation="CenterScreen"
         Title="Multitool"
         Name="MultitoolMainWindow"
-        Closed="MultiToolMainWindow_Closed"
+        Closed="Window_Closed"
         MinHeight="400" 
         MinWidth="700" 
         Style="{StaticResource DarkWindow}">

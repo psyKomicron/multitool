@@ -1,5 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using Multitool.Reflection.ObjectFlatteners;
+﻿using Multitool.Reflection.ObjectFlatteners;
+
+using System.Collections.ObjectModel;
 
 namespace MultitoolWPF.ViewModels
 {

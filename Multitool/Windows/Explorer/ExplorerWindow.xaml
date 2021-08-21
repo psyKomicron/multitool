@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:usercontrols="clr-namespace:MultitoolWPF.UserControls"
+    xmlns:c="clr-namespace:MultitoolWPF.UserControls"
     x:Class="MultitoolWPF.Windows.ExplorerWindow"
     mc:Ignorable="d"
     Title="Explorer"
@@ -38,7 +38,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="20*"/>
             </Grid.RowDefinitions>
-            <usercontrols:MultitoolWindowChrome 
+            <c:MultitoolWindowChrome 
                 Grid.Row="0"
                 Background="{StaticResource DevBlue}"
                 CloseClick="MultiToolWindowChrome_CloseClick"
@@ -75,9 +75,10 @@
                 </TabControl.Resources>
 
                 <TabItem Header="Home">
-                    <ScrollViewer>
-                        <Grid x:Name="Disks_Grid"
-                          HorizontalAlignment="Center"/>
+                    <ScrollViewer Template="{StaticResource ScrollViewerControlTemplate}"
+                                  VerticalScrollBarVisibility="Hidden">
+                        <UniformGrid x:Name="Disks_Grid"
+                                     HorizontalAlignment="Center"/>
                     </ScrollViewer>
                 </TabItem>
 
@@ -133,7 +134,7 @@
                                          VerticalAlignment="Center"
                                          HorizontalAlignment="Stretch"/>
                                 <TextBox x:Name="Progress_TextBox"
-                                     Background="{StaticResource LightBlack}"
+                                     Background="Transparent"
                                      FontFamily="Cascadia Code Light"
                                      Foreground="White"
                                      BorderThickness="0"
@@ -159,12 +160,13 @@
                             </StackPanel>
                         </Grid>
                         <ListView x:Name="History_ListView"
-                              Grid.Row="1" 
-                              Grid.Column="0" 
-                              ItemsSource="{Binding Data.History}"
-                              MinWidth="50"
-                              MouseDoubleClick="HistoryListView_MouseDoubleClick"
-                              Style="{StaticResource DarkListViewStyle}">
+                                  Grid.Row="1" 
+                                  Grid.Column="0" 
+                                  ItemsSource="{Binding Data.History}"
+                                  MinWidth="50"
+                                  MouseDoubleClick="HistoryListView_MouseDoubleClick"
+                                  Background="{StaticResource LightBlack}"
+                                  Style="{StaticResource DarkListViewStyle}">
                             <ListView.Resources>
                                 <Style TargetType="GridViewColumnHeader">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -187,10 +189,14 @@
                               Grid.Column="1"
                               ItemsSource="{Binding CurrentFiles}"
                               MouseDoubleClick="MainListView_MouseDoubleClick" 
+                                  Background="{StaticResource DarkBlack}"
                               Style="{StaticResource DarkListViewStyle}">
                             <ListView.Resources>
                                 <Style TargetType="GridViewColumnHeader">
                                     <Setter Property="Visibility" Value="Collapsed"/>
+                                </Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                             </ListView.Resources>
                             <ListView.ItemTemplate>
@@ -200,27 +206,35 @@
                                           VerticalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition MinWidth="70"/>
-                                            <ColumnDefinition MinWidth="500"/>
+                                            <ColumnDefinition MinWidth="700"/>
                                             <ColumnDefinition MinWidth="100"/>
-                                            <ColumnDefinition MinWidth="100"/>
+                                            <ColumnDefinition MinWidth="150"/>
                                         </Grid.ColumnDefinitions>
+                                        <Grid.Resources>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                            </Style>
+                                        </Grid.Resources>
 
                                         <TextBlock Grid.Column="0"
-                                                   Text="{Binding Icon}"
-                                                   Margin="2,0,5,0"/>
+                                                Text="{Binding Icon}"
+                                                FontSize="16"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                Margin="2,0,5,0"/>
 
                                         <TextBlock Grid.Column="1"
-                                                   Text="{Binding Name}"
-                                                   Foreground="{Binding Color}"
-                                                   Margin="0,0,30,0"
-                                                   MouseEnter="TextBlock_MouseEnter"/>
+                                                Text="{Binding Name}"
+                                                Foreground="{Binding Color}"
+                                                Margin="0,0,30,0"
+                                                MouseEnter="TextBlock_MouseEnter"/>
 
                                         <TextBlock Grid.Column="2"
                                                    Foreground="White">
                                             <Run Text="{Binding DisplaySize, StringFormat=F2, Mode=OneWay}"/>
                                             <Run Text="{Binding DisplaySizeUnit, Mode=OneWay}"/>
                                         </TextBlock>
-                                        
+
                                         <!--#region icons stackpanel-->
                                         <StackPanel Grid.Column="3" 
                                                     Orientation="Horizontal" 

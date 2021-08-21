@@ -1,10 +1,8 @@
-﻿using Multitool.NTInterop;
-using Multitool.NTInterop.Power;
+﻿using Multitool.NTInterop.Power;
 
 using MultitoolWPF.UserControls;
 
 using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,7 +24,7 @@ namespace MultitoolWPF.Windows.ControlPanels
             pwrOptions.PowerPlanChanged += PwrOptions_PowerPlanChanged;
         }
 
-        private void PwrOptions_PowerPlanChanged(PowerPlan plan)
+        private void PwrOptions_PowerPlanChanged(Guid plan)
         {
             //throw new System.NotImplementedException();
         }

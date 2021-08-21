@@ -8,8 +8,8 @@
     Name="PowerManagementWindow"
     MinHeight="405"
     MinWidth="520"
-    Height="404"
-    Width="619"
+    Height="405"
+    Width="700"
     Style="{StaticResource DarkWindow}">
     <Window.Resources>
         <Style TargetType="{x:Type TextBox}">
@@ -264,82 +264,88 @@
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="30"/>
     </WindowChrome.WindowChrome>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="15*"/>
-        </Grid.RowDefinitions>
-        <usercontrols:MultitoolWindowChrome
+    <Border x:Name="WindowBorder"
+            BorderBrush="{DynamicResource DarkDevBlue}"
+            Background="Transparent"
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15*"/>
+            </Grid.RowDefinitions>
+            <usercontrols:MultitoolWindowChrome
             CloseClick="MultiToolWindowChrome_CloseClick"
             MinimizeClick="MultiToolWindowChrome_MinimizeClick"
             Title="Power window"
             Background="{StaticResource DevBlue}"/>
 
-        <TabControl 
+            <TabControl 
             Grid.Row="1"
             Style="{StaticResource DarkTabControlTemplate}">
-            <TabControl.Resources>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="{StaticResource DevBlue}">
-                                    <ContentPresenter 
+                <TabControl.Resources>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border Name="Border" BorderThickness="1,1,1,0" CornerRadius="4,4,0,0" Margin="2,0" Background="{StaticResource DevBlue}">
+                                        <ContentPresenter 
                                         x:Name="ContentSite"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
                                         ContentSource="Header"
                                         Margin="10,2"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="False">
-                                        <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Foreground" Value="White"/>
-                </Style>
-            </TabControl.Resources>
-            <TabItem Header="Shutdown menu">
-                <Grid Background="{StaticResource LightBlack}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="60*"/>
-                        <RowDefinition Height="59*"/>
-                        <RowDefinition Height="39*"/>
-                    </Grid.RowDefinitions>
-
-                    <!--Tiles panel-->
-                    <Grid x:Name="TileGrid" Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="192*"/>
-                            <ColumnDefinition Width="249*"/>
-                            <ColumnDefinition Width="133*"/>
-                        </Grid.ColumnDefinitions>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource LightBlack}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Style>
+                </TabControl.Resources>
+                <TabItem Header="Shutdown menu">
+                    <Grid Background="{StaticResource LightBlack}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="60*"/>
+                            <RowDefinition Height="59*"/>
+                            <RowDefinition Height="39*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBox 
-                            x:Name="InputTextBox" 
-                            Text="Input delay" 
-                            MaxWidth="300" Width="170" 
-                            MinHeight="40" MaxHeight="100" 
-                            VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                            VerticalAlignment="Center"
-                            Background="#212121" 
-                            GotKeyboardFocus="InputTextBlock_GotKeyboardFocus"
-                            TextChanged="InputTextBox_TextChanged"
-                            Grid.Column="0" Grid.Row="1">
-                            <TextBox.Resources>
-                                <Style TargetType="{x:Type Border}">
-                                    <Setter Property="CornerRadius" Value="2"/>
-                                </Style>
-                            </TextBox.Resources>
-                        </TextBox>
+                        <!--Tiles panel-->
+                        <Grid x:Name="TileGrid" Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="192*"/>
+                                <ColumnDefinition Width="249*"/>
+                                <ColumnDefinition Width="133*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <ComboBox 
+                            <TextBox 
+                                x:Name="InputTextBox" 
+                                Text="Input delay" 
+                                MaxWidth="300" Width="170" 
+                                MinHeight="40" MaxHeight="100" 
+                                VerticalContentAlignment="Center" 
+                                HorizontalContentAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="{StaticResource DarkBlack}" 
+                                GotKeyboardFocus="InputTextBlock_GotKeyboardFocus"
+                                LostKeyboardFocus="InputTextBlock_LostKeyboardFocus"
+                                TextChanged="InputTextBox_TextChanged"
+                                Grid.Column="0" Grid.Row="1">
+                                <TextBox.Resources>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Setter Property="CornerRadius" Value="2"/>
+                                    </Style>
+                                </TextBox.Resources>
+                            </TextBox>
+
+                            <ComboBox 
                             x:Name="TypeComboBox"
                             Height="{Binding ElementName=InputTextBox, Path=ActualHeight}" 
                             MaxWidth="230" Width="170" 
@@ -347,19 +353,19 @@
                             Foreground="White"
                             Grid.Column="1" Grid.Row="1" 
                             Template="{DynamicResource ComboBoxControlTemplate1}">
-                            <ComboBoxItem IsSelected="True" Content="auto-detect"/>
-                            <ComboBoxItem Content="seconds"/>
-                            <ComboBoxItem Content="minutes"/>
-                            <ComboBoxItem Content="hours"/>
-                        </ComboBox>
-                        <StackPanel 
+                                <ComboBoxItem IsSelected="True" Content="auto-detect"/>
+                                <ComboBoxItem Content="seconds"/>
+                                <ComboBoxItem Content="minutes"/>
+                                <ComboBoxItem Content="hours"/>
+                            </ComboBox>
+                            <StackPanel 
                             Orientation="Vertical" 
                             Grid.Column="2" 
                             VerticalAlignment="Center" 
                             Margin="0,26" 
                             Grid.RowSpan="2">
 
-                            <Button
+                                <Button
                                 x:Name="RestartTimer" 
                                 MinHeight="40" 
                                 Content="Restart timer" 
@@ -367,299 +373,254 @@
                                 Margin="0,0,0,5"
                                 Grid.Column="2" Grid.Row="0"
                                 Template="{StaticResource StandardButtonCT}"/>
-                            <Button 
+                                <Button 
                                 x:Name="StopTimer" 
                                 MinHeight="40" 
                                 Content="Stop timer" 
                                 Click="StopTimer_Click" 
                                 Grid.Column="2" Grid.Row="1"
                                 Template="{StaticResource StandardButtonCT}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <!--Buttons zone-->
-                    <Grid 
-                    x:Name="ButtonsPanel" 
-                    Grid.Row="1" 
-                    HorizontalAlignment="Center" 
-                    Width="{Binding ElementName=PowerManagementWindow, Path=ActualWidth}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="1*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button x:Name="LockButton" 
-                                ToolTip="Lock" 
-                                Click="LockButton_Click" 
-                                Margin="10,0" 
-                                Grid.Column="0"
-                                MinWidth="10"  Width="80"  MaxWidth="90"
-                                MinHeight="10" Height="80" MaxHeight="90"
-                                IsEnabled="{Binding ButtonsEnabled}" 
-                                Style="{StaticResource IconButton}"
-                                Template="{StaticResource IconButtonControlTemplate}">
-                            <Image Source="../../images/lock_ico.png"/>
-                        </Button>
-                        <Button x:Name="SleepButton" 
-                                ToolTip="Sleep" 
-                                Click="SleepButton_Click" 
-                                Margin="10,10" 
-                                Grid.Column="1"
-                                MinWidth="10"  Width="80"  MaxWidth="90"
-                                MinHeight="10" Height="80" MaxHeight="90"
-                                IsEnabled="{Binding ButtonsEnabled}"
-                                Style="{StaticResource IconButton}"
-                                Template="{DynamicResource IconButtonControlTemplate}">
-                            <Image Source="../../images/sleep_ico.png"/>
-                        </Button>
-                        <Button x:Name="RestartButton" 
-                                ToolTip="Restart" 
-                                Click="RestartButton_Click" 
-                                Margin="10,10" 
-                                Grid.Column="2"
-                                MinWidth="10"  Width="80"  MaxWidth="90"
-                                MinHeight="10" Height="80" MaxHeight="90"
-                                IsEnabled="{Binding ButtonsEnabled}" 
-                                Style="{StaticResource IconButton}"
-                                Template="{StaticResource IconButtonControlTemplate}">
-                            <Image Source="../../images/restart_ico.png"/>
-                        </Button>
-                        <Button x:Name="ShutdownButton" 
-                                ToolTip="Shutdown" 
-                                Click="ShutdownButton_Click"
-                                Margin="10,10"
-                                Grid.Column="3"
-                                MinWidth="10"  Width="80"  MaxWidth="90"
-                                MinHeight="10" Height="80" MaxHeight="90"
-                                IsEnabled="{Binding ButtonsEnabled}"
-                                Style="{StaticResource IconButton}"
-                                Template="{StaticResource IconButtonControlTemplate}">
-                            <Image Source="../../images/power_ico.png"/>
-                        </Button>
-
-                        <Grid.Triggers>
-
-                            <!--#region Lock button-->
-                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="LockButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                                        Storyboard.TargetName="LockButton"
-                                        Storyboard.TargetProperty="Width"
-                                        To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
-                                        AutoReverse="False"/>
-                                        <DoubleAnimation
-                                        Storyboard.TargetName="LockButton"
-                                        Storyboard.TargetProperty="Height"
-                                        To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
-                                        AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="LockButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="LockButton"
-                            Storyboard.TargetProperty="Width"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
-                            Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="LockButton"
-                            Storyboard.TargetProperty="Height" 
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
-                            Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <!--#endregion-->
-
-                            <!--#region Sleep button-->
-                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="SleepButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="SleepButton"
-                            Storyboard.TargetProperty="Width"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="SleepButton"
-                            Storyboard.TargetProperty="Height"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="SleepButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="SleepButton"
-                            Storyboard.TargetProperty="Width"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
-                            Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="SleepButton"
-                            Storyboard.TargetProperty="Height" 
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
-                            Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <!--#endregion-->
-
-                            <!--#region Restart button-->
-                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="RestartButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="RestartButton"
-                            Storyboard.TargetProperty="Width"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="RestartButton"
-                            Storyboard.TargetProperty="Height"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="RestartButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="RestartButton"
-                            Storyboard.TargetProperty="Width"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
-                            Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="RestartButton"
-                            Storyboard.TargetProperty="Height" 
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
-                            Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <!--#endregion-->
-
-                            <!--#region Shutdown button-->
-                            <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="ShutdownButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="ShutdownButton"
-                            Storyboard.TargetProperty="Width"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxWidth}" By="100" Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                        <DoubleAnimation
-                            Storyboard.TargetName="ShutdownButton"
-                            Storyboard.TargetProperty="Height"
-                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=MaxHeight}" By="100" Duration="0:0:0.2"
-                            AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="ShutdownButton">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="ShutdownButton"
-                                            Storyboard.TargetProperty="Width"
-                                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Width}"
-                                            Duration="0:0:0.2"
-                                            AutoReverse="False"/>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="ShutdownButton"
-                                            Storyboard.TargetProperty="Height" 
-                                            To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Button}}, Path=Height}" 
-                                            Duration="0:0:0.2"
-                                            AutoReverse="False"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                            <!--#endregion-->
-
-                        </Grid.Triggers>
-
-                    </Grid>
-
-                    <!--Progress bar (timer)-->
-                    <ProgressBar 
-                        x:Name="TimerProgressBar" 
-                        Height="25"
-                        Width="{Binding Path=Data.Width}"
-                        Value="0"
-                        BorderBrush="{Binding Path=Background, ElementName=PowerManagementWindow}"
-                        Background="Black" 
-                        VerticalAlignment="Center" 
-                        Grid.Row="2" 
-                        Margin="0,50,0,42"/>
-                </Grid>
-            </TabItem>
-
-            <TabItem Header="Options">
-                <Grid Background="{StaticResource LightBlack}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="3*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <ListView x:Name="OptionsList"
-                              Background="Transparent"
-                              Grid.Column="0"
-                              HorizontalContentAlignment="Center">
-                        <ListViewItem>
-                            <Button 
-                            Content="General"
-                            Click="GeneralOptions_Click"/>
-                        </ListViewItem>
-                        <ListViewItem>
-                            <Button Content="Shutdown"/>
-                        </ListViewItem>
-                    </ListView>
-
-                    <ScrollViewer x:Name="ScrollViewer"
-                                  Grid.Column="1">
-
-                        <Grid Grid.Column="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="150"/>
-                                <RowDefinition Height="150"/>
-                                <RowDefinition Height="150"/>
-                                <RowDefinition Height="150"/>
-                            </Grid.RowDefinitions>
-                            <StackPanel Orientation="Vertical" Grid.Row="0">
-                                <CheckBox IsChecked="True"
-                                          Margin="10,10">
-
-                                    <TextBlock Text="Force shutdown, restart or other actions"
-                                               ToolTip="This option will force any opened window/application to close. Unsaved open documents will not be saved"
-                                               Foreground="White"/>
-
-                                </CheckBox>
-
-                                <CheckBox IsChecked="False"
-                                          Margin="10,10">
-                                    <TextBlock Text="Add a comment"
-                                               ToolTip="This option will add a comment to why the computer has restarted/shutdown ect... Usefull for administration purposes"
-                                               Foreground="White"/>
-                                </CheckBox>
                             </StackPanel>
                         </Grid>
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-        </TabControl>
-    </Grid>
 
+                        <!--Buttons zone-->
+                        <Grid 
+                            x:Name="ButtonsPanel" 
+                            Grid.Row="1" 
+                            HorizontalAlignment="Center" 
+                            Width="{Binding ElementName=PowerManagementWindow, Path=ActualWidth}">
+                            <Grid.Resources>
+                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                                    <Setter Property="Margin" Value="10,0"/>
+                                    <Setter Property="MinWidth" Value="10"/>
+                                    <Setter Property="Width" Value="80"/>
+                                    <Setter Property="MaxWidth" Value="90"/>
+                                    <Setter Property="IsEnabled" Value="{Binding ButtonsEnabled}"/>
+                                    <Setter Property="Template" Value="{StaticResource IconButtonControlTemplate}"/>
+                                    <Setter Property="FontSize" Value="55"/>
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                                
+                            <Button x:Name="LockButton" 
+                                    Content="🔒"
+                                    ToolTip="Lock" 
+                                    Click="LockButton_Click" 
+                                    Grid.Column="0">
+                                <!--<Image Source="../../images/lock_ico.png"/>-->
+                            </Button>
+                            <Button x:Name="SleepButton" 
+                                    Content="🌙"
+                                    ToolTip="Sleep" 
+                                    Click="SleepButton_Click" 
+                                    Grid.Column="1">
+                                <!--<Image Source="../../images/sleep_ico.png"/>-->
+                            </Button>
+                            <Button x:Name="RestartButton" 
+                                    ToolTip="Restart" 
+                                    Click="RestartButton_Click" 
+                                    Grid.Column="2">
+                                <Image Source="../../images/restart_ico.png"
+                                       Height="80"/>
+                            </Button>
+                            <Button x:Name="ShutdownButton" 
+                                    Content="⚡"
+                                    ToolTip="Shutdown" 
+                                    Click="ShutdownButton_Click"
+                                    Grid.Column="3">
+                                <!--<Image Source="../../images/power_ico.png"/>-->
+                            </Button>
+
+                            <Grid.Triggers>
+
+                                <!--#region Lock button-->
+                                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="LockButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="LockButton"
+                                                Storyboard.TargetProperty="FontSize"
+                                                To="60" 
+                                                By="100"
+                                                Duration="0:0:0.1"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="LockButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="LockButton"
+                                                Storyboard.TargetProperty="FontSize"
+                                                To="55"
+                                                Duration="0:0:0.2"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <!--#endregion-->
+
+                                <!--#region Sleep button-->
+                                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="SleepButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="SleepButton"
+                                                Storyboard.TargetProperty="FontSize"
+                                                To="60" 
+                                                By="100" 
+                                                Duration="0:0:0.1"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="SleepButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="SleepButton"
+                                                Storyboard.TargetProperty="FontSize"
+                                                To="55"
+                                                Duration="0:0:0.2"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <!--#endregion-->
+
+                                <!--#region Restart button-->
+                                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="RestartButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="RestartButton"
+                                                Storyboard.TargetProperty="Width"
+                                                To="{Binding ElementName=RestartButton, Path=MaxHeight}" 
+                                                By="100" 
+                                                Duration="0:0:0.1"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="RestartButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="RestartButton"
+                                                Storyboard.TargetProperty="Width"
+                                                To="{Binding ElementName=RestartButton, Path=Height}"
+                                                Duration="0:0:0.2"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <!--#endregion-->
+
+                                <!--#region Shutdown button-->
+                                <EventTrigger RoutedEvent="Button.MouseEnter" SourceName="ShutdownButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ShutdownButton"
+                                                Storyboard.TargetProperty="FontSize"
+                                                To="60" 
+                                                By="100" 
+                                                Duration="0:0:0.1"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="Button.MouseLeave" SourceName="ShutdownButton">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ShutdownButton"
+                                                Storyboard.TargetProperty="FontSize"
+                                                To="55"
+                                                Duration="0:0:0.2"
+                                                AutoReverse="False"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <!--#endregion-->
+
+                            </Grid.Triggers>
+
+                        </Grid>
+
+                        <!--Progress bar (timer)-->
+                        <ProgressBar 
+                            x:Name="TimerProgressBar" 
+                            Height="25"
+                            Width="{Binding Path=Data.Width}"
+                            Value="0"
+                            BorderBrush="{Binding Path=Background, ElementName=PowerManagementWindow}"
+                            Background="Black" 
+                            VerticalAlignment="Center" 
+                            Grid.Row="2" 
+                            Margin="0,50,0,42"/>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Options">
+                    <Grid Background="{StaticResource DarkBlack}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="3*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ListView x:Name="OptionsList"
+                                  Background="Transparent"
+                                  Grid.Column="0"
+                                  HorizontalContentAlignment="Center">
+                            <ListViewItem>
+                                <Button 
+                                    Content="General"
+                                    Click="GeneralOptions_Click"/>
+                            </ListViewItem>
+                            <ListViewItem>
+                                <Button Content="Shutdown"/>
+                            </ListViewItem>
+                        </ListView>
+
+                        <ScrollViewer x:Name="ScrollViewer"
+                                  Grid.Column="1">
+
+                            <Grid Grid.Column="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="150"/>
+                                    <RowDefinition Height="150"/>
+                                    <RowDefinition Height="150"/>
+                                    <RowDefinition Height="150"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Orientation="Vertical" Grid.Row="0">
+                                    <CheckBox IsChecked="True"
+                                              Margin="10,10">
+
+                                        <TextBlock Text="Force shutdown, restart or other actions"
+                                                   ToolTip="This option will force any opened window/application to close. Unsaved open documents will not be saved"
+                                                   Foreground="White"/>
+
+                                    </CheckBox>
+
+                                    <CheckBox IsChecked="False"
+                                              Margin="10,10">
+                                        <TextBlock Text="Add a comment"
+                                                   ToolTip="This option will add a comment to why the computer has restarted/shutdown ect... Usefull for administration purposes"
+                                                   Foreground="White"/>
+                                    </CheckBox>
+                                </StackPanel>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Border>
 </Window>

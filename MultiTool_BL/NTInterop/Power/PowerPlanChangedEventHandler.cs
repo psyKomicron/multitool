@@ -1,4 +1,6 @@
-﻿namespace Multitool.NTInterop.Power
+﻿using System;
+
+namespace Multitool.NTInterop.Power
 {
-    public delegate void PowerPlanChangedEventHandler(PowerPlan newPowerPlan);
+    public delegate void PowerPlanChangedEventHandler(Guid newPowerPlan);
 }

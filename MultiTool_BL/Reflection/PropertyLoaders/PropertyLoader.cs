@@ -127,12 +127,14 @@ namespace Multitool.Reflection.PropertyLoaders
                 }
                 catch (InvalidCastException ice)
                 {
-                    if (HaltOnException) throw;
+                    if (HaltOnException)
+                        throw;
                     HandleICE(ice, property);
                 }
                 catch (TargetInvocationException tie)
                 {
-                    if (HaltOnException) throw;
+                    if (HaltOnException)
+                        throw;
                     HandleTIE(tie, property);
                 }
             }
@@ -152,12 +154,14 @@ namespace Multitool.Reflection.PropertyLoaders
                 }
                 catch (InvalidCastException ice)
                 {
-                    if (HaltOnException) throw;
+                    if (HaltOnException)
+                        throw;
                     HandleICE(ice, property);
                 }
                 catch (TargetInvocationException tie)
                 {
-                    if (HaltOnException) throw;
+                    if (HaltOnException)
+                        throw;
                     HandleTIE(tie, property);
                 }
             }

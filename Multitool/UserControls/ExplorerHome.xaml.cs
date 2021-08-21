@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace MultitoolWPF.UserControls
 {
@@ -19,8 +20,6 @@ namespace MultitoolWPF.UserControls
     public partial class ExplorerHome : UserControl, INotifyPropertyChanged
     {
         static string[] sysFiles = new string[] { "pagefile.sys", "hiberfil.sys", "swapfile.sys" };
-        private const double heightAnimationDelta = 7;
-        private const double widthAnimationDelta = 5;
         private string _recycleBinSize = string.Empty;
         private double _recycleBinPercentage;
         private double _sysFilesPercentage;
@@ -32,12 +31,14 @@ namespace MultitoolWPF.UserControls
         {
             DriveInfo = driveInfo;
             InitializeComponent();
+            SetGradients(false);
             cancelToken.Token.ThrowIfCancellationRequested();
             _ = LoadComponents(cancelToken);
         }
 
         #region properties
-        public DriveInfo DriveInfo { get; set; }
+        public string BackgroudColor { get; set; }
+        public DriveInfo DriveInfo { get; }
         public string DriveName => DriveInfo.Name + "(" + DriveInfo?.VolumeLabel + ")";
         public string DriveCapacity => Tool.FormatSize(DriveInfo?.TotalSize ?? 0);
         public string DriveFreeSpace => Tool.FormatSize(DriveInfo?.TotalFreeSpace ?? 0);
@@ -98,7 +99,7 @@ namespace MultitoolWPF.UserControls
             CancellationToken cancelToken = cancelTokenSource.Token;
             cancelToken.ThrowIfCancellationRequested();
 
-            long size = await Task.Run(() => 
+            long size = await Task.Run(() =>
             {
                 return calculator.CalculateDirectorySize(DriveInfo.Name + @"$RECYCLE.BIN\", cancelToken);
             }, cancelToken);
@@ -135,7 +136,8 @@ namespace MultitoolWPF.UserControls
             }, cancelToken);
 
             cancelToken.ThrowIfCancellationRequested();
-            await Task.Run(() => ComputeSysFiles(DriveInfo.Name, cancelToken), cancelToken); 
+            await Task.Run(() => ComputeSysFiles(DriveInfo.Name, cancelToken), cancelToken);
+            Application.Current.Dispatcher.Invoke(() => SetGradients(true));
         }
 
         private void ComputeSysFiles(string path, CancellationToken cancelToken)
@@ -171,7 +173,7 @@ namespace MultitoolWPF.UserControls
                         catch (FileNotFoundException) { }
                     }
                 }
-            } 
+            }
             catch (UnauthorizedAccessException) { }
             catch (DirectoryNotFoundException) { }
         }
@@ -191,28 +193,45 @@ namespace MultitoolWPF.UserControls
                 stopwatch.Start();
             }
         }
+
+        private void SetGradients(bool active)
+        {
+            if (active)
+            {
+                SetFirstGradient(Tool.GetAppRessource<Color>("DarkDevBlueColor"));
+                SetSecondGradient(Tool.GetAppRessource<Color>("DevBlueColor"));
+                SetThirdGradient((Color)ColorConverter.ConvertFromString("#CFCFCF"));
+            }
+            else
+            {
+                SetFirstGradient(Tool.GetAppRessource<Color>("DarkBlackColor"));
+                SetSecondGradient(Tool.GetAppRessource<Color>("LightBlackColor"));
+                SetThirdGradient((Color)ColorConverter.ConvertFromString("#CFCFCF"));
+            }
+        }
+
+        private void SetFirstGradient(Color value)
+        {
+            GradientStopOne.Color = value;
+        }
+
+        private void SetSecondGradient(Color value)
+        {
+            GradientStopTwo.Color = value;
+        }
+
+        private void SetThirdGradient(Color value)
+        {
+            GradientStopThree.Color = value;
+        }
         #endregion
 
         #region events
-        private void Control_Loaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= Control_Loaded;
-            double controlHeight, controlWidth;
-            controlHeight = ActualHeight;
-            controlWidth = ActualWidth;
-
-            Height = controlHeight;
-            Width = controlWidth;
-
-            HeightMouseEnter_Animation.To = controlHeight + heightAnimationDelta;
-            HeightMouseLeave_Animation.To = controlHeight;
-            WidthMouseEnter_Animation.To = controlWidth + widthAnimationDelta;
-            WidthMouseLeave_Animation.To = controlWidth;
-        }
-
         private void ClearTrashBin_Click(object sender, RoutedEventArgs e)
         {
-
+#if DEBUG
+            throw new NotImplementedException();
+#endif
         }
         #endregion
     }

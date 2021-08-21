@@ -1,6 +1,7 @@
 ﻿using Multitool.Parsers.Errors;
 using Multitool.PreferencesManagers;
 using Multitool.PreferencesManagers.Json;
+
 using System;
 using System.Collections.Generic;
 
@@ -33,7 +34,7 @@ namespace Multitool.Parsers
 
                     List<WindowPreferenceManager> childs = ParseWindowPreferenceManager(array.Substring(1, array.Length - 2));
                     preferenceManager.AddPreferenceManagers(childs);
-                    
+
                 }
                 return preferenceManager;
             }
@@ -77,7 +78,7 @@ namespace Multitool.Parsers
                         properties.Add(propName, value);
                     }
                 }
-            } 
+            }
             return properties;
         }
 
@@ -103,8 +104,8 @@ namespace Multitool.Parsers
 
                     WindowPreferenceManager manager = new WindowPreferenceManager() { ItemName = name };
                     managers.Add(manager);
-                    
-                    manager.Properties = Parse(s.Substring(charRead + 2),  out int charParsed);
+
+                    manager.Properties = Parse(s.Substring(charRead + 2), out int charParsed);
                     charRead += charParsed;
                 }
                 // end

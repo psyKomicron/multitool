@@ -1,7 +1,7 @@
 ﻿using Multitool.Sorting;
-using MultitoolWPF.ViewModels;
 
 using MultitoolWPF.Tools;
+using MultitoolWPF.ViewModels;
 
 using System;
 using System.Threading.Tasks;

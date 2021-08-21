@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-
+﻿
 using Multitool.NTInterop.Codes;
 
 using System;
@@ -11,9 +10,6 @@ namespace Multitool.NTInterop.Power
 {
     public class PowerOptions : WndProcService
     {
-        private const int balanced = 34;
-        private const int performance = 218;
-
         public PowerOptions() : base()
         {
             RegisterForNotifications(PowerNotifications.PowerSchemePersonality);
@@ -44,6 +40,17 @@ namespace Multitool.NTInterop.Power
             }
         }
 
+        public Guid GetActivePowerPlanGuid()
+        {
+            IntPtr guid = IntPtr.Zero;
+            uint returnCode = PowerGetActiveScheme(IntPtr.Zero, ref guid);
+            if (returnCode != (uint)SystemCodes.ERROR_SUCCESS)
+            {
+                throw InteropHelper.GetLastError("PowerGetActiveScheme call failed", returnCode);
+            }
+            return Marshal.PtrToStructure<Guid>(guid);
+        }
+
         /// <summary>
         /// Get this computer available power plans.
         /// </summary>
@@ -68,14 +75,14 @@ namespace Multitool.NTInterop.Power
             Guid guid = powerPlan.Guid;
             uint retCode = PowerSetActiveScheme(IntPtr.Zero, ref guid);
 
-            ActiveChanged?.Invoke(powerPlan);
+            ActiveChanged?.Invoke(powerPlan.Guid);
             if (retCode != (uint)SystemCodes.ERROR_SUCCESS)
             {
                 throw InteropHelper.GetLastError("PowerSetActiveScheme call failed", retCode);
             }
             else
             {
-                PowerPlanChanged?.BeginInvoke(powerPlan, null, null);
+                _ = PowerPlanChanged?.BeginInvoke(powerPlan.Guid, null, null);
             }
         }
 
@@ -200,10 +207,6 @@ namespace Multitool.NTInterop.Power
         #region events
         protected override void OnWndProcCalled(object sender, Message e)
         {
-#if DEBUG
-            Console.WriteLine("msg -> " + e.Msg);
-            Console.WriteLine("wParam -> " + e.WParam.ToInt32());
-#endif
             if (e.Msg == PowerSettings.WM_POWERBROADCAST && e.WParam.ToInt32() == (int)PowerBroadcastEvent.PowerSettingChange)
             {
                 POWERBROADCAST_SETTING pwrSetting = Marshal.PtrToStructure<POWERBROADCAST_SETTING>(e.LParam);
@@ -212,19 +215,11 @@ namespace Multitool.NTInterop.Power
                 if (pwrSetting.PowerSetting == PowerSettings.GUID_POWERSCHEME_PERSONALITY && pwrSetting.DataLength == Marshal.SizeOf(typeof(Guid)))
                 {
 #if DEBUG
-                    switch (pwrSetting.Data)
-                    {
-                        case balanced:
-                            Console.WriteLine("Power mode changed to balanced");
-                            break;
-                        case performance:
-                            Console.WriteLine("Power mode changed to performance/high performance");
-                            break;
-                        default:
-                            break;
-                    }
+                    Console.WriteLine("Power plan changed");
 #endif
-                    //PowerPlanChanged?.BeginInvoke();
+                    Guid active = GetActivePowerPlanGuid();
+                    ActiveChanged?.Invoke(active);
+                    PowerPlanChanged?.BeginInvoke(active, null, null);
                 }
             }
         }
@@ -278,7 +273,7 @@ namespace Multitool.NTInterop.Power
         private static extern IntPtr DefWindowProc(
             IntPtr hwnd,
             int message,
-            IntPtr wParam, 
+            IntPtr wParam,
             IntPtr lParam
         );
         #endregion

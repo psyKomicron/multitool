@@ -3,6 +3,7 @@
 using Multitool.Reflection.ObjectFlatteners;
 
 using MultiToolTest;
+
 using System.Xml;
 
 namespace MultitoolTest.Reflection.ObjectFlatteners.Tests

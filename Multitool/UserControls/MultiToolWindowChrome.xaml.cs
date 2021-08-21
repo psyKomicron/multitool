@@ -37,7 +37,7 @@ namespace MultitoolWPF.UserControls
             add
             {
                 WindowCloseButton.Click += value;
-                
+
                 if (!WindowCloseButton.IsEnabled)
                 {
                     WindowCloseButton.IsEnabled = true;
@@ -74,7 +74,7 @@ namespace MultitoolWPF.UserControls
             remove
             {
                 WindowMinimizeButton.Click -= value;
-               
+
                 if (minimizeListeners > 0)
                 {
                     minimizeListeners--;

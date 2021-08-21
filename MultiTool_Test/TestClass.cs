@@ -6,8 +6,8 @@ using Multitool.Reflection.ObjectFlatteners;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Xml;
 
 namespace MultiToolTest
@@ -96,10 +96,11 @@ namespace MultiToolTest
         [TestMethod]
         public void MyTestMethod()
         {
-            PropertyInfo[] infos = GetType().GetProperties();
-            foreach (var info in infos)
+            string path = @"c:\users\julie\documents";
+            if (path != null)
             {
-                Console.WriteLine(info.ToString());
+                Console.WriteLine(path + " file exists ? " + File.Exists(path));
+                Console.WriteLine(path + " directory exists ? " + Directory.Exists(path));
             }
         }
     }

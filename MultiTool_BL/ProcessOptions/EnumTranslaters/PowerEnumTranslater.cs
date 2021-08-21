@@ -1,4 +1,5 @@
 ﻿using Multitool.ProcessOptions.Enums;
+
 using System.Collections.Generic;
 using System.Text;
 

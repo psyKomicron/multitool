@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Multitool.FileSystem
 {
@@ -29,7 +28,7 @@ namespace Multitool.FileSystem
         /// <param name="list">Collection to add items to</param>
         /// <param name="addDelegate">Delegate to add items to the <paramref name="list"/></param>
         /// <exception cref="System.ArgumentNullException">
-        /// If either <paramref name="list"/> or <paramref name="cancellationToken"/> is <see cref="null"/>
+        /// If either <paramref name="list"/> or <paramref name="cancellationToken"/> is null/>
         /// </exception>
         void GetFileSystemEntries<ItemType>(
             string path, CancellationToken cancellationToken, IList<ItemType> list,
@@ -48,5 +47,5 @@ namespace Multitool.FileSystem
         void Reset();
     }
 
-    public delegate void ItemChangedEventHandler(object sender, ChangeEventArgs data);
+    public delegate void ItemChangedEventHandler(object sender, FileChangeEventArgs data);
 }

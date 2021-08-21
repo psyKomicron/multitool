@@ -1,11 +1,7 @@
-﻿using Multitool.JulieV2.Commands;
-
+﻿
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Multitool.JulieV2.Logs
 {

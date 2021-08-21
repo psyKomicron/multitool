@@ -1,5 +1,6 @@
 ﻿using Multitool.Reflection.ObjectFlatteners;
 using Multitool.Reflection.PropertyLoaders;
+
 using System;
 using System.IO;
 using System.Xml;
@@ -48,7 +49,7 @@ namespace Multitool.PreferencesManagers.Xml
                 Console.WriteLine("Preference file does not exist at " + Path);
                 Console.ResetColor();
                 #endregion
-                
+
                 xmlDocument = new XmlDocument();
                 root = xmlDocument.CreateElement("PreferenceManager");
                 xmlDocument.AppendChild(root);
@@ -64,7 +65,7 @@ namespace Multitool.PreferencesManagers.Xml
             {
                 root.RemoveChild(storedData);
             }
-            
+
             XmlNode dataRoot = xmlDocument.CreateElement(name);
             foreach (XmlNode node in dataAsXml)
             {

@@ -1,8 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.Threading;
-using System.IO;
+
 using Multitool.FileSystem;
+
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 namespace MultitoolTest.FileSystem.Tests
 {
@@ -13,14 +15,14 @@ namespace MultitoolTest.FileSystem.Tests
         public void GetFileSystemEntriesTest()
         {
             #region instanciations
-            FileSystemManager manager = FileSystemManager.Get();
+            FileSystemManager manager = new FileSystemManager();
             CancellationToken cancellationToken = new();
             IList<IFileSystemEntry> entries = new List<IFileSystemEntry>();
             #endregion
 
             string path = @"C:\Users\julie\Documents";
             string[] items = Directory.GetFileSystemEntries(path);
-            manager.GetFileSystemEntries(path, cancellationToken, entries, 
+            manager.GetFileSystemEntries(path, cancellationToken, entries,
                 (IList<IFileSystemEntry> list, IFileSystemEntry entry) => { list.Add(entry); });
 
             Assert.AreEqual(items.Length, entries.Count);
@@ -44,7 +46,7 @@ namespace MultitoolTest.FileSystem.Tests
         [TestMethod()]
         public void GetRealPathTest()
         {
-            FileSystemManager manager = FileSystemManager.Get();
+            FileSystemManager manager = new FileSystemManager();
 
             string realPath = manager.GetRealPath(@"c:\users\julie\documents");
             Assert.AreEqual(@"C:\Users\julie\Documents", realPath);
@@ -56,7 +58,7 @@ namespace MultitoolTest.FileSystem.Tests
         [TestMethod()]
         public void ResetTest()
         {
-            FileSystemManager manager = FileSystemManager.Get();
+            FileSystemManager manager = new FileSystemManager();
             manager.Reset();
         }
     }

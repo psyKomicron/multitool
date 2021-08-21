@@ -1,4 +1,5 @@
 ﻿using Multitool.ProcessOptions.EnumTranslaters;
+
 using System;
 using System.Collections.Generic;
 

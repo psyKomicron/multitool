@@ -1,16 +1,17 @@
 ﻿using Multitool.FileSystem;
+using Multitool.FileSystem.Events;
 
 using MultitoolWPF.Tools;
 
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Windows.Media;
 
 namespace MultitoolWPF.ViewModels
 {
-    public class FileSystemEntryViewModel : IFileSystemEntry
+    public class FileSystemEntryViewModel : ViewModel, IFileSystemEntry, INotifyPropertyChanged
     {
         private static string DirectoryIcon = "📁";
         private static string FileIcon = "📄";
@@ -20,39 +21,45 @@ namespace MultitoolWPF.ViewModels
         private static string EncryptedIcon = "🔒";
         private static string CompressedIcon = "💾";
         private static string DeviceIcon = "‍💻";
+
         private string _displaySizeUnit;
+        private string _displaySize;
+        private Brush _color;
 
         /// <summary>Constructor.</summary>
         /// <param name="item"><see cref="IFileSystemEntry"/> to decorate</param>
         public FileSystemEntryViewModel(IFileSystemEntry item)
         {
             FileSystemEntry = item;
-            item.PropertyChanged += OnItemPropertyChanged;
 
-            Icon = IsDirectory ? DirectoryIcon : FileIcon;
+            item.AttributesChanged += OnAttributesChanged;
+            item.Deleted += OnDeleted;
+            item.SizedChanged += OnSizeChanged;
 
+            Icon = GetIcon();
             Color = IsDirectory ? new SolidColorBrush(Tool.GetAppRessource<Color>("DevBlueColor")) : new SolidColorBrush(Colors.White);
+
             if (!Partial)
+            {
+                Color.Opacity = 0.6;
+                DisplaySize = string.Empty;
+            }
+            else
             {
                 Tool.FormatSize(Size, out double formatted, out string ext);
                 DisplaySizeUnit = ext;
                 DisplaySize = formatted.ToString("F2", CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                Color.Opacity = 0.6;
-                DisplaySize = string.Empty;
             }
         }
 
         #region properties
 
         #region IFileSystemEntry
+        public FileAttributes Attributes => FileSystemEntry.Attributes;
+        public IFileSystemEntry FileSystemEntry { get; }
         public FileSystemInfo Info => FileSystemEntry.Info;
         public string Path => FileSystemEntry.Path;
-        public long Size => FileSystemEntry.Size;
         public string Name => FileSystemEntry.Name;
-        public FileAttributes Attributes => FileSystemEntry.Attributes;
         public bool IsHidden => FileSystemEntry.IsHidden;
         public bool IsSystem => FileSystemEntry.IsSystem;
         public bool IsReadOnly => FileSystemEntry.IsReadOnly;
@@ -60,12 +67,10 @@ namespace MultitoolWPF.ViewModels
         public bool IsCompressed => FileSystemEntry.IsCompressed;
         public bool IsDevice => FileSystemEntry.IsDevice;
         public bool IsDirectory => FileSystemEntry.IsDirectory;
+        public long Size => FileSystemEntry.Size;
         public bool Partial => FileSystemEntry.Partial;
         #endregion
 
-        public Brush Color { get; }
-        public string DisplaySize { get; private set; }
-        public IFileSystemEntry FileSystemEntry { get; }
         public string Icon { get; }
         public string IsHiddenEcon => FileSystemEntry.IsHidden ? HiddenIcon : string.Empty;
         public string IsSystemEcon => FileSystemEntry.IsSystem ? SystemIcon : string.Empty;
@@ -74,19 +79,91 @@ namespace MultitoolWPF.ViewModels
         public string IsCompressedEcon => FileSystemEntry.IsCompressed ? CompressedIcon : string.Empty;
         public string IsDeviceEcon => FileSystemEntry.IsDevice ? DeviceIcon : string.Empty;
 
+        public Brush Color
+        {
+            get => _color;
+            set
+            {
+                _color = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public string DisplaySize
+        {
+            get => _displaySize;
+            set
+            {
+                _displaySize = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         public string DisplaySizeUnit
         {
             get => _displaySizeUnit;
-
             set
             {
                 _displaySizeUnit = value;
                 NotifyPropertyChanged();
             }
         }
+
         #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        #region events
+        public event EntryChangedEventHandler Deleted
+        {
+            add
+            {
+                FileSystemEntry.Deleted += value;
+            }
+
+            remove
+            {
+                FileSystemEntry.Deleted -= value;
+            }
+        }
+
+        public event EntrySizeChangedEventHandler SizedChanged
+        {
+            add
+            {
+                FileSystemEntry.SizedChanged += value;
+            }
+
+            remove
+            {
+                FileSystemEntry.SizedChanged -= value;
+            }
+        }
+
+        public event EntryAttributesChangedEventHandler AttributesChanged
+        {
+            add
+            {
+                FileSystemEntry.AttributesChanged += value;
+            }
+
+            remove
+            {
+                FileSystemEntry.AttributesChanged -= value;
+            }
+        }
+
+        public event EntryRenamedEventHandler Renamed
+        {
+            add
+            {
+                FileSystemEntry.Renamed += value;
+            }
+
+            remove
+            {
+                FileSystemEntry.Renamed -= value;
+            }
+        }
+        #endregion
 
         #region public
         ///<inheritdoc/>
@@ -133,29 +210,70 @@ namespace MultitoolWPF.ViewModels
         #endregion
 
         #region private
-        private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private string GetIcon()
         {
-            if (e.PropertyName == nameof(Size))
+            switch (Name)
             {
-                Tool.FormatSize(Size, out double formatted, out string ext);
-                DisplaySizeUnit = ext;
-                DisplaySize = formatted.ToString("F2", CultureInfo.InvariantCulture);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplaySize)));
-            }
-            else
-            {
-                if (e.PropertyName == nameof(Partial))
-                {
-                    Color.Opacity = 1;
-                }
-
-                PropertyChanged?.Invoke(this, e);
+                case "$RECYCLE.BIN":
+                    return "🗑";
+                case "desktop.ini":
+                    return "🖥";
+                case "swapfile.sys":
+                case "hiberfil.sys":
+                case "pagefile.sys":
+                    return "⚙";
+                default:
+                    return IsDirectory ? DirectoryIcon : FileIcon;
             }
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        private void OnSizeChanged(IFileSystemEntry sender, long newSize)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (!Partial)
+            {
+                Color.Opacity = 1;
+                NotifyPropertyChanged(nameof(Partial));
+            }
+
+            Tool.FormatSize(Size, out double formatted, out string ext);
+            DisplaySizeUnit = ext;
+            DisplaySize = formatted.ToString("F2", CultureInfo.InvariantCulture);
+        }
+
+        private void OnDeleted(IFileSystemEntry sender, FileChangeEventArgs e)
+        {
+            Color = new SolidColorBrush(Colors.Red)
+            {
+                Opacity = 0.8
+            };
+        }
+
+        private void OnAttributesChanged(IFileSystemEntry sender, FileAttributes attributes)
+        {
+            switch (attributes)
+            {
+                case FileAttributes.ReadOnly:
+                    NotifyPropertyChanged(nameof(IsReadOnly));
+                    break;
+                case FileAttributes.Hidden:
+                    NotifyPropertyChanged(nameof(IsHidden));
+                    break;
+                case FileAttributes.System:
+                    NotifyPropertyChanged(nameof(IsSystem));
+                    break;
+                case FileAttributes.Directory:
+                    NotifyPropertyChanged(nameof(IsDirectory));
+                    break;
+                case FileAttributes.Device:
+                    NotifyPropertyChanged(nameof(IsDevice));
+                    break;
+                case FileAttributes.Compressed:
+                    NotifyPropertyChanged(nameof(IsCompressed));
+                    break;
+                case FileAttributes.Encrypted:
+                    NotifyPropertyChanged(nameof(IsEncrypted));
+                    break;
+            }
         }
         #endregion
     }

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -21,9 +18,9 @@ namespace MultitoolWPF
         {
             List<Run> results = new List<Run>(10)
             {
-                new Run() 
-                { 
-                    Foreground = new SolidColorBrush(GetExceptionColor(e)), 
+                new Run()
+                {
+                    Foreground = new SolidColorBrush(GetExceptionColor(e)),
                     Text = "\n" +  e.GetType().Name + " thrown in " + (e.Source == string.Empty ? "unknow" : e.Source)
                 },
                 new Run()
@@ -56,7 +53,7 @@ namespace MultitoolWPF
             else
             {
                 results.Add(new Run() { Foreground = new SolidColorBrush(Colors.YellowGreen), Text = "\n\tNo data for this exception.\n" });
-            } 
+            }
 
             return results;
         }

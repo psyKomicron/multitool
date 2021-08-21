@@ -1,13 +1,15 @@
 ﻿using Multitool.Controllers;
 using Multitool.ProcessOptions;
+using Multitool.ProcessOptions.Enums;
 using Multitool.ProcessOptions.EnumTranslaters;
-using MultitoolWPF.ViewModels;
 
 using MultitoolWPF.Tools;
+using MultitoolWPF.ViewModels;
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Timers;
 using System.Windows;
@@ -23,6 +25,7 @@ namespace MultitoolWPF.Windows
     /// </summary>
     public partial class PowerWindow : ISerializableWindow, INotifyPropertyChanged
     {
+        private const string inputDelay = "Input delay";
         private readonly Regex timespanRegex = new Regex(@"([0-9]+:[0-5][0-9]:[0-5][0-9])", RegexOptions.Compiled);
         private readonly Regex inputTextBoxRegex = new Regex(@"([0-9])+", RegexOptions.Compiled);
         private bool _buttonsEnabled = true;
@@ -79,11 +82,11 @@ namespace MultitoolWPF.Windows
             CancelProgressBarAnimation();
         }
 
-        private void ExecuteController(List<Multitool.ProcessOptions.Enums.PowerOptions> options)
+        private void ExecuteController(List<PowerOptions> options)
         {
             controller = new PowerController()
             {
-                StartOptions = new StartOptions<Multitool.ProcessOptions.Enums.PowerOptions>()
+                StartOptions = new StartOptions<PowerOptions>()
                 {
                     Options = options,
                     Translater = new PowerEnumTranslater()
@@ -93,9 +96,9 @@ namespace MultitoolWPF.Windows
         }
 
         #region hmi methods
-
         private double GetTextBoxValue()
         {
+            // conditional expr are great but i want to be able to read my code ;)
             if (IsInitialized && InputTextBox.Text != null)
             {
                 if (double.TryParse(InputTextBox.Text, out double value))
@@ -174,41 +177,41 @@ namespace MultitoolWPF.Windows
         #region power management methods
         private void Shutdown(object sender, ElapsedEventArgs e)
         {
-            ExecuteCommand(new List<Multitool.ProcessOptions.Enums.PowerOptions>() 
+            ExecuteCommand(new List<PowerOptions>()
             {
-                Multitool.ProcessOptions.Enums.PowerOptions.Shutdown, 
-                Multitool.ProcessOptions.Enums.PowerOptions.NoDelay 
+                PowerOptions.Shutdown,
+                PowerOptions.NoDelay
             });
         }
 
         private void Restart(object sender, ElapsedEventArgs e)
         {
-            ExecuteCommand(new List<Multitool.ProcessOptions.Enums.PowerOptions>() 
-            { 
-                Multitool.ProcessOptions.Enums.PowerOptions.Restart, 
-                Multitool.ProcessOptions.Enums.PowerOptions.NoDelay 
+            ExecuteCommand(new List<PowerOptions>()
+            {
+                PowerOptions.Restart,
+                PowerOptions.NoDelay
             });
         }
 
         private void Lock(object sender, ElapsedEventArgs e)
         {
-            ExecuteCommand(new List<Multitool.ProcessOptions.Enums.PowerOptions>() 
-            { 
-                Multitool.ProcessOptions.Enums.PowerOptions.LogOff, 
-                Multitool.ProcessOptions.Enums.PowerOptions.Force 
+            ExecuteCommand(new List<PowerOptions>()
+            {
+                PowerOptions.LogOff,
+                PowerOptions.Force
             });
         }
 
         private void Sleep(object sender, ElapsedEventArgs e)
         {
-            ExecuteCommand(new List<Multitool.ProcessOptions.Enums.PowerOptions>() 
-            { 
-                Multitool.ProcessOptions.Enums.PowerOptions.Hibernate, 
-                Multitool.ProcessOptions.Enums.PowerOptions.NoDelay 
+            ExecuteCommand(new List<PowerOptions>()
+            {
+                PowerOptions.Hibernate,
+                PowerOptions.NoDelay
             });
         }
 
-        private void ExecuteCommand(List<Multitool.ProcessOptions.Enums.PowerOptions> options)
+        private void ExecuteCommand(List<PowerOptions> options)
         {
             timer.Stop();
             timer.Close();
@@ -236,9 +239,14 @@ namespace MultitoolWPF.Windows
             InputTextBox.Text = string.Empty;
         }
 
+        private void InputTextBlock_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            InputTextBox.Text = inputDelay;
+        }
+
         private void InputTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (IsInitialized && sender is TextBox textBox)
+            if (sender is TextBox textBox)
             {
                 if (string.IsNullOrEmpty(textBox.Text))
                 {
@@ -246,15 +254,33 @@ namespace MultitoolWPF.Windows
                 }
                 else if (inputTextBoxRegex.Match(textBox.Text).Success)
                 {
-                    double value = double.Parse(textBox.Text);
-                    if (value < 60)
+                    if (textBox.Text.Contains(":"))
                     {
-                        TypeComboBox.SelectedIndex = 2;
+                        string seconds;
+                        string hours = string.Empty, minutes = string.Empty;
+                        string[] s = textBox.Text.Split(':');
+                        switch (s.Length)
+                        {
+                            case 1:
+                                seconds = s[0];
+                                break;
+                            case 2:
+                                minutes = s[0];
+                                seconds = s[1];
+                                break;
+                            case 3:
+                                hours = s[0];
+                                minutes = s[1];
+                                seconds = s[2];
+                                break;
+                            default:
+                                throw new FormatException();
+                        }
+
+                        Debug.WriteLine(hours + ":" + minutes + ":" + seconds);
                     }
-                    else
-                    {
-                        TypeComboBox.SelectedIndex = 1;
-                    }
+                    //double value = double.Parse(textBox.Text);
+
                 }
                 e.Handled = true;
             }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Multitool.NTInterop;
+using Multitool.NTInterop.Power;
 
 using System;
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace MultitoolTest.NTInterop.Tests
         [TestMethod()]
         public void GetPowerPlansTest()
         {
-            List<PowerPlan> plans = powerOptions.EnumeratePowerPlans();
+            PowerPlan[] plans = powerOptions.EnumeratePowerPlans();
 
             foreach (var item in plans)
             {
@@ -52,7 +52,7 @@ namespace MultitoolTest.NTInterop.Tests
         [TestMethod()]
         public void SwitchPowerPlanTest()
         {
-            List<PowerPlan> plans = powerOptions.EnumeratePowerPlans();
+            PowerPlan[] plans = powerOptions.EnumeratePowerPlans();
             PowerPlan current = powerOptions.GetActivePowerPlan();
 
             //powerPlans.SwitchPowerPlan(plans[0]);
@@ -60,7 +60,7 @@ namespace MultitoolTest.NTInterop.Tests
             {
                 if (plan.Name != current.Name)
                 {
-                    powerOptions.SwitchPowerPlan(plan);
+                    powerOptions.SetActivePowerPlan(plan);
                 }
             }
         }

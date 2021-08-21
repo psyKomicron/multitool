@@ -1,12 +1,14 @@
-﻿using Multitool.FileSystem;
+﻿using Microsoft.Win32;
+
+using Multitool.FileSystem;
 using Multitool.FileSystem.Completion;
 using Multitool.FileSystem.Events;
 using Multitool.Parsers;
 using Multitool.Sorting;
-using MultitoolWPF.ViewModels;
 
 using MultitoolWPF.Tools;
 using MultitoolWPF.UserControls;
+using MultitoolWPF.ViewModels;
 
 using System;
 using System.Collections.Generic;
@@ -21,7 +23,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Win32;
 
 namespace MultitoolWPF.Windows
 {
@@ -66,7 +67,7 @@ namespace MultitoolWPF.Windows
                 NotifyPropertyChanged();
             }
         }
-        
+
         #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -103,43 +104,35 @@ namespace MultitoolWPF.Windows
 
         private void DisplayHome()
         {
+            loaded |= 0b100;
+
             homeCancellationToken = new CancellationTokenSource();
             DriveInfo[] driveInfo = DriveInfo.GetDrives();
 
-            int rows, column;
-            column = driveInfo.Length > 1 ? 2 : 1;
-            rows = (driveInfo.Length / 2) + (driveInfo.Length % 2);
+            int columns = driveInfo.Length > 1 ? 2 : 1;
+            int rows = (driveInfo.Length / 2) + (driveInfo.Length % 2);
 
-            for (int i = 0; i < column; i++)
-            {
-                Disks_Grid.ColumnDefinitions.Add(new ColumnDefinition() 
-                {
-                    Width = new GridLength(630)
-                });
-            }
-            for (int i = 0; i < rows; i++)
-            {
-                Disks_Grid.RowDefinitions.Add(new RowDefinition() 
-                {
-                    Height = new GridLength(280)
-                });
-            }
+            Disks_Grid.Columns = columns;
+            Disks_Grid.Rows = rows;
 
             for (int i = 0; i < driveInfo.Length; i++)
             {
                 CancellationTokenSource homeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(homeCancellationToken.Token);
 
-                ExplorerHome home = new ExplorerHome(driveInfo[i], homeCancellationTokenSource);
-                home.MouseDoubleClick += ExplorerHomeControl_MouseDoubleClick;
-                home.Height = home.MinHeight;
-                home.Width = home.MinWidth;
+                ExplorerHome home = new ExplorerHome(driveInfo[i], homeCancellationTokenSource)
+                {
+                    Margin = new Thickness(10),
+                    MaxHeight = 100,
+                    MaxWidth = (Width - 50) / columns
+                };
+                home.MouseLeftButtonDown += ExplorerHomeControl_MouseDoubleClick;
+                /*home.Height = home.MinHeight;
+                home.Width = home.MinWidth;*/
 
                 Grid.SetRow(home, i / 2);
                 Grid.SetColumn(home, i % 2 == 0 ? 0 : 1);
                 Disks_Grid.Children.Add(home);
             }
-
-            loaded |= 0b100;
         }
 
         private void DisplayFiles(string path)
@@ -185,8 +178,8 @@ namespace MultitoolWPF.Windows
                     CancelAction_Button.IsEnabled = false;
                     Files_ProgressBar.IsIndeterminate = false;
 
-                    Console.Error.WriteLine(argExcep);
-                    Progress_TextBox.Text = argExcep.Message;
+                    Trace.WriteLine(argExcep);
+                    Progress_TextBox.Text = argExcep.ToString();
                 }
             }
             catch (DirectoryNotFoundException)
@@ -197,6 +190,7 @@ namespace MultitoolWPF.Windows
 
                 CurrentPath = path;
                 path = path.ToLowerInvariant();
+                // remove from history
                 for (int i = 0; i < Data.History.Count; i++)
                 {
                     if (Data.History[i].Equals(path, StringComparison.OrdinalIgnoreCase))
@@ -234,7 +228,7 @@ namespace MultitoolWPF.Windows
 
         private void SortList()
         {
-            FileSystemEntryViewModel[] pathItems =  ObservableCollectionQuickSort.Sort(CurrentFiles);
+            FileSystemEntryViewModel[] pathItems = ObservableCollectionQuickSort.Sort(CurrentFiles);
             CurrentFiles.Clear();
             for (int i = 0; i < pathItems.Length; i++)
             {
@@ -252,6 +246,7 @@ namespace MultitoolWPF.Windows
             Application.Current.Dispatcher.Invoke(() =>
             {
                 items.Add(new FileSystemEntryViewModel(item));
+                SortList();
             });
         }
 
@@ -259,7 +254,7 @@ namespace MultitoolWPF.Windows
         {
             await Task.Run(() =>
             {
-                if (force || eventStopwatch.ElapsedMilliseconds > 20) //ms interval between each notification
+                if (force || eventStopwatch.ElapsedMilliseconds > 30) //ms interval between each notification
                 {
                     if (error)
                     {
@@ -287,26 +282,25 @@ namespace MultitoolWPF.Windows
         #region events handlers
 
         #region window
-
         private void TextBlock_MouseEnter(object sender, MouseEventArgs e)
         {
             TextBlock textBlock = (TextBlock)sender;
             if (!string.IsNullOrWhiteSpace(textBlock.Text))
             {
                 string toolTip;
-                if (!string.IsNullOrEmpty(Properties.Resources.ResourceManager.GetString(textBlock.Text)))
+                if (!string.IsNullOrEmpty(Tool.GetStringResource(textBlock.Text)))
                 {
-                    toolTip = Properties.Resources.ResourceManager.GetString(textBlock.Text);
+                    toolTip = Tool.GetStringResource(textBlock.Text);
                 }
                 else
                 {
                     string ext = Path.GetExtension(textBlock.Text);
 
-                    toolTip = (!string.IsNullOrEmpty(ext) && !string.IsNullOrEmpty(Properties.Resources.ResourceManager.GetString(ext)))
-                        ? Properties.Resources.ResourceManager.GetString(ext)
+                    toolTip = (!string.IsNullOrEmpty(ext) && !string.IsNullOrEmpty(Tool.GetStringResource(ext)))
+                        ? Tool.GetStringResource(ext)
                         : "Unknown";
                 }
-                
+
                 if (textBlock.ToolTip == null)
                 {
                     textBlock.ToolTip = new ToolTip();
@@ -321,7 +315,10 @@ namespace MultitoolWPF.Windows
             try
             {
                 homeCancellationToken.Cancel();
-                homeCancellationToken.Dispose();
+                if (homeCancellationToken != null)
+                {
+                    homeCancellationToken.Dispose();
+                }
             }
             catch (ObjectDisposedException) { }
 
@@ -331,7 +328,10 @@ namespace MultitoolWPF.Windows
                 try
                 {
                     fsCancellationTokenSource.Cancel();
-                    fsCancellationTokenSource.Dispose();
+                    if (fsCancellationTokenSource != null)
+                    {
+                        fsCancellationTokenSource.Dispose();
+                    }
                 }
                 catch (ObjectDisposedException) { }
             }
@@ -403,8 +403,8 @@ namespace MultitoolWPF.Windows
                     }
                     catch (Win32Exception w32e)
                     {
-                        Console.WriteLine(w32e.ToString());
-                        // fsEntry.Color = new SolidColorBrush(Colors.Red);
+                        Trace.WriteLine(w32e.ToString());
+                        Dispatcher.Invoke(() => fsEntry.Color = new SolidColorBrush(Colors.Red));
                     }
                 }
                 e.Handled = true;
@@ -479,7 +479,10 @@ namespace MultitoolWPF.Windows
         private void ExplorerHomeControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             DriveInfo info = ((ExplorerHome)sender).DriveInfo;
-            DisplayFiles(info.Name);
+            if (fsCancellationTokenSource == null)
+            {
+                DisplayFiles(info.Name);
+            }
             _ = Dispatcher.BeginInvoke((Action)(() => Window_TabControl.SelectedIndex = 1));
         }
 
@@ -545,7 +548,6 @@ namespace MultitoolWPF.Windows
         #endregion
 
         #region manager
-
         private void FileSystemManager_Progress(object sender, string message)
         {
             DisplayMessage(message, false, sender == null);
@@ -554,10 +556,9 @@ namespace MultitoolWPF.Windows
         private void FileSystemManager_Exception(object sender, Exception exception)
         {
             DisplayMessage(exception.Message, true);
-            //exceptionWindow.Queue(exception);
         }
 
-        private void FileSystemManager_Change(object sender, ChangeEventArgs data)
+        private void FileSystemManager_Change(object sender, FileChangeEventArgs data)
         {
             switch (data.ChangeTypes)
             {
@@ -574,15 +575,17 @@ namespace MultitoolWPF.Windows
                         }
                     }
                     break;
+#if TRACE
                 case WatcherChangeTypes.Changed:
-                    Console.WriteLine(data.Entry.Path + " changed");
+                    Trace.WriteLine(data.Entry.Path + " changed");
                     break;
                 case WatcherChangeTypes.Renamed:
-                    Console.WriteLine(data.Entry.Path + " renamed");
+                    Trace.WriteLine(data.Entry.Path + " renamed");
                     break;
                 case WatcherChangeTypes.All:
-                    Console.WriteLine(data.Entry.Path + " : all changes");
+                    Trace.WriteLine(data.Entry.Path + " : all changes");
                     break;
+#endif
             }
             data.InUse = false;
         }
@@ -590,33 +593,39 @@ namespace MultitoolWPF.Windows
         private void FileSystemManager_Completed(TaskStatus status, Task task)
         {
             taskStopwatch.Stop();
-            fsCancellationTokenSource.Dispose();
+            if (fsCancellationTokenSource != null)
+            {
+                fsCancellationTokenSource.Dispose();
+            }
             fsCancellationTokenSource = null;
             eventStopwatch.Reset();
 
             Dispatcher.Invoke(() =>
             {
                 CancelAction_Button.IsEnabled = false;
-                Files_ProgressBar.IsIndeterminate = false;
                 SortList();
+                Files_ProgressBar.IsIndeterminate = false;
 
                 string message = string.Empty;
                 switch (status)
                 {
                     case TaskStatus.RanToCompletion:
+                        Progress_TextBox.Foreground = new SolidColorBrush(Colors.White);
                         message = "Task successfully completed";
                         break;
                     case TaskStatus.Canceled:
+                        Progress_TextBox.Foreground = new SolidColorBrush(Colors.Orange);
                         message = "Task cancelled";
                         break;
                     case TaskStatus.Faulted:
-                        message = "Task failed\n";
-                        Console.Error.WriteLine(task.Exception.ToString());
+                        Progress_TextBox.Foreground = new SolidColorBrush(Colors.Red);
+                        message = "Task failed";
+                        Trace.WriteLine(task.Exception.ToString());
                         break;
                 }
 
-                Progress_TextBox.Text = taskStopwatch.Elapsed.TotalSeconds > 0
-                    ? message + " (in " + Math.Round(taskStopwatch.Elapsed.TotalSeconds).ToString() + "s)"
+                Progress_TextBox.Text = taskStopwatch.Elapsed.TotalSeconds >= 1
+                    ? message + " (in " + taskStopwatch.Elapsed.TotalSeconds.ToString() + "s)"
                     : message + " (in " + taskStopwatch.ElapsedMilliseconds.ToString() + "ms)";
             });
         }
@@ -624,7 +633,6 @@ namespace MultitoolWPF.Windows
         #endregion
 
         #region window chrome
-
         private void MultiToolWindowChrome_CloseClick(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
@@ -649,7 +657,6 @@ namespace MultitoolWPF.Windows
             }
             e.Handled = true;
         }
-
         #endregion
 
         #endregion

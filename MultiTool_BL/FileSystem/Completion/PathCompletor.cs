@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
+using System.Text;
 
 namespace Multitool.FileSystem.Completion
 {
     public class PathCompletor : IPathCompletor
     {
-        private DirectoryInfo previousDir;
-
         public void Complete(string input, IList<string> list)
         {
             string fileName = GetFileName(input, out int i);
@@ -124,8 +122,6 @@ namespace Multitool.FileSystem.Completion
         {
             if (Directory.Exists(path))
             {
-                previousDir = new DirectoryInfo(path);
-
                 string[] directories = Directory.GetDirectories(path);
                 string[] files = Directory.GetFiles(path);
                 string[] joins = new string[directories.Length + files.Length];
@@ -149,12 +145,24 @@ namespace Multitool.FileSystem.Completion
 
         private string Reverse(string input)
         {
-            string reverse = string.Empty;
-            for (int i = input.Length - 1; i >= 0; i--)
+            if (input.Length > 100)
             {
-                reverse += input[i];
+                StringBuilder builder = new StringBuilder();
+                for (int i = input.Length - 1; i >= 0; i--)
+                {
+                    builder.Append(input[i]);
+                }
+                return builder.ToString();
             }
-            return reverse;
+            else
+            {
+                string reverse = string.Empty;
+                for (int i = input.Length - 1; i >= 0; i--)
+                {
+                    reverse += input[i];
+                }
+                return reverse;
+            } 
         }
     }
 }

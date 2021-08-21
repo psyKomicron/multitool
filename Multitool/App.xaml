@@ -8,6 +8,8 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/ColorsDictionary.xaml"/>
+                <ResourceDictionary Source="Themes/CustomScrollBar.xaml"/>
+                <ResourceDictionary Source="Themes/CustomScrollViewer.xaml"/>
                 <ResourceDictionary Source="Themes/DarkListViewItemTheme.xaml"/>
                 <ResourceDictionary Source="Themes/DarkListViewTheme.xaml"/>
                 <ResourceDictionary Source="Themes/DarkMenuItemTheme.xaml"/>

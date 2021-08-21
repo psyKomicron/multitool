@@ -70,22 +70,22 @@ namespace MultitoolWPF.Tools
         {
             if (size >= (long)Sizes.TERA)
             {
-                formatted = Math.Round(size/(double)Sizes.TERA, 3);
+                formatted = Math.Round(size / (double)Sizes.TERA, 3);
                 ext = " Tb";
             }
             else if (size >= (long)Sizes.GIGA)
             {
-                formatted = Math.Round(size/(double)Sizes.GIGA, 3);
+                formatted = Math.Round(size / (double)Sizes.GIGA, 3);
                 ext = " Gb";
             }
             else if (size >= (long)Sizes.MEGA)
             {
-                formatted = Math.Round(size/(double)Sizes.MEGA, 3);
+                formatted = Math.Round(size / (double)Sizes.MEGA, 3);
                 ext = " Mb";
             }
             else if (size >= (long)Sizes.KILO)
             {
-                formatted = Math.Round(size/(double)Sizes.KILO, 3);
+                formatted = Math.Round(size / (double)Sizes.KILO, 3);
                 ext = " Kb";
             }
             else

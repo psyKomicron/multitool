@@ -1,32 +1,44 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace Multitool.FileSystem
 {
     internal class DirectoryEntry : FileSystemEntry
     {
-        private long _size;
+        public long _size;
+        private DirectoryInfo dirInfo;
 
         public DirectoryEntry(DirectoryInfo info) : base(info)
         {
-            DirectoryInfo = info;
+            dirInfo = info;
         }
 
         public DirectoryEntry(DirectoryInfo info, long size) : base(info)
         {
-            DirectoryInfo = info;
-            _size = size;
+            dirInfo = info;
+            Size = size;
         }
 
+        /// <inheritdoc/>
         public override long Size
         {
             get => _size;
             set
             {
+                if (!Partial)
+                {
+                    throw new InvalidOperationException("Item is not partial");
+                }
+                long old = _size;
                 _size = value;
-                NotifyPropertyChanged();
+                Trace.WriteLine("Size changed: " + value);
+                RaiseSizeChangedEvent(old);
             }
         }
 
+        #region public methods
+        /// <inheritdoc/>
         public override void Delete()
         {
             if (CanDelete())
@@ -35,10 +47,39 @@ namespace Multitool.FileSystem
             }
             else
             {
-                throw CreateIOException();
+                throw CreateDeleteIOException();
             }
         }
 
+        /// <inheritdoc/>
+        public override void Move(string newPath)
+        {
+            if (CanMove(newPath, out MoveCodes res))
+            {
+                dirInfo.MoveTo(newPath);
+            }
+            else
+            {
+                string message;
+                switch (res)
+                {
+                    case MoveCodes.PathNotFound:
+                        message = "path not found";
+                        break;
+                    case MoveCodes.IsSystem:
+                        message = "file/directory belongs to the system";
+                        break;
+                    case MoveCodes.InfoNotSet:
+                        throw new InvalidOperationException("IO actions cannot be performed until the entry has a reference to a FileSystemInfo");
+                    default:
+                        throw new ArgumentException("MoveCodes not recognized");
+                }
+                Debug.WriteLine(Name + "cannot be moved -> " + message);
+                throw new IOException(Path + " cannot be moved (reason: " + message + ")");
+            }
+        }
+
+        /// <inheritdoc/>
         public override void CopyTo(string newPath)
         {
             if (Directory.Exists(newPath))
@@ -49,12 +90,24 @@ namespace Multitool.FileSystem
                 }
                 else
                 {
-                    DirectoryCopyTo(DirectoryInfo, newPath);
+                    DirectoryCopy(dirInfo, newPath);
                 }
             }
         }
+        public override void RefreshInfos()
+        {
+            string oldPath = Path;
+            dirInfo.Refresh();
+            if (!dirInfo.Exists)
+            {
+                dirInfo = new DirectoryInfo(oldPath);
+            }
+            SetInfos(dirInfo);
+        }
+        #endregion
 
-        private void DirectoryCopyTo(DirectoryInfo info, string newPath)
+        #region private methods
+        private void DirectoryCopy(DirectoryInfo info, string newPath)
         {
             DirectoryInfo[] dirs = info.GetDirectories();
 
@@ -69,11 +122,11 @@ namespace Multitool.FileSystem
                 file.CopyTo(tempPath, false);
             }
 
-            // copy them and their contents to new location.
-            foreach (DirectoryInfo subdir in dirs)
+            // Copy them and their contents to new location.
+            for (int i = 0; i < dirs.Length; i++)
             {
-                string tempPath = System.IO.Path.Combine(newDir.FullName, subdir.Name);
-                DirectoryCopyTo(subdir, tempPath);
+                string tempPath = System.IO.Path.Combine(newDir.FullName, dirs[i].Name);
+                DirectoryCopy(dirs[i], tempPath);
             }
         }
 
@@ -96,7 +149,7 @@ namespace Multitool.FileSystem
                 }
                 else
                 {
-                    throw CreateIOException(fileInfo);
+                    throw CreateDeleteIOException(fileInfo);
                 }
             }
 
@@ -107,8 +160,9 @@ namespace Multitool.FileSystem
             }
             else
             {
-                throw CreateIOException(directoryInfo);
+                throw CreateDeleteIOException(directoryInfo);
             }
         }
+        #endregion
     }
 }

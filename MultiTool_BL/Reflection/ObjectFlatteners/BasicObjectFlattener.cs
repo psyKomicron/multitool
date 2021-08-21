@@ -25,7 +25,7 @@ namespace Multitool.Reflection.ObjectFlatteners
                         {
                             flatProperties.Add(key, properties[i].GetValue(o).ToString());
                         }
-                        else 
+                        else
                         {
                             Dictionary<string, string> props = Flatten(o, value.GetType());
                             StringBuilder stringBuilder = new StringBuilder();

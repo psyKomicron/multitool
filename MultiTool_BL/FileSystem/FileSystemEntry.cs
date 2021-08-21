@@ -1,31 +1,36 @@
-﻿using System;
+﻿
+using Multitool.FileSystem.Events;
+
+using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace Multitool.FileSystem
 {
+    /// <summary>
+    /// Base class for directory and file entries
+    /// </summary>
     public abstract class FileSystemEntry : IFileSystemEntry
     {
-        private string _path;
-        private string _name;
-        private bool _partial;
-
-        /// <summary>Constructor.</summary>
-        /// <param name="path"></param>
-        /// <param name="name"></param>
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="info"></param>
         protected FileSystemEntry(FileSystemInfo info)
         {
-            _path = info.FullName;
-            _name = info.Name;
-            _partial = true;
+            Path = info.FullName;
+            Name = info.Name;
+            Partial = true;
             Info = info;
         }
 
-        public abstract long Size { get; set; }
-        
+        #region properties
         /// <inheritdoc/>
-        public FileSystemInfo Info { get; private set; }
+        public abstract long Size { get; set; }
+
+        /// <inheritdoc/>
+        public FileSystemInfo Info { get; protected set; }
         /// <inheritdoc/>
         public FileAttributes Attributes => Info.Attributes;
         /// <inheritdoc/>
@@ -43,58 +48,38 @@ namespace Multitool.FileSystem
         /// <inheritdoc/>
         public bool IsDirectory => (Attributes & FileAttributes.Directory) != 0;
         /// <inheritdoc/>
-        public string Path
-        {
-            get => _path;
-            set 
-            {
-                _path = value;
-                NotifyPropertyChanged();
-            }
-        }
+        public string Path { get; set; }
         /// <inheritdoc/>
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                NotifyPropertyChanged();
-            }
-        }
+        public string Name { get; set; }
         /// <inheritdoc/>
-        public bool Partial
-        {
-            get => _partial;
-            set
-            {
-                _partial = value;
-                NotifyPropertyChanged();
-            }
-        }
+        public bool Partial { get; set; }
+        #endregion
 
-        /// <summary>
-        /// Used to avoid cast operations. File instances will have this property valued, directories not.
-        /// </summary>
-        internal FileInfo FileInfo { get; set; }
-        /// <summary>
-        /// Used to avoid cast operations. Directory instances will have this property valued, files not.
-        /// </summary>
-        internal DirectoryInfo DirectoryInfo { get; set; }
+        #region events
 
         /// <inheritdoc/>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event EntryChangedEventHandler Deleted;
+        /// <inheritdoc/>
+        public event EntrySizeChangedEventHandler SizedChanged;
+        /// <inheritdoc/>
+        public event EntryAttributesChangedEventHandler AttributesChanged;
+        /// <inheritdoc/>
+        public event EntryRenamedEventHandler Renamed;
 
+        #endregion
+
+        #region abstract methods
         public abstract void CopyTo(string newPath);
+        /// <inheritdoc/>
+        public abstract void Move(string newPath);
+        /// <inheritdoc/>
+        public abstract void RefreshInfos();
+        #endregion
 
+        #region public methods
         /// <summary>
         /// Refreshes the internal <see cref="FileSystemInfo"/>.
         /// </summary>
-        public void RefreshInfos()
-        {
-            Info.Refresh();
-            SetInfos();
-        }
 
         /// <inheritdoc/>
         public virtual void Delete()
@@ -105,7 +90,7 @@ namespace Multitool.FileSystem
             }
             else
             {
-                throw CreateIOException();
+                throw CreateDeleteIOException();
             }
         }
 
@@ -114,7 +99,7 @@ namespace Multitool.FileSystem
         {
             if (IsDevice)
             {
-                throw new IOException("Cannot delete a file with IsDevice tag");
+                throw new IOException("Cannot delete a file with device tag");
             }
             else if (IsSystem)
             {
@@ -123,30 +108,6 @@ namespace Multitool.FileSystem
             else
             {
                 throw new NotImplementedException();
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Move(string newPath)
-        {
-            if (File.Exists(newPath))
-            {
-                if (IsSystem)
-                {
-                    throw new IOException("Cannot move system file");
-                }
-                else if (DirectoryInfo != null)
-                {
-                    DirectoryInfo.MoveTo(newPath);
-                }
-                else if (FileInfo != null)
-                {
-                    FileInfo.MoveTo(newPath);
-                }
-            }
-            else
-            {
-                throw new DirectoryNotFoundException("Directory (" + newPath + ") does not exist. File cannot be moved");
             }
         }
 
@@ -170,7 +131,7 @@ namespace Multitool.FileSystem
             {
                 return -1;
             }
-            else if (!IsDirectory && other.IsDirectory)
+            if (!IsDirectory && other.IsDirectory)
             {
                 return 1;
             }
@@ -179,14 +140,11 @@ namespace Multitool.FileSystem
             {
                 return -1;
             }
-            else if (Size < other.Size)
+            if (Size < other.Size)
             {
                 return 1;
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         /// <inheritdoc/>
@@ -198,16 +156,46 @@ namespace Multitool.FileSystem
         /// <inheritdoc/>
         public override string ToString()
         {
-            return Name;
+            return Name + ", " + Path;
         }
+        #endregion
 
+        #region protected methods
         /// <summary>
         /// Set path and name of this <see cref="FileSystemEntry"/>. Use after refreshing info.
         /// </summary>
-        protected void SetInfos()
+        protected void SetInfos(FileSystemInfo newInfo)
         {
+            Info = newInfo;
             Path = Info.FullName;
             Name = Info.Name;
+        }
+
+        protected virtual bool CanMove(string newPath, out MoveCodes res)
+        {
+            if (File.Exists(newPath))
+            {
+                if (IsSystem)
+                {
+                    res = MoveCodes.IsSystem;
+                    return false;
+                }
+                else if (Info == null)
+                {
+                    res = MoveCodes.InfoNotSet;
+                    return false;
+                }
+                else
+                {
+                    res = MoveCodes.Possible;
+                    return false;
+                }
+            }
+            else
+            {
+                res = MoveCodes.PathNotFound;
+                return false;
+            }
         }
 
         protected virtual bool CanDelete(FileSystemInfo fileInfo)
@@ -233,25 +221,71 @@ namespace Multitool.FileSystem
             return true;
         }
 
-        protected virtual bool CanDelete() => CanDelete(Info);
+        protected virtual bool CanDelete()
+        {
+            return CanDelete(Info);
+        }
 
-        protected IOException CreateIOException(FileSystemInfo info)
+        protected IOException CreateDeleteIOException(FileSystemInfo info)
         {
             IOException e = new IOException("Cannot delete " + info.FullName);
             e.Data.Add(info.ToString(), info);
             return e;
         }
 
-        protected IOException CreateIOException() => CreateIOException(Info);
+        protected IOException CreateDeleteIOException()
+        {
+            return CreateDeleteIOException(Info);
+        }
 
         protected void RemoveReadOnly(FileSystemInfo info)
         {
             info.Attributes &= ~FileAttributes.ReadOnly;
+            AttributesChanged?.Invoke(this, FileAttributes.ReadOnly);
         }
 
-        protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        protected void RaiseDeletedEvent()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            Deleted?.Invoke(this, new FileChangeEventArgs(this, WatcherChangeTypes.Deleted));
         }
+
+        protected void RaiseSizeChangedEvent(long oldSize)
+        {
+            SizedChanged?.Invoke(this, oldSize);
+        }
+
+        protected void RaiseAttributesChangedEvent(FileAttributes attributes)
+        {
+            AttributesChanged?.Invoke(this, attributes);
+        }
+
+        protected void RaiseRenamedEvent(string oldPath)
+        {
+            Renamed?.Invoke(this, oldPath);
+        }
+        #endregion
+
+        #region events
+
+        #region watcher events
+        private void OnFileChange(object sender, FileSystemEventArgs e)
+        {
+            
+        }
+
+        private void OnFileDeleted(object sender, FileSystemEventArgs e)
+        {
+            RaiseDeletedEvent();
+        }
+
+        private void OnFileRenamed(object sender, RenamedEventArgs e)
+        {
+            Path = e.FullPath;
+            Name = e.Name;
+            RaiseRenamedEvent(e.OldFullPath);
+        }
+        #endregion
+
+        #endregion
     }
 }

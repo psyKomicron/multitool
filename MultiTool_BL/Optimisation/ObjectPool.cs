@@ -60,7 +60,7 @@ namespace Multitool.Optimisation
         /// Gets an object from the pool.
         /// <para>
         /// <paramref name="ctorParams"/> represents the parameters of the class constructor 
-        /// (if the constructor is parameter-less put <see cref="null"/>). It needs to be indexed as the 
+        /// (if the constructor is parameter-less put null). It needs to be indexed as the 
         /// actual constructor parameter. See <seealso cref="Type.GetConstructor(Type[])"/>
         /// </para>
         /// </summary>
@@ -175,7 +175,7 @@ namespace Multitool.Optimisation
                 T o = (T)sender;
                 if (o.InUse)
                 {
-                    throw new PoolObjectStateException();
+                    throw new InvalidOperationException("Object is not in a valid state (still in use)");
                 }
                 freePool.Push(o);
             }

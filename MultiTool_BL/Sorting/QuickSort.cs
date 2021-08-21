@@ -33,7 +33,7 @@ namespace Multitool.Sorting
             if (high >= array.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(high));
-            } 
+            }
             if (low < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(low));

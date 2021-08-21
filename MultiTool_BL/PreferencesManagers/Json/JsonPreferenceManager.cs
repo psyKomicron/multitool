@@ -2,6 +2,7 @@
 using Multitool.Parsers.Errors;
 using Multitool.Reflection.ObjectFlatteners;
 using Multitool.Reflection.PropertyLoaders;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -68,7 +69,7 @@ namespace Multitool.PreferencesManagers.Json
 
             if (childs.Contains(manager)) // WPM implements IQuatable
             {
-                WindowPreferenceManager currentManager = null; 
+                WindowPreferenceManager currentManager = null;
                 foreach (var child in childs)
                 {
                     if (child.ItemName.Equals(manager.ItemName))
@@ -205,7 +206,7 @@ namespace Multitool.PreferencesManagers.Json
                     stream.Write(bytes, 0, bytes.Length);
                 }
             }
-            catch (IOException){ }
+            catch (IOException) { }
         }
 
         private bool IsControlChar(char c) => c == '\r' || c == '\n' || c == '\t' || c == ' ';

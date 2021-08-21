@@ -95,7 +95,7 @@ namespace MultitoolTest.Reflection.ObjectFlatteners.Tests
 
         public ForAttributeTest()
         {
-            Items = new(){"1", "2", "3", "4" };
+            Items = new() { "1", "2", "3", "4" };
             Users = new()
             {
                 UserFactory.Create(6527, "psyKomicron", "psyKomicron"),

@@ -1,5 +1,4 @@
 ﻿using Multitool.Controllers;
-using Multitool.NTInterop;
 using Multitool.PerformanceMonitors;
 
 using MultitoolWPF.Tools;
@@ -9,10 +8,11 @@ using MultitoolWPF.Windows;
 using MultitoolWPF.Windows.ControlPanels;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -29,7 +29,8 @@ namespace MultitoolWPF
         private const string gitHub = "https://github.com/psyKomicron/multitool/blob/main/README.md";
         private IPerformanceMonitor cpuMonitor;
         private IPerformanceMonitor ramMonitor;
-        private Timer cpuTimer = new Timer(250);
+        private System.Timers.Timer perfMonTimer = new System.Timers.Timer(250);
+        private CancellationTokenSource instanceTokenSource;
 
         public string AppVersion { get; set; }
 
@@ -88,17 +89,38 @@ namespace MultitoolWPF
             AsyncPerformanceMonitor localCpuMonitor = new AsyncPerformanceMonitor(MonitorCategory.ProcessorUsageTotal);
             AsyncPerformanceMonitor localRamMonitor = new AsyncPerformanceMonitor(MonitorCategory.MemoryGlobal);
 
+            instanceTokenSource =  CancellationTokenSource.CreateLinkedTokenSource(localCpuMonitor.CancellationTokenSource.Token, localRamMonitor.CancellationTokenSource.Token);
+
             await Task.WhenAll(localCpuMonitor.InstanciationTask, localRamMonitor.InstanciationTask);
+
+            if (instanceTokenSource.IsCancellationRequested)
+            {
+                return;
+            }
 
             cpuMonitor = localCpuMonitor;
             ramMonitor = localRamMonitor;
-            cpuTimer.Elapsed += (object sender, ElapsedEventArgs e) => Application.Current.Dispatcher.Invoke(UpdatePerfsStats);
-            cpuTimer.Start();
+            perfMonTimer.Elapsed += (object sender, ElapsedEventArgs e) => Application.Current.Dispatcher.Invoke(UpdatePerfsStats);
+            perfMonTimer.Start();
+
+            instanceTokenSource.Dispose();
+            instanceTokenSource = null;
         }
 
-        private void AddAndSwitch(FrameworkElement element)
+        private void AddAndSwitch(string headerName, FrameworkElement content)
         {
-            Controls_Panel.Items.Add(element);
+            TabItem tab = new TabItem()
+            {
+                Foreground = new SolidColorBrush(Colors.White),
+                Content = content
+            };
+            ClosableTabHeader header = new ClosableTabHeader(tab)
+            {
+                Title = headerName
+            };
+            tab.Header = header;
+            header.Close += Header_Close;
+            _ = Controls_Panel.Items.Add(tab);
             Controls_Panel.SelectedIndex = Controls_Panel.Items.Count - 1;
         }
 
@@ -161,11 +183,20 @@ namespace MultitoolWPF
             RamUsage_TextBlock.Text = ram.ToString("F2");
         }
 
-        private void MultiToolMainWindow_Closed(object sender, EventArgs e)
+        private void Window_Closed(object sender, EventArgs e)
         {
-            cpuTimer.Stop();
-            cpuTimer.Dispose();
-            cpuMonitor.Dispose();
+            if (instanceTokenSource != null)
+            {
+                instanceTokenSource.Cancel();
+            }
+
+            perfMonTimer.Stop();
+            perfMonTimer.Dispose();
+            if (cpuMonitor != null)
+            {
+                cpuMonitor.Dispose();
+                ramMonitor.Dispose();
+            }
             Serialize();
         }
         #endregion
@@ -173,27 +204,21 @@ namespace MultitoolWPF
         #region tools menu
         private void PowerCapabilitiesPanelButton_Click(object sender, RoutedEventArgs e)
         {
-            AddAndSwitch(new TabItem()
+            AddAndSwitch("Power capabilities", new PowerCapabilitiesPanel()
             {
-                Header = "Power capabilities",
-                Foreground = new SolidColorBrush(Colors.White),
-                Content = new PowerCapabilitiesPanelControl()
-                {
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch,
-                    Margin = new Thickness(5)
-                }
+                Margin = new Thickness(5)
             });
         }
 
         private void PowerPanelButton_Click(object sender, RoutedEventArgs e)
         {
-            AddAndSwitch(new TabItem()
-            {
-                Header = "Power panel",
-                Foreground = new SolidColorBrush(Colors.White),
-                Content = new PowerPlansPanel()
-            });
+            AddAndSwitch("Power panel", new PowerPlansPanel());
+        }
+
+        private void Header_Close(object sender, RoutedEventArgs e)
+        {
+            TabItem tab = (sender as ClosableTabHeader).TabItem;
+            Controls_Panel.Items.Remove(tab);
         }
 
         private void CopySpotlightWallpapers_Click(object sender, RoutedEventArgs e)
@@ -202,14 +227,9 @@ namespace MultitoolWPF
             {
                 TextWrapping = TextWrapping.Wrap,
                 Foreground = new SolidColorBrush(Colors.White),
-                FontSize = 10
+                FontSize = 14
             };
-            AddAndSwitch(new TabItem()
-            {
-                Header = "Copying Spotlight files",
-                Foreground = new SolidColorBrush(Colors.White),
-                Content = textBlock
-            });
+            AddAndSwitch("Copying Spotlight files", textBlock);
 
             string localappdata = Environment.GetEnvironmentVariable("LOCALAPPDATA");
             if (string.IsNullOrEmpty(localappdata))
@@ -228,12 +248,32 @@ namespace MultitoolWPF
             FileInfo fileInfo;
             for (int i = 0; i < files.Length; i++)
             {
-                fileInfo = new FileInfo(files[i]);
-                fileInfo = fileInfo.Extension != ".png"
-                    ? fileInfo.CopyTo(myPicturesPath + "\\" + fileInfo.Name + ".png", true)
-                    : fileInfo.CopyTo(myPicturesPath + "\\" + fileInfo.Name, true);
-                Console.WriteLine("Successfully moved and renamed -> " + fileInfo.Name);
-                textBlock.Inlines.Add("Successfully moved and renamed -> " + fileInfo.Name + "\n");
+                try
+                {
+                    System.Drawing.Image image = new Bitmap(files[i]);
+                    if (image.Height >= 1080 && image.Width >= 1920)
+                    {
+                        fileInfo = new FileInfo(files[i]);
+                        fileInfo = fileInfo.Extension != ".png"
+                            ? fileInfo.CopyTo(myPicturesPath + "\\" + fileInfo.Name + ".png", true)
+                            : fileInfo.CopyTo(myPicturesPath + "\\" + fileInfo.Name, true);
+                        textBlock.Inlines.Add("Successfully moved and renamed -> " + fileInfo.Name + "\n");
+                        Trace.WriteLine("Successfully moved and renamed : " + fileInfo.Name);
+                    }
+                    else
+                    {
+                        Trace.WriteLine("Not moving " + files[i] + " (too small)");
+                    }
+                }
+#if TRACE
+                catch (ArgumentException ae)
+                {
+                    Console.WriteLine(ae.ToString());
+                    textBlock.Inlines.Add("Failed to move -> " + files[i] + "\n");
+                }
+#else
+                catch (ArgumentException) { }
+#endif
             }
             //WindowManager.Open<ExplorerWindow>(myPicturesPath);
         }

@@ -73,7 +73,7 @@ namespace MultitoolTest.Tests
         [TestMethod]
         public void QuickSortFullTest()
         {
-            FileSystemManager manager = FileSystemManager.Get();
+            FileSystemManager manager = new FileSystemManager();
             CancellationToken cancellationToken = new();
             IList<IFileSystemEntry> entries = new List<IFileSystemEntry>();
             string path = @"C:\Users\julie\Documents";

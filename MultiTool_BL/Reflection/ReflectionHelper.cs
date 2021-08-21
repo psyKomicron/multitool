@@ -51,7 +51,7 @@ public static class ReflectionHelper
         return Implements(typeof(TargetType), actualType);
     }
 
-    public static bool IsPrimitiveType(Type t , bool includeString = true)
+    public static bool IsPrimitiveType(Type t, bool includeString = true)
     {
         return t.IsPrimitive || (t == typeof(string) && includeString);
     }

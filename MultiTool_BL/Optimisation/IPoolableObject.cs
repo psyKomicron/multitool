@@ -1,5 +1,9 @@
 ﻿namespace Multitool.Optimisation
 {
+    /// <summary>
+    /// Allows for objects to be reused when they are not longer used.
+    /// Mainly used for event data.
+    /// </summary>
     public interface IPoolableObject
     {
         /// <summary>

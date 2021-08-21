@@ -4,7 +4,6 @@
 
     <SolidColorBrush x:Key="ListBorder" Color="#828790"/>
     <Style x:Key="DarkListViewStyle" TargetType="{x:Type ListView}">
-        <Setter Property="Background" Value="{DynamicResource DarkBlack}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Foreground" Value="White"/>
@@ -25,7 +24,8 @@
                                               RenderFocused="{TemplateBinding IsKeyboardFocusWithin}" 
                                               SnapsToDevicePixels="true">
                         <ScrollViewer Padding="{TemplateBinding Padding}" 
-                                          Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
+                                      Template="{DynamicResource ScrollViewerControlTemplate}"
+                                      Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
                             <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                         </ScrollViewer>
                     </Themes:ListBoxChrome>
